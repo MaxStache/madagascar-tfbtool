@@ -1,50 +1,10 @@
 from dataclasses import dataclass
 
-from lib.binaryReader import BinaryReader
+from TFBStringTable import TFBStringTable
+from opcodes.OpIfElse import COpIfElse
+from utils.binaryReader import BinaryReader
 from opcodes import COpCode
-from opcodes.OpCode import InstructionFlags
-
-
-@dataclass
-class TFBStringTable_Entry:
-    """
-    Represents a single entry in a TFB string table
-    """
-
-    string: str  # u8 string length followed by string bytes
-    metadata: bytes  # 4 bytes of metetadata usually 0x0
-
-    @classmethod
-    def read(cls, reader: BinaryReader):
-        """
-        Reads a TFBStringTable_Entry from a binary reader
-        """
-
-        stringLength = reader.readUint8()
-        string = reader.readString(stringLength)
-        metadata = reader.readBytes(4)
-
-        return cls(string, metadata)
-
-
-@dataclass
-class TFBStringTable:
-    """
-    Represents one of the string tables in a TFB script file
-    """
-
-    entries: list[TFBStringTable_Entry]  # u32 entry count followed by entries
-
-    @classmethod
-    def read(cls, reader: BinaryReader):
-        """
-        Reads a TFBStringTable from a binary reader
-        """
-
-        entryCount = reader.readUint32()
-        entries = [TFBStringTable_Entry.read(reader) for _ in range(entryCount)]
-
-        return cls(entries)
+from opcodes.OpCode import OpParserContext
 
 
 @dataclass
@@ -79,8 +39,25 @@ class TFBScriptFile:
 
         instructions = []
         instructionCount = reader.readUint32()
-        for _ in range(instructionCount):
-            COpCode.read(reader, opcodeTable, globalRefTable, localRefTable)
+
+        # counter for 0xFF opcodes, wich are control blocks such as OpPrescript, OpStartup, OpShutdown, etc
+        # we need to count them to know if its an OpPrescript(0), OpStartup(1), OpShutdown(2) or OpBehaviourImplementation(3,4,5,..)
+        context = OpParserContext(opcodeTable, globalRefTable, localRefTable, controlBlockCounter=0)
+        i = 0
+        try:
+            while i < instructionCount:
+                instr = COpCode.read(reader, context)
+                instructions.append(instr)
+
+                i += instr.totalSpan()  # Count the instruction and its descendants
+
+                if isinstance(instr, COpIfElse) and not instr.flags.noElse:
+                    print("OpIf/Else HAS ELSE BRANCH")
+                    raise NotImplementedError("OpIf/Else with else branch is not implemented yet")
+
+        except Exception as e:
+            print(f"\x1b[1;34mError reading instruction {i}: {e}\x1b[0m")
+            raise
 
         return cls(
             magicString, unk, opcodeTable, globalRefTable, localRefTable, instructions
@@ -88,6 +65,13 @@ class TFBScriptFile:
 
 
 if __name__ == "__main__":
-    with open("example_scripts/RW_Kids_Cup.ai", "rb") as f:
+    # Syntax coloring is auto-detected (on for a real terminal, off when piped
+    # to a file/NO_COLOR is set) -- force it either way with:
+    #   from utils.ansi_text import enable_colors, disable_colors
+    #   disable_colors()
+
+    with open("example_scripts/RW_WrongWayChecker.ai", "rb") as f:
         reader = BinaryReader(f.read(), littleEndian=True)
-        TFBScriptFile.read(reader)
+        file = TFBScriptFile.read(reader)
+        for rootInstr in file.instructions:
+            rootInstr.print()
