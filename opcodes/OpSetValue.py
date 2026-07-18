@@ -1,7 +1,12 @@
 from dataclasses import dataclass
-from .OpCode import OpCode
+from .OpCode import COpCode
 
 @dataclass
-class OpSetValue(OpCode):
+class COpSetValue(COpCode):
     lhs: str
     rhs: str
+
+    @classmethod
+    def readPayload(cls, reader, flags):
+
+        return cls(lhs=lhs, rhs=rhs, flags=flags)
