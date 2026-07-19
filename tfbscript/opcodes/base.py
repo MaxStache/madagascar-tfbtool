@@ -54,7 +54,7 @@ class InstructionFlags:
 
     def flow_control_str(self) -> str:
         if self.flow_control == 0:
-            return "stop"  # return
+            return "end"  # return / stop
         if self.flow_control == 1:
             return "continue"
         return f"break {self.flow_control - 1}"
@@ -108,7 +108,7 @@ class Opcode:
         return 1 + sum(child.total_span() for child in self.children)
 
     @classmethod
-    def read(cls, reader: "BinaryReader", context: ParserContext) -> "Opcode":
+    def read(cls, reader: "BinaryReader", context: ParserContext, debug_store: dict | None = None) -> "Opcode":
         """Read one instruction (and its re-nested descendants) from the stream."""
         from tfbscript.opcodes.op_behavior_implementation import OpBehaviorImplementation
         from tfbscript.opcodes.op_prescript import OpPrescript
@@ -121,7 +121,7 @@ class Opcode:
 
         behavior_entry = None
 
-        if opcode_index == 0xFF:
+        if opcode_index == 0xFF: # Control Blocks
             control_blocks = [OpPrescript, OpStartup, OpShutdown]
             if context.control_block_counter < len(control_blocks):
                 opcode_class = control_blocks[context.control_block_counter]
@@ -132,7 +132,8 @@ class Opcode:
                 opcode_class = OpBehaviorImplementation
 
             context.control_block_counter += 1
-        else:
+
+        else: # Normal opcodes
             entry = context.opcode_table.get(opcode_index)
             if entry is None:
                 raise ValueError(f"Invalid opcode index: {opcode_index}")
@@ -144,6 +145,8 @@ class Opcode:
                     f"Unknown opcode name: {opcode_name}, falling back to generic Opcode",
                     file=sys.stderr,
                 )
+                if debug_store is not None:
+                    debug_store.setdefault("unresolved_ops", set()).add(opcode_name)
                 opcode_class = Opcode
 
         raw_payload = reader.read_bytes(payload_size)
@@ -165,7 +168,7 @@ class Opcode:
 
         descendants_read = 0
         while descendants_read < flags.descendant_span:
-            child = Opcode.read(reader, context)
+            child = Opcode.read(reader, context, debug_store=debug_store)
             instruction.children.append(child)
             descendants_read += child.total_span()
 

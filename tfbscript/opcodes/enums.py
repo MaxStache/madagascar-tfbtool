@@ -31,4 +31,12 @@ class ControlRequirement(IntEnum):
 
     def __str__(self) -> str:
         return ("strict", "lenient")[self.value]
+    
+class CutsceneCommand(IntEnum):
+    Pause  = 1
+    Resume = 2
+    Start  = 3
+
+    def __str__(self) -> str:
+        return ("pause", "resume", "start")[self.value]
 # fmt: on

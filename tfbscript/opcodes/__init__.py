@@ -27,6 +27,9 @@ from tfbscript.opcodes.op_shutdown import OpShutdown
 from tfbscript.opcodes.op_slide_value import OpSlideValue
 from tfbscript.opcodes.op_startup import OpStartup
 from tfbscript.opcodes.op_comment import OpComment
+from tfbscript.opcodes.op_teleport_to import OpTeleportTo
+from tfbscript.opcodes.op_run_as_player import OpRunAsPlayer
+from tfbscript.opcodes.op_cut_scene import OpCutScene
 
 __all__ = [
     "OPCODE_REGISTRY",
@@ -54,4 +57,7 @@ __all__ = [
     "OpSlideValue",
     "OpStartup",
     "OpComment",
+    "OpTeleportTo",
+    "OpRunAsPlayer",
+    "OpCutScene",
 ]

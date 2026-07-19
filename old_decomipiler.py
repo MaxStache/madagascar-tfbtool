@@ -408,6 +408,7 @@ def render_line(instructions, op_names, i, prefix):
 
     elif op_name == "teleport to::op-code":
         p = OpParser(instr["payload"])
+        
         target_ref = (
             p.readRef()
         )  # reference: teleport destination (e.g. an actor/placement)
