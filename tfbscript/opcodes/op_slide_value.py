@@ -26,5 +26,6 @@ class OpSlideValue(Opcode):
             ease_in=reader.read_reference(),
         )
     
-    def toString(self) -> str:
-        return f"{self.lhs} = slide({self.target_value}, {self.interpolation_time}, {self.ease_out}, {self.ease_in})"
+
+    def source_line(self, inline: bool = False) -> str:
+        return f"{self.lhs} = slide(to {self.target_value}, over {self.interpolation_time} seconds, ease in: {self.ease_out}, ease out: {self.ease_in})"
