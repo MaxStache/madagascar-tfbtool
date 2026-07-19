@@ -13,7 +13,7 @@ class OpCreateVariable(Opcode):
 
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> "OpCreateVariable":
-        return cls(variable=reader.read_reference())
+        return cls(variable=reader.readRef())
 
     def source_line(self, inline: bool = False) -> str:
         var_type = self.variable.entry.type if self.variable.entry else "unknown"

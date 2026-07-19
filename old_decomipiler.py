@@ -1,11 +1,12 @@
+# type: ignore
+
 from enum import IntEnum
 
 from formats.lib.parser import Parser
 from formats.lib.sytax_hilighting import Color, color_text
 from formats.lib.tfb_reference import Reference, parse_reference
-from formats.lib.tfb_rhs import read_rhs, rhs_to_string
+from formats.lib.tfb_rhs import readRHS, rhs_to_string
 
-import glob
 import sys
 
 sys.stdout.reconfigure(encoding="utf-8")
@@ -26,7 +27,7 @@ class OpParser(Parser):
         return parse_reference(ref_bytes, offset=0, table2=TABLE2, table3=TABLE3)
 
     def readRHS(self):
-        return read_rhs(self, table2=TABLE2, table3=TABLE3)
+        return readRHS(self, table2=TABLE2, table3=TABLE3)
 
 
 class RelOp(IntEnum):
@@ -732,9 +733,9 @@ def parse_tfbscirpt_file(filename):
         buf = Parser(f.read())
 
         scriptNameLength = buf.readUint8()
-        scriptName = buf.readString(scriptNameLength)
+        _scriptName = buf.readString(scriptNameLength)
 
-        unk_count = buf.readUint32()
+        _unk_count = buf.readUint32()
 
         table1 = readStringTable(buf)  # opcode names
         table2 = readStringTable(buf) # global

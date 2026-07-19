@@ -24,10 +24,10 @@ class PayloadReader(BinaryReader):
         self.global_refs = global_refs
         self.local_refs = local_refs
 
-    def read_reference(self) -> Reference:
+    def readRef(self) -> Reference:
         """Read a 4-byte TFB-Script variable reference."""
         return Reference.read(self, self.global_refs, self.local_refs)
 
-    def read_rhs(self) -> Rhs:
+    def readRHS(self) -> Rhs:
         """Read a 5-11 byte TFB-Script RHS operand."""
         return Rhs.read(self, self.global_refs, self.local_refs)

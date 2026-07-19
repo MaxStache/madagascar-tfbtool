@@ -13,7 +13,7 @@ class OpIncValue(Opcode):
 
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> "OpIncValue":
-        return cls(lhs=reader.read_reference())
+        return cls(lhs=reader.readRef())
 
     def source_line(self, inline: bool = False) -> str:
         return f"{self.lhs} {operator('++')};"

@@ -19,11 +19,11 @@ class OpSlideValue(Opcode):
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> Opcode:
         return cls(
-            lhs=reader.read_reference(),
+            lhs=reader.readRef(),
             target_value=Rhs.read(reader, reader.global_refs, reader.local_refs),
             interpolation_time=Rhs.read(reader, reader.global_refs, reader.local_refs),
-            ease_out=reader.read_reference(),
-            ease_in=reader.read_reference(),
+            ease_out=reader.readRef(),
+            ease_in=reader.readRef(),
         )
     
 

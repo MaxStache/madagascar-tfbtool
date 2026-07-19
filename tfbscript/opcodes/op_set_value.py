@@ -15,7 +15,7 @@ class OpSetValue(Opcode):
 
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> "OpSetValue":
-        return cls(lhs=reader.read_reference(), rhs=reader.read_rhs())
+        return cls(lhs=reader.readRef(), rhs=reader.readRHS())
 
     def source_line(self, inline: bool = False) -> str:
         return f"{keyword('set')} {self.lhs} {operator('=')} {self.rhs};"

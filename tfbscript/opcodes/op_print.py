@@ -14,7 +14,7 @@ class OpPrint(Opcode):
 
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> "OpPrint":
-        target = reader.read_reference()
+        target = reader.readRef()
         content = reader.read_string(reader.read_u8())
         return cls(target=target, content=content)
 

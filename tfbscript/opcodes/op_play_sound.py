@@ -13,7 +13,7 @@ class OpPlaySound(Opcode):
 
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> "OpPlaySound":
-        return cls(sound=reader.read_reference())
+        return cls(sound=reader.readRef())
 
     def source_line(self, inline: bool = False) -> str:
         return f"{self.sound}.{method('play')}{parentheses('()')};"

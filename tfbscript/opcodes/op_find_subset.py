@@ -19,9 +19,9 @@ class OpFindSubset(Opcode):
 
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> "OpFindSubset":
-        set_ref = reader.read_reference()
+        set_ref = reader.readRef()
         rel_op = RelOp(reader.read_u8())
-        rhs = reader.read_rhs()
+        rhs = reader.readRHS()
         return cls(set_ref=set_ref, rel_op=rel_op, rhs=rhs)
 
     def source_line(self, inline: bool = False) -> str:

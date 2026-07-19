@@ -13,7 +13,7 @@ class OpRemove(Opcode):
 
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> "OpRemove":
-        return cls(target=reader.read_reference())
+        return cls(target=reader.readRef())
 
     def source_line(self, inline: bool = False) -> str:
         return f"{self.target}.{method('remove')}{parentheses('()')};"

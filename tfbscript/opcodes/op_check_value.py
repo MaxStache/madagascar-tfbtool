@@ -17,9 +17,9 @@ class OpCheckValue(Opcode):
 
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> "OpCheckValue":
-        lhs = reader.read_reference()
+        lhs = reader.readRef()
         rel_op = RelOp(reader.read_u8())
-        rhs = reader.read_rhs()
+        rhs = reader.readRHS()
         return cls(lhs=lhs, rel_op=rel_op, rhs=rhs)
 
     def source_line(self, inline: bool = False) -> str:

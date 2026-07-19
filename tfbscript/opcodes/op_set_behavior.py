@@ -13,7 +13,7 @@ class OpSetBehavior(Opcode):
 
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> "OpSetBehavior":
-        return cls(behavior=reader.read_reference())
+        return cls(behavior=reader.readRef())
 
     def source_line(self, inline: bool = False) -> str:
         return func_call("setBehavior", str(self.behavior))

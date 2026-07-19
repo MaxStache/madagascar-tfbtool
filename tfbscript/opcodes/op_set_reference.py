@@ -14,7 +14,7 @@ class OpSetReference(Opcode):
 
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> "OpSetReference":
-        return cls(dest_ref=reader.read_reference(), src_ref=reader.read_reference())
+        return cls(dest_ref=reader.readRef(), src_ref=reader.readRef())
 
     def source_line(self, inline: bool = False) -> str:
         return f"{keyword('set reference')} *{self.dest_ref} = {self.src_ref};"
