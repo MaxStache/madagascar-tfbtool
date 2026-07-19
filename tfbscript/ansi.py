@@ -1,10 +1,9 @@
-"""
-Centralized ANSI syntax highlighting for TFBScript pretty-printing.
+"""Centralized ANSI syntax highlighting for TFBScript pretty-printing.
 
 Usage:
-    from utils.ansi_text import Color, color_text
+    from tfbscript.ansi import keyword
 
-    print(color_text("var", Color.KEYWORD))
+    print(keyword("var"))
 
 Coloring is on by default when stdout is a real terminal, and off when
 piped/redirected or when the NO_COLOR env var is set (https://no-color.org).
@@ -31,7 +30,9 @@ def _enable_windows_vt100() -> bool:
         STD_OUTPUT_HANDLE = -11
         ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
 
-        kernel32 = ctypes.windll.kernel32
+        if not hasattr(ctypes, "windll"):
+            return False
+        kernel32 = ctypes.windll.kernel32  # pyright: ignore[reportAttributeAccessIssue]
         handle = kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
 
         mode = ctypes.c_uint32()
@@ -117,6 +118,8 @@ class Color(Enum):
     # Comments
     COMMENT = "#5C6370"  # muted gray
 
+    INLINE_FUNC_OP = "#6458EC"
+
 
 def color_text(text: object, color: Color) -> str:
     """Wrap text in `color`'s ANSI code; passes it through unchanged if coloring is off."""
@@ -126,7 +129,7 @@ def color_text(text: object, color: Color) -> str:
 
 
 # Shorthand for each syntax category, e.g. keyword("if") instead of
-# color_text("if", Color.KEYWORD) -- use these when building toString()/print()
+# color_text("if", Color.KEYWORD) -- use these when building source_line()
 # output for opcodes so call sites read like the syntax they represent.
 def parentheses(text: object) -> str:
     return color_text(text, Color.PARENTHESES)
@@ -180,8 +183,18 @@ def comment(text: object) -> str:
     return color_text(text, Color.COMMENT)
 
 
-def text_rgb_square(r: int, g: int, b: int) -> str:
+def rgb_square(r: int, g: int, b: int) -> str:
     """A small ■ swatch rendered in the given RGB, e.g. to preview a Color32 value."""
     if not _enabled:
         return ""
     return f"{_fg_rgb(r, g, b)}■ {_RESET}"
+
+
+def quoted_string(text: str) -> str:
+    return string(f'"{text}"')
+
+
+def func_call(func_name: str, *args: str) -> str:
+    """Format a function call with syntax highlighting."""
+    args_str = ", ".join(args)
+    return f"{method(func_name)}{parentheses('(')}{args_str}{parentheses(')')};"

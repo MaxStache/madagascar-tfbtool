@@ -1,9 +1,11 @@
+"""Enums shared by opcode payloads."""
+
 from enum import IntEnum
 
 
-# fmt:off
-class ERelOp(IntEnum):
-    """Relational operator for OpAbstractCheckValue / OpCheckValue."""
+# fmt: off
+class RelOp(IntEnum):
+    """Relational operator for OpCheckValue / OpFindSubset."""
 
     LessOrEq  = 0  # <=
     Eq        = 1  # ==
@@ -14,4 +16,4 @@ class ERelOp(IntEnum):
 
     def symbol(self) -> str:
         return ("<=", "==", ">=", "<", ">", "!=")[self.value]
-# fmt:on
+# fmt: on

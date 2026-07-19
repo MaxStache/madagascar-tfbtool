@@ -1,0 +1,10 @@
+{
+  "exclude": [
+    "generated",
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.*",
+    "env",
+    "old_decomipiler.py"
+  ]
+}

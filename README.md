@@ -1,1 +1,83 @@
 # TFBTool TFBScript tools
+
+Parser and decompiler for TFB script (`.ai`) files, as used by *Madagascar* (2005).
+Parsing is based on reverse engineering of the game's script loader; `FUN_...`
+names in code comments refer to functions in `Game.exe`.
+
+## Usage
+
+```sh
+python -m tfbscript example_scripts/Teleporter.ai
+python -m tfbscript --no-color example_scripts/*.ai
+```
+
+Syntax coloring is auto-detected: on for a real terminal, off when piped or
+when `NO_COLOR` is set. Force it with `--color` / `--no-color`.
+
+As a library:
+
+```python
+from tfbscript import ScriptFile
+
+script = ScriptFile.from_path("example_scripts/Teleporter.ai")
+script.print_tree()
+```
+
+## File format
+
+A `.ai` file is little-endian and laid out as:
+
+| Field | Size | Description |
+| --- | --- | --- |
+| magic string | u8 length + bytes | file identifier |
+| unknown | 4 bytes | purpose unknown |
+| opcode table | string table | opcode names, indexed by instruction opcode byte |
+| global refs | string table | names of global objects the script references |
+| local refs | string table | script-local variables, behaviors, etc. |
+| instruction count | u32 | total flattened instruction count |
+| instructions | ... | flat instruction stream |
+
+A **string table** is a u32 entry count followed by entries of
+`u8 length + string + 4 metadata bytes`. Entry strings are `::`-separated
+paths like `myactor::actor` or `score::user::value`
+(name / optional category / type).
+
+Each **instruction** is `u8 opcode index + u32 flags + u8 payload size + payload`.
+The flags word packs (low to high bits): a 3-bit flow-control value
+(stop / continue / break N), reserved bits, a "no handler" bit, a runtime
+scratch bit, a "no else branch" bit, and a 21-bit *descendant span* — the
+number of following instructions that are children of this one, which is how
+the flat stream re-nests into a tree.
+
+Opcode index `0xFF` marks a top-level control block with no table entry; the
+Nth `0xFF` in the file is, in order: prescript, startup, shutdown, then one
+block per `::behavior` entry in the local ref table.
+
+Payloads are built from two shared building blocks:
+
+- **Reference** (4 bytes, bit-packed): resolves to a global table entry, a
+  local table entry, or an engine builtin (`self`, `[~each]`, ...), plus
+  optional member/sub/scope selectors. See [tfbscript/reference.py](tfbscript/reference.py).
+- **RHS operand** (5–11 bytes): a tag byte followed by an int32, float,
+  RGBA color, int16 pair, or a reference — optionally extended by an
+  operator byte and a second RHS, forming an expression like `(x + 1)`.
+  See [tfbscript/rhs.py](tfbscript/rhs.py).
+
+## Project layout
+
+- [tfbscript/binary.py](tfbscript/binary.py) — plain binary reader
+- [tfbscript/string_table.py](tfbscript/string_table.py) — the three string tables
+- [tfbscript/reference.py](tfbscript/reference.py) — 4-byte variable references
+- [tfbscript/rhs.py](tfbscript/rhs.py) — RHS operands / expressions
+- [tfbscript/payload.py](tfbscript/payload.py) — payload reader bound to the ref tables
+- [tfbscript/script.py](tfbscript/script.py) — top-level `.ai` file
+- [tfbscript/opcodes/](tfbscript/opcodes/) — instruction base class and registry ([base.py](tfbscript/opcodes/base.py)), plus one `op_*.py` module per opcode with its payload parser and pretty-printer
+- [tfbscript/ansi.py](tfbscript/ansi.py) — ANSI syntax coloring
+- [example_scripts/](example_scripts/) — shipped scripts for testing
+
+Opcodes not yet reverse engineered fall back to the generic `Opcode` class,
+which keeps and prints the raw payload. To implement one, add a new
+`op_<name>.py` module in [tfbscript/opcodes/](tfbscript/opcodes/) with a
+dataclass decorated with `@opcode("<table name>")` that overrides
+`parse_payload` and `source_line`, and import it from
+[tfbscript/opcodes/\_\_init\_\_.py](tfbscript/opcodes/__init__.py) so it registers.
