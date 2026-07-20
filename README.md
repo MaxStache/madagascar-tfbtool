@@ -25,7 +25,7 @@ script.print_tree()
 
 ## Coverage
 
-### 20 / 36 Opcodes
+### 22 / 36 Opcodes
 
 - [x] comment::op-code
 - [x] print::op-code
