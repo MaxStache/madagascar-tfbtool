@@ -28,7 +28,7 @@ script.print_tree()
 - [x] comment::op-code
 - [x] print::op-code
 - [x] if/else::op-code
-- [ ] displace::op-code
+- [x] displace::op-code
 - [ ] check message::op-code
 - [ ] send message::op-code
 - [x] create variable::op-code
