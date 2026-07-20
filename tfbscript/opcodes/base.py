@@ -15,17 +15,15 @@ if TYPE_CHECKING:
 class InstructionFlags:
     """The 32-bit flags word that follows every opcode index."""
 
-    flow_control: int = 0  # bits 0-2 -- flow-control value returned by FUN_00431130
+    flow_control: int = 0  # bits 0-2 -- flow-control value returned by tfb_walk_children (FUN_00431130)
     # 0: return - skip to end of script (block)
     # 1: continue - proceed normally
     # 2,3,4...: break - skip the rest of N-1 enclosing levels, then resume
     #           normally one level further up.
-    reserved_low: int = 0  # bits 3-5   -- unknown / reserved
+    reserved_low: int = 0  # bits 3-5 
     no_handler: bool = False  # bit 6   -- no handler bound (loader skips construction) (aka disabled at runtime)
     runtime_scratch: bool = False  # bit 7 -- runtime-only scratch flag (always 0 on disk)
-    no_else: bool = False  # bit 8     -- IF instruction has no ELSE branch
-    is_elseif: bool = False  # bit 9     -- IF instruction is actually an ELSEIF
-    reserved_high: int = 0  # bits 9-10 -- unknown / reserved
+    reserved_high: int = 0
     descendant_span: int = 0  # bits 11-31 -- 21-bit descendant span
 
     @staticmethod
@@ -35,24 +33,18 @@ class InstructionFlags:
             reserved_low=(value >> 3) & 0x7,
             no_handler=bool(value & 0x40),
             runtime_scratch=bool(value & 0x80),
-            no_else=bool(value & 0x100),
-            is_elseif=bool(value & 0x8),
-            reserved_high=(value >> 9) & 0x3,
+            reserved_high=(value >> 8) & 0x7,
             descendant_span=(value >> 11) & 0x1FFFFF,
         )
 
     def encode(self) -> int:
         value = self.flow_control & 0x7
         value |= (self.reserved_low & 0x7) << 3
-        if self.is_elseif:
-            value |= 0x8
         if self.no_handler:
             value |= 0x40
         if self.runtime_scratch:
             value |= 0x80
-        if self.no_else:
-            value |= 0x100
-        value |= (self.reserved_high & 0x3) << 9
+        value |= (self.reserved_high & 0x7) << 8
         value |= (self.descendant_span & 0x1FFFFF) << 11
         return value
 
@@ -68,11 +60,9 @@ class InstructionFlags:
             "Flags: "
             f"flow_control={self.flow_control_str()}, "
             f"reserved_low={hex(self.reserved_low)} ({self.reserved_low}), "
-            f"is_elseif={self.is_elseif}, "
             f"no_handler={self.no_handler}, "
             f"runtime_scratch={self.runtime_scratch}, "
-            f"no_else={self.no_else}, "
-            f"reserved_high=0b{self.reserved_high:02b} ({self.reserved_high}), "
+            f"reserved_high={hex(self.reserved_high)} ({self.reserved_high}), "
             f"descendant_span={self.descendant_span}"
         )
 
@@ -84,10 +74,7 @@ class ParserContext:
     opcode_table: StringTable
     global_refs: StringTable
     local_refs: StringTable
-
-    # Counter for 0xFF opcodes, which are control blocks such as OpPrescript,
-    # OpStartup, OpShutdown, etc. The Nth occurrence decides whether it is an
-    # OpPrescript(0), OpStartup(1), OpShutdown(2) or OpBehaviorImplementation(3,4,5,...).
+    
     control_block_counter: int = 0
 
 

@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field
 
+from tfbscript.ansi import func_call
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
 from tfbscript.rhs import Rhs
+
 
 @opcode("slide value")
 @dataclass
@@ -15,7 +17,6 @@ class OpSlideValue(Opcode):
     ease_out: Reference = field(default_factory=Reference)
     ease_in: Reference = field(default_factory=Reference)
 
-    
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> Opcode:
         return cls(
@@ -25,7 +26,16 @@ class OpSlideValue(Opcode):
             ease_out=reader.readRef(),
             ease_in=reader.readRef(),
         )
-    
 
     def source_line(self, inline: bool = False) -> str:
-        return f"{self.lhs} = slide(to {self.target_value}, over {self.interpolation_time} seconds, ease in: {self.ease_out}, ease out: {self.ease_in})"
+        return (
+            str(self.lhs)
+            + "."
+            + func_call(
+                "slide",
+                f"to {str(self.target_value)}",
+                f"over {str(self.interpolation_time)}",
+                f"ease in {str(self.ease_out)}",
+                f"ease out {str(self.ease_in)}",
+            )
+        )

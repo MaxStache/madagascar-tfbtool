@@ -26,7 +26,8 @@ class OpCheckValue(Opcode):
         condition = f"{self.lhs} {comparison(self.rel_op.symbol())} {self.rhs}"
         if inline:
             return condition
-        return f"{keyword('if (')} {condition} {keyword(') {')}"
+
+        return f"{keyword('check value (')} {condition} {keyword(') {')}"
 
     def print_tree(self, indent: int = 0) -> None:
         super().print_tree(indent)
