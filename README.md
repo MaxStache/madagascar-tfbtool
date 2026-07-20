@@ -50,7 +50,7 @@ script.print_tree()
 - [ ] check reference::op-code
 - [ ] turn to::op-code
 - [x] run as player::op-code
-- [ ] reset::op-code
+- [x] reset::op-code
 - [ ] check membership::op-code
 - [ ] change membership::op-code
 - [ ] move to::op-code
