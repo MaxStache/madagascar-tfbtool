@@ -30,6 +30,7 @@ from tfbscript.opcodes.op_comment import OpComment
 from tfbscript.opcodes.op_teleport_to import OpTeleportTo
 from tfbscript.opcodes.op_run_as_player import OpRunAsPlayer
 from tfbscript.opcodes.op_cut_scene import OpCutScene
+from tfbscript.opcodes.op_displace import OpDisplace
 
 __all__ = [
     "OPCODE_REGISTRY",
@@ -60,4 +61,5 @@ __all__ = [
     "OpTeleportTo",
     "OpRunAsPlayer",
     "OpCutScene",
+    "OpDisplace",
 ]

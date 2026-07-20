@@ -49,4 +49,14 @@ class SetDirection(IntEnum):
 
     def __str__(self) -> str:
         return ("forward", "backward", "randomly")[self.value]
+    
+class CombineMode(IntEnum):
+    """Displacement combine mode for OpDisplace."""
+
+    relative = 0
+    absolute = 1
+    local = 2
+
+    def __str__(self) -> str:
+        return ("relative", "absolute", "local")[self.value]
 # fmt: on
