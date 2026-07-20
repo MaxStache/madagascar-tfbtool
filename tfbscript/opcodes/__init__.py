@@ -17,6 +17,7 @@ from tfbscript.opcodes.op_find_subset import OpFindSubset
 from tfbscript.opcodes.op_if_else import OpIfElse
 from tfbscript.opcodes.op_inc_value import OpIncValue
 from tfbscript.opcodes.op_play_sound import OpPlaySound
+from tfbscript.opcodes.op_stop_sound import OpStopSound
 from tfbscript.opcodes.op_prescript import OpPrescript
 from tfbscript.opcodes.op_print import OpPrint
 from tfbscript.opcodes.op_remove import OpRemove
@@ -50,6 +51,7 @@ __all__ = [
     "OpIfElse",
     "OpIncValue",
     "OpPlaySound",
+    "OpStopSound",
     "OpPrescript",
     "OpPrint",
     "OpRemove",
