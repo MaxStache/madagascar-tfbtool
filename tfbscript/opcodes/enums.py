@@ -38,7 +38,7 @@ class CutsceneCommand(IntEnum):
     Start  = 3
 
     def __str__(self) -> str:
-        return ("pause", "resume", "start")[self.value]
+        return ("pause", "resume", "start")[self.value-1]
     
 class SetDirection(IntEnum):
     """Direction for how to traverse a set"""

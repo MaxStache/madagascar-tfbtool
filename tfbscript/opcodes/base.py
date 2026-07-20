@@ -126,6 +126,7 @@ class Opcode:
         behavior_entry = None
 
         if opcode_index == 0xFF: # Control Blocks
+            opcode_name = "control block"
             control_blocks = [OpPrescript, OpStartup, OpShutdown]
             if context.control_block_counter < len(control_blocks):
                 opcode_class = control_blocks[context.control_block_counter]
@@ -161,7 +162,17 @@ class Opcode:
             little_endian=True,
         )
 
-        instruction = opcode_class.parse_payload(payload_reader)
+        try:
+            instruction = opcode_class.parse_payload(payload_reader)
+        except Exception as e:
+            print(
+                f"Error parsing payload for opcode {opcode_class.__name__} "
+                f"(index {opcode_index}, name {opcode_name if opcode_name else 'control block'}): {e}", # type: ignore
+                file=sys.stderr,
+            )
+            instruction = Opcode()
+            raise e
+        
         instruction.opcode_index = opcode_index
         instruction.flags = flags
         instruction.raw_payload = raw_payload

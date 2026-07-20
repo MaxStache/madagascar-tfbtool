@@ -25,7 +25,7 @@ script.print_tree()
 
 ## Coverage
 
-### 22 / 36 Opcodes
+### 23 / 36 Opcodes -> 13 unimplemented
 
 - [x] comment::op-code
 - [x] print::op-code
@@ -49,7 +49,7 @@ script.print_tree()
 - [x] play animation::op-code
 - [x] check value::op-code
 - [x] set value::op-code
-- [ ] check reference::op-code
+- [x] check reference::op-code
 - [ ] turn to::op-code
 - [x] run as player::op-code
 - [x] reset::op-code
