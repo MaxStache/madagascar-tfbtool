@@ -39,10 +39,10 @@ script.print_tree()
 - [x] set behavior::op-code
 - [x] set reference::op-code
 - [ ] spawn actor::op-code
-- [ ] teleport to::op-code
+- [x] teleport to::op-code
 - [x] play sound::op-code
 - [ ] stop sound::op-code
-- [ ] cut-scene::op-code
+- [x] cut-scene::op-code
 - [ ] loop value::op-code
 - [ ] play animation::op-code
 - [x] check value::op-code
