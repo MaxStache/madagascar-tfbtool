@@ -32,6 +32,7 @@ from tfbscript.opcodes.op_run_as_player import OpRunAsPlayer
 from tfbscript.opcodes.op_cut_scene import OpCutScene
 from tfbscript.opcodes.op_displace import OpDisplace
 from tfbscript.opcodes.op_reset import OpReset
+from tfbscript.opcodes.op_play_animation import OpPlayAnimation
 
 __all__ = [
     "OPCODE_REGISTRY",
@@ -64,4 +65,5 @@ __all__ = [
     "OpCutScene",
     "OpDisplace",
     "OpReset",
+    "OpPlayAnimation",
 ]

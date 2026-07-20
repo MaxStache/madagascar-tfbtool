@@ -25,6 +25,8 @@ script.print_tree()
 
 ## Coverage
 
+### 20 / 36 Opcodes
+
 - [x] comment::op-code
 - [x] print::op-code
 - [x] if/else::op-code
@@ -44,7 +46,7 @@ script.print_tree()
 - [ ] stop sound::op-code
 - [x] cut-scene::op-code
 - [ ] loop value::op-code
-- [ ] play animation::op-code
+- [x] play animation::op-code
 - [x] check value::op-code
 - [x] set value::op-code
 - [ ] check reference::op-code
