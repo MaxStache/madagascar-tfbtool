@@ -412,8 +412,8 @@ def render_line(instructions, op_names, i, prefix):
         target_ref = (
             p.readRef()
         )  # reference: teleport destination (e.g. an actor/placement)
-        facing = Direction(p.readUint8())  # which way the actor faces after teleporting
-        offset = p.readRHS()  # positional offset
+        facing = Direction(p.readUint8())  # which way the actor faces after teleporting ACTUALLY SET DIR
+        offset = p.readRHS()  # positional offset   ACUTALLY FACING
         seconds_rhs = p.readRHS()  # transition time in seconds
 
         line = BUILD_LINE(

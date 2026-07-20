@@ -23,6 +23,8 @@ class OpIfElse(Opcode):
         pad = "    " * indent
         condition = self.children[0]
 
+        self.flags.print()
+
         print(f"{pad}{keyword('if (')} {condition.source_line(inline=True)} {keyword(') {')}")
         for then_child in condition.children:
             then_child.print_tree(indent + 1)

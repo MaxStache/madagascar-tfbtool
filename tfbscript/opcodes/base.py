@@ -24,6 +24,7 @@ class InstructionFlags:
     no_handler: bool = False  # bit 6   -- no handler bound (loader skips construction) (aka disabled at runtime)
     runtime_scratch: bool = False  # bit 7 -- runtime-only scratch flag (always 0 on disk)
     no_else: bool = False  # bit 8     -- IF instruction has no ELSE branch
+    is_elseif: bool = False  # bit 9     -- IF instruction is actually an ELSEIF
     reserved_high: int = 0  # bits 9-10 -- unknown / reserved
     descendant_span: int = 0  # bits 11-31 -- 21-bit descendant span
 
@@ -35,6 +36,7 @@ class InstructionFlags:
             no_handler=bool(value & 0x40),
             runtime_scratch=bool(value & 0x80),
             no_else=bool(value & 0x100),
+            is_elseif=bool(value & 0x8),
             reserved_high=(value >> 9) & 0x3,
             descendant_span=(value >> 11) & 0x1FFFFF,
         )
@@ -42,6 +44,8 @@ class InstructionFlags:
     def encode(self) -> int:
         value = self.flow_control & 0x7
         value |= (self.reserved_low & 0x7) << 3
+        if self.is_elseif:
+            value |= 0x8
         if self.no_handler:
             value |= 0x40
         if self.runtime_scratch:
@@ -58,6 +62,19 @@ class InstructionFlags:
         if self.flow_control == 1:
             return "continue"
         return f"break {self.flow_control - 1}"
+    
+    def print(self) -> None:
+        print(
+            "Flags: "
+            f"flow_control={self.flow_control_str()}, "
+            f"reserved_low={hex(self.reserved_low)} ({self.reserved_low}), "
+            f"is_elseif={self.is_elseif}, "
+            f"no_handler={self.no_handler}, "
+            f"runtime_scratch={self.runtime_scratch}, "
+            f"no_else={self.no_else}, "
+            f"reserved_high=0b{self.reserved_high:02b} ({self.reserved_high}), "
+            f"descendant_span={self.descendant_span}"
+        )
 
 
 @dataclass

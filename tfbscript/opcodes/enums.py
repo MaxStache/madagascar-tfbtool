@@ -39,4 +39,14 @@ class CutsceneCommand(IntEnum):
 
     def __str__(self) -> str:
         return ("pause", "resume", "start")[self.value]
+    
+class SetDirection(IntEnum):
+    """Direction for how to traverse a set"""
+
+    forward = 0
+    backward = 1
+    randomly = 2
+
+    def __str__(self) -> str:
+        return ("forward", "backward", "randomly")[self.value]
 # fmt: on
