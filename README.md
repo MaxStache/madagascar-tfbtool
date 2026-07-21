@@ -122,3 +122,7 @@ which keeps and prints the raw payload. To implement one, add a new
 dataclass decorated with `@opcode("<table name>")` that overrides
 `parse_payload` and `source_line`, and import it from
 [tfbscript/opcodes/\_\_init\_\_.py](tfbscript/opcodes/__init__.py) so it registers.
+
+## Notes
+
+Please run `pytest` after changes to verify against all scripts in example_scripts

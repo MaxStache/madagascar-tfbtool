@@ -33,6 +33,8 @@ class ControlRequirement(IntEnum):
         return ("strict", "lenient")[self.value]
     
 class CutsceneCommand(IntEnum):
+    # TODO: TODO: TODO: Verify and figure out 0
+    Unknown = 0
     Pause  = 1
     Resume = 2
     Start  = 3

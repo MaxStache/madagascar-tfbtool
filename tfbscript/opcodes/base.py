@@ -2,7 +2,7 @@
 
 import sys
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable
 
 from tfbscript.ansi import flow_control, keyword
 from tfbscript.payload import PayloadReader

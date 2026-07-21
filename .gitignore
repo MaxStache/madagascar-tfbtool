@@ -65,4 +65,9 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+
+# pytest
+.pytest_cache/
+
 example_scripts/*
+alex.txt
