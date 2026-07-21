@@ -2,7 +2,7 @@ from pathlib import Path
 
 folder = Path("example_scripts")
 
-OP_CODE = b"loop value"
+OP_CODE = b"check membership"
 
 for file in folder.rglob("*.ai"):
     data = file.read_bytes()

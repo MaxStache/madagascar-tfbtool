@@ -47,8 +47,8 @@ class RelOp(IntEnum):
 class MembershipTest(IntEnum):
     """Membership test for OpCheckMembership."""
 
-    includes = 0  # set_a includes element_a (element could be a set itself, that is called a subset)
-    excludes = 1  # set_a excludes element_a (element could be a set itself, that is called a subset)
+    includes = 0  # set_a includes element_a
+    excludes = 1  # set_a excludes element_a
     intersects_with = 2  # set_a intersects with_b (set_a has at least one element in common with set_b)
     includes_all = 3  # set_a all in set_b
 

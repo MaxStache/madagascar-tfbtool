@@ -25,7 +25,7 @@ script.print_tree()
 
 ## Coverage
 
-### 27 / 36 Opcodes -> 9 unimplemented
+### 28 / 36 Opcodes -> 8 unimplemented
 
 - [x] comment::op-code
 - [x] print::op-code
@@ -57,7 +57,7 @@ script.print_tree()
 - [x] stop sound::op-code
 - [x] cut-scene::op-code
 
-- [ ] check message::op-code
+- [x] check message::op-code
 - [ ] send message::op-code
 
 - [x] set behavior::op-code
