@@ -25,7 +25,7 @@ script.print_tree()
 
 ## Coverage
 
-### 29 / 36 Opcodes -> 7 unimplemented
+### 30 / 36 Opcodes -> 6 unimplemented
 
 - [x] comment::op-code
 - [x] print::op-code

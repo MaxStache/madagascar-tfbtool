@@ -94,7 +94,7 @@ class Reference:
             return "<null>"
 
         if self.kind == "global":
-            s = variable_global(f"global[ {self.name.split('::')[0]} ]")
+            s = variable_global(f"global::{self.name.split('::')[0]}")
         elif self.kind == "local" and self.entry is not None:
             s = variable(self.entry.name)
         elif self.kind == "builtin":
