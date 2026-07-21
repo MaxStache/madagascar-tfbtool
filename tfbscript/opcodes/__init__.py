@@ -37,6 +37,7 @@ from tfbscript.opcodes.op_play_animation import OpPlayAnimation
 from tfbscript.opcodes.op_check_reference import OpCheckReference
 from tfbscript.opcodes.op_turn_to import OpTurnTo
 from tfbscript.opcodes.op_for_each import OpForEach
+from tfbscript.opcodes.op_loop_value import OpLoopValue
 
 __all__ = [
     "OPCODE_REGISTRY",
@@ -74,4 +75,5 @@ __all__ = [
     "OpCheckReference",
     "OpTurnTo",
     "OpForEach",
+    "OpLoopValue",
 ]
