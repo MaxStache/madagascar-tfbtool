@@ -2,7 +2,7 @@
 
 import sys
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, Optional
 
 from tfbscript.ansi import flow_control, keyword
 from tfbscript.payload import PayloadReader
@@ -88,7 +88,7 @@ class ParserContext:
 OPCODE_REGISTRY: dict[str, type["Opcode"]] = {}
 
 
-def opcode(name: str):
+def opcode(name: str, description: str = "") -> Callable[[type["Opcode"]], type["Opcode"]]:
     """Class decorator that registers an Opcode subclass under its table name."""
 
     def register(cls: type["Opcode"]) -> type["Opcode"]:
