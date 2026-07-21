@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from tfbscript.ansi import comparison, flow_control, keyword
+from tfbscript.ansi import comparison, keyword
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import RelOp
 from tfbscript.payload import PayloadReader

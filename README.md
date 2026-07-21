@@ -25,7 +25,7 @@ script.print_tree()
 
 ## Coverage
 
-### 26 / 36 Opcodes -> 10 unimplemented
+### 27 / 36 Opcodes -> 9 unimplemented
 
 - [x] comment::op-code
 - [x] print::op-code
@@ -37,7 +37,7 @@ script.print_tree()
 - [ ] check fov::op-code
 - [x] inc value::op-code
 - [x] dec value::op-code
-- [ ] find variable::op-code
+- [x] find variable::op-code
 - [x] set behavior::op-code
 - [x] set reference::op-code
 - [ ] spawn actor::op-code

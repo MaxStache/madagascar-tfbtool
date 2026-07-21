@@ -38,6 +38,7 @@ from tfbscript.opcodes.op_check_reference import OpCheckReference
 from tfbscript.opcodes.op_turn_to import OpTurnTo
 from tfbscript.opcodes.op_for_each import OpForEach
 from tfbscript.opcodes.op_loop_value import OpLoopValue
+from tfbscript.opcodes.op_find_variable import OpFindVariable
 
 __all__ = [
     "OPCODE_REGISTRY",
@@ -76,4 +77,5 @@ __all__ = [
     "OpTurnTo",
     "OpForEach",
     "OpLoopValue",
+    "OpFindVariable",
 ]
