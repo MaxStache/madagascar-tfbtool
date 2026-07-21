@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from tfbscript.ansi import keyword, operator
 from tfbscript.opcodes.base import Opcode, opcode
+from typing import override
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
 from tfbscript.rhs import Rhs
@@ -14,8 +15,10 @@ class OpSetValue(Opcode):
     rhs: Rhs = field(default_factory=Rhs)
 
     @classmethod
+    @override
     def parse_payload(cls, reader: PayloadReader) -> "OpSetValue":
         return cls(lhs=reader.readRef(), rhs=reader.readRHS())
 
+    @override
     def source_line(self, inline: bool = False) -> str:
         return f"{keyword('set')} {self.lhs} {operator('=')} {self.rhs};"

@@ -1,6 +1,7 @@
 """Enums shared by opcode payloads."""
 
 from enum import IntEnum
+from typing import override
 
 
 # fmt: off
@@ -17,6 +18,7 @@ class RelOp(IntEnum):
     def symbol(self) -> str:
         return ("<=", "==", ">=", "<", ">", "!=")[self.value]
     
+    @override
     def __str__(self) -> str:
         return str(self.symbol())
     
@@ -29,6 +31,7 @@ class ControlRequirement(IntEnum):
     #that requirement is relaxed, so the block runs even if the target isn't in that fully-ready state yet.
     Lenient = 1
 
+    @override
     def __str__(self) -> str:
         return ("strict", "lenient")[self.value]
     
@@ -39,6 +42,7 @@ class CutsceneCommand(IntEnum):
     Resume = 2
     Start  = 3
 
+    @override
     def __str__(self) -> str:
         return ("pause", "resume", "start")[self.value-1]
     
@@ -49,6 +53,7 @@ class SetDirection(IntEnum):
     backward = 1
     randomly = 2
 
+    @override
     def __str__(self) -> str:
         return ("forward", "backward", "randomly")[self.value]
     
@@ -59,6 +64,7 @@ class CombineMode(IntEnum):
     absolute = 1
     local = 2
 
+    @override
     def __str__(self) -> str:
         return ("relative", "absolute", "local")[self.value]
 # fmt: on

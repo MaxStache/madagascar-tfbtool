@@ -5,8 +5,10 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Callable
 
 from tfbscript.ansi import flow_control, keyword
+from tfbscript.debug import DebugStore
 from tfbscript.payload import PayloadReader
 from tfbscript.string_table import StringTable
+from typing import Self
 
 if TYPE_CHECKING:
     from tfbscript.binary import BinaryReader
@@ -63,12 +65,12 @@ class InstructionFlags:
     def print(self) -> None:
         print(
             "Flags: "
-            f"flow_control={self.flow_control_str()}, "
-            f"reserved_low={hex(self.reserved_low)} ({self.reserved_low}), "
-            f"no_handler={self.no_handler}, "
-            f"runtime_scratch={self.runtime_scratch}, "
-            f"reserved_high={hex(self.reserved_high)} ({self.reserved_high}), "
-            f"descendant_span={self.descendant_span}"
+            + f"flow_control={self.flow_control_str()}, "
+            + f"reserved_low={hex(self.reserved_low)} ({self.reserved_low}), "
+            + f"no_handler={self.no_handler}, "
+            + f"runtime_scratch={self.runtime_scratch}, "
+            + f"reserved_high={hex(self.reserved_high)} ({self.reserved_high}), "
+            + f"descendant_span={self.descendant_span}"
         )
 
 
@@ -88,7 +90,9 @@ class ParserContext:
 OPCODE_REGISTRY: dict[str, type["Opcode"]] = {}
 
 
-def opcode(name: str, description: str = "") -> Callable[[type["Opcode"]], type["Opcode"]]:
+def opcode(
+    name: str, description: str = ""
+) -> Callable[[type["Opcode"]], type["Opcode"]]:
     """Class decorator that registers an Opcode subclass under its table name."""
 
     def register(cls: type["Opcode"]) -> type["Opcode"]:
@@ -121,7 +125,7 @@ class Opcode:
         cls,
         reader: "BinaryReader",
         context: ParserContext,
-        debug_store: dict | None = None,
+        debug_store: DebugStore | None = None,
     ) -> "Opcode":
         """Read one instruction (and its re-nested descendants) from the stream."""
         from tfbscript.opcodes.op_behavior_implementation import (
@@ -139,7 +143,7 @@ class Opcode:
 
         if opcode_index == 0xFF:  # Control Blocks
             opcode_name = "control block"
-            control_blocks = [OpPrescript, OpStartup, OpShutdown]
+            control_blocks: list[type[Opcode]] = [OpPrescript, OpStartup, OpShutdown]
             if context.control_block_counter < len(control_blocks):
                 opcode_class = control_blocks[context.control_block_counter]
             else:
@@ -163,7 +167,7 @@ class Opcode:
                     file=sys.stderr,
                 )
                 if debug_store is not None:
-                    debug_store.setdefault("unresolved_ops", set()).add(opcode_name)
+                    debug_store.unresolved_ops.add(opcode_name)
                 opcode_class = Opcode
 
         raw_payload = reader.read_bytes(payload_size)
@@ -179,7 +183,7 @@ class Opcode:
         except Exception as e:
             print(
                 f"Error parsing payload for opcode {opcode_class.__name__} "
-                f"(index {opcode_index}, name {opcode_name if opcode_name else 'control block'}): {e}",  # type: ignore
+                + f"(index {opcode_index}, name {opcode_name if opcode_name else 'control block'}): {e}",
                 file=sys.stderr,
             )
             instruction = Opcode()
@@ -202,13 +206,13 @@ class Opcode:
         return instruction
 
     @classmethod
-    def parse_payload(cls, reader: PayloadReader) -> "Opcode":
+    def parse_payload(cls, reader: PayloadReader) -> Self:
         """Parse this opcode's payload. Override in subclasses; the base
         implementation is the generic fallback and parses nothing."""
         if cls is not Opcode:
             print(
                 f"Warning: parse_payload not implemented for {cls.__name__}. "
-                "Returning empty instance.",
+                + "Returning empty instance.",
                 file=sys.stderr,
             )
         return cls()
@@ -236,5 +240,7 @@ class Opcode:
         if has_children:
             for child in self.children:
                 child.print_tree(children_indent)
-            print(f"{'    ' * children_indent}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}")
+            print(
+                f"{'    ' * children_indent}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}"
+            )
             print(f"{'    ' * indent}{'}'}")

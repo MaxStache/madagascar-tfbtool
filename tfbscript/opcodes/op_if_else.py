@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import cast
+from typing import override
 
 from tfbscript.ansi import flow_control, keyword
 from tfbscript.opcodes.base import Opcode, opcode
@@ -14,9 +14,11 @@ class OpIfElse(Opcode):
     # children of the if/else are the "else" branch.
 
     @classmethod
+    @override
     def parse_payload(cls, reader: PayloadReader) -> "OpIfElse":
         return cls()
 
+    @override
     def print_tree(self, indent: int = 0, chained: bool = False) -> None:
         if not self.children:
             return
@@ -42,7 +44,7 @@ class OpIfElse(Opcode):
             print(pad + keyword("}"))
         # ELSE IF
         elif len(else_children) == 1 and isinstance(else_children[0], OpIfElse):
-            fist_child = cast(OpIfElse, else_children[0])
+            fist_child = else_children[0]
             fist_child.print_tree(indent, chained=True) # type: ignore
 
             print(f"{'    ' * (indent + 1)}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}")

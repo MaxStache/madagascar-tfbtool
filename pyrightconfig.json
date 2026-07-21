@@ -1,4 +1,7 @@
 {
+  "pythonVersion": "3.14",
+  "typeCheckingMode": "standard",
+
   "exclude": [
     "generated",
     "**/node_modules",
@@ -6,5 +9,32 @@
     "**/.*",
     "env",
     "old_decomipiler.py"
-  ]
+  ],
+
+  "reportMissingTypeStubs": "none",
+  "reportUnknownVariableType": "none",
+  "reportUnknownMemberType": "warning",
+  "reportUnknownArgumentType": "warning",
+  "reportUnknownLambdaType": "warning",
+  "reportUnknownParameterType": "warning",
+
+  "reportUnusedImport": "error",
+  "reportUnusedVariable": "warning",
+  "reportUnusedFunction": "warning",
+
+  "reportMissingImports": "error",
+  "reportMissingModuleSource": "warning",
+
+  "reportPrivateUsage": "warning",
+  "reportUnnecessaryCast": "warning",
+  "reportUnnecessaryComparison": "warning",
+  "reportUnnecessaryContains": "warning",
+  "reportUnnecessaryIsInstance": "warning",
+  "reportAssertAlwaysTrue": "warning",
+
+  "reportImplicitStringConcatenation": "warning",
+  "reportImplicitOverride": "error",
+  "reportPropertyTypeMismatch": "error",
+
+  "useLibraryCodeForTypes": true
 }

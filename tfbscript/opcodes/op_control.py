@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
+from typing import override
 
-from tfbscript.ansi import keyword, method, parentheses
+from tfbscript.ansi import keyword, method
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import ControlRequirement
 from tfbscript.payload import PayloadReader
@@ -14,6 +15,7 @@ class OpControl(Opcode):
     readyness_requirement: ControlRequirement = field(default=ControlRequirement.Strict)
 
     @classmethod
+    @override
     def parse_payload(cls, reader: PayloadReader) -> "OpControl":
         target = reader.readRef()
 
@@ -30,5 +32,6 @@ class OpControl(Opcode):
             readyness_requirement=readyness_requirement
         )
     
+    @override
     def source_line(self, inline: bool = False) -> str:
         return f"{keyword("control (")} {self.target}, {method("requirement:")} {self.readyness_requirement} {keyword(")")}"

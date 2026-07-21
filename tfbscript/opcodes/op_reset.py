@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from tfbscript.ansi import method, parentheses
 from tfbscript.opcodes.base import Opcode, opcode
+from typing import override
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
 
@@ -12,8 +13,10 @@ class OpReset(Opcode):
     target: Reference = field(default_factory=Reference)
 
     @classmethod
+    @override
     def parse_payload(cls, reader: PayloadReader) -> "OpReset":
         return cls(target=reader.readRef())
 
+    @override
     def source_line(self, inline: bool = False) -> str:
         return f"{self.target}.{method('reset')}{parentheses('()')};"

@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from tfbscript.ansi import func_call
 from tfbscript.opcodes.base import Opcode, opcode
+from typing import override
 from tfbscript.opcodes.enums import SetDirection
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
@@ -18,6 +19,7 @@ class OpTeleportTo(Opcode):
     duration: Rhs = field(default_factory=Rhs)
 
     @classmethod
+    @override
     def parse_payload(cls, reader: PayloadReader) -> "OpTeleportTo":
         return cls(
             target_ref=reader.readRef(),
@@ -26,6 +28,7 @@ class OpTeleportTo(Opcode):
             duration=reader.readRHS(),
         )
 
+    @override
     def source_line(self, inline: bool = False) -> str:
         return func_call(
             "teleportTo",

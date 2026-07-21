@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from tfbscript.ansi import keyword
 from tfbscript.opcodes.base import Opcode, opcode
+from typing import override
 from tfbscript.payload import PayloadReader
 from tfbscript.rhs import Rhs
 
@@ -12,10 +13,12 @@ class OpLoopValue(Opcode):
     loop_amount: Rhs = field(default_factory=Rhs)
 
     @classmethod
+    @override
     def parse_payload(cls, reader: PayloadReader) -> "OpLoopValue":
         return cls(
             loop_amount=reader.readRHS(),
         )
 
+    @override
     def source_line(self, inline: bool = False) -> str:
         return f"{keyword('loop value (')} {self.loop_amount} {keyword(')')}"

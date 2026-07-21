@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from tfbscript.ansi import operator
 from tfbscript.opcodes.base import Opcode, opcode
+from typing import override
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
 
@@ -12,8 +13,10 @@ class OpIncValue(Opcode):
     lhs: Reference = field(default_factory=Reference)
 
     @classmethod
+    @override
     def parse_payload(cls, reader: PayloadReader) -> "OpIncValue":
         return cls(lhs=reader.readRef())
 
+    @override
     def source_line(self, inline: bool = False) -> str:
         return f"{self.lhs} {operator('++')};"

@@ -1,7 +1,7 @@
 """The 5-11 byte right-hand-side operand used by value opcodes."""
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, override
 
 from tfbscript.ansi import number, operator, rgb_square, type_
 from tfbscript.reference import Reference
@@ -150,5 +150,6 @@ class Rhs:
 
         return f"Unknown({self.kind}): {self.value}"
 
+    @override
     def __str__(self) -> str:
         return self.to_string()

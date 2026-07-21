@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from tfbscript.binary import BinaryReader
+from tfbscript.debug import DebugStore
 from tfbscript.opcodes import Opcode, ParserContext
 from tfbscript.string_table import StringTable
 
@@ -22,12 +23,10 @@ class ScriptFile:
     instructions: list[Opcode]
 
     @classmethod
-    def read(cls, reader: BinaryReader, debugOptions={}) -> "ScriptFile":
+    def read(cls, reader: BinaryReader, debugOptions: dict[str, bool | int]={}) -> "ScriptFile":
         """Read a ScriptFile from a binary reader."""
 
-        debug_store = {
-            "unresolved_ops": set(),
-        }
+        debug_store: DebugStore = DebugStore()
 
         magic_string = reader.read_string(reader.read_u8())
         unk = reader.read_bytes(4)
@@ -53,12 +52,12 @@ class ScriptFile:
             ) from error
         
         if debugOptions.get("listUnresolvedOps"):
-            print(f"Unresolved ops: {debug_store['unresolved_ops']}")
+            print(f"Unresolved ops: {debug_store.unresolved_ops}")
 
         return cls(magic_string, unk, opcode_table, global_refs, local_refs, instructions)
 
     @classmethod
-    def from_path(cls, path: str | Path, debugOptions={}) -> "ScriptFile":
+    def from_path(cls, path: str | Path, debugOptions: dict[str, bool | int]={}) -> "ScriptFile":
         """Read a ScriptFile from an .ai file on disk."""
         data = Path(path).read_bytes()
         return cls.read(BinaryReader(data, little_endian=True), debugOptions=debugOptions)

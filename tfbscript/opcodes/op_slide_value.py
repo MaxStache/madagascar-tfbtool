@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from tfbscript.ansi import func_call
 from tfbscript.opcodes.base import Opcode, opcode
+from typing import override
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
 from tfbscript.rhs import Rhs
@@ -18,6 +19,7 @@ class OpSlideValue(Opcode):
     ease_in: Reference = field(default_factory=Reference)
 
     @classmethod
+    @override
     def parse_payload(cls, reader: PayloadReader) -> Opcode:
         return cls(
             lhs=reader.readRef(),
@@ -27,6 +29,7 @@ class OpSlideValue(Opcode):
             ease_in=reader.readRef(),
         )
 
+    @override
     def source_line(self, inline: bool = False) -> str:
         return (
             str(self.lhs)

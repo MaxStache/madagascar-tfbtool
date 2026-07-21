@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import override
 
 from tfbscript.ansi import func_call
 from tfbscript.opcodes.base import Opcode, opcode
@@ -19,6 +20,7 @@ class OpDisplace(Opcode):
     pitch: Rhs = field(default_factory=Rhs)
 
     @classmethod
+    @override
     def parse_payload(cls, reader: PayloadReader) -> "OpDisplace":
         target = reader.readRef()  # the object being displaced
         combine_mode = CombineMode(reader.read_u8()) # TODO : May actually be a SetDirection
@@ -29,5 +31,6 @@ class OpDisplace(Opcode):
 
         return cls(target=target, combine_mode=combine_mode, length=length, heading=heading, pitch=pitch)
 
+    @override
     def source_line(self, inline: bool = False) -> str:
         return  f"{self.target}." + func_call("displace", str(self.combine_mode), "length: " + str(self.length), "heading: " + str(self.heading), "pitch: " + str(self.pitch))

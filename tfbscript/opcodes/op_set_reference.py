@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import override
 
 from tfbscript.ansi import keyword
 from tfbscript.opcodes.base import Opcode, opcode
@@ -13,8 +14,10 @@ class OpSetReference(Opcode):
     src_ref: Reference = field(default_factory=Reference)
 
     @classmethod
+    @override
     def parse_payload(cls, reader: PayloadReader) -> "OpSetReference":
         return cls(dest_ref=reader.readRef(), src_ref=reader.readRef())
 
+    @override
     def source_line(self, inline: bool = False) -> str:
         return f"{keyword('set reference')} *{self.dest_ref} = {self.src_ref};"

@@ -1,7 +1,7 @@
 """The 4-byte bit-packed variable reference used throughout opcode payloads."""
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from tfbscript.ansi import builtin, variable, variable_global
 from tfbscript.string_table import StringTable, StringTableEntry
@@ -88,6 +88,7 @@ class Reference:
         name = entry.string if entry is not None else f"local#{slot}"
         return cls(**fields, kind="local", slot=slot, name=name, entry=entry)
 
+    @override
     def __str__(self) -> str:
         if self.kind == "null":
             return "<null>"
