@@ -66,7 +66,7 @@ script.print_tree()
 - [x] run as player::op-code
 
 - [x] find subset::op-code
-- [ ] check membership::op-code
+- [x] check membership::op-code
 - [ ] change membership::op-code
 
 - [ ] use camera::op-code
