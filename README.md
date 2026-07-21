@@ -30,38 +30,47 @@ script.print_tree()
 - [x] comment::op-code
 - [x] print::op-code
 - [x] if/else::op-code
-- [x] displace::op-code
-- [ ] check message::op-code
-- [ ] send message::op-code
+- [x] for each::op-code
+- [x] loop value::op-code
+
 - [x] create variable::op-code
-- [ ] check fov::op-code
+- [x] find variable::op-code
+- [x] set reference::op-code
+- [x] check reference::op-code
+
+- [x] set value::op-code
+- [x] check value::op-code
 - [x] inc value::op-code
 - [x] dec value::op-code
-- [x] find variable::op-code
-- [x] set behavior::op-code
-- [x] set reference::op-code
+- [x] slide value::op-code
+
 - [ ] spawn actor::op-code
 - [x] teleport to::op-code
+- [ ] move to::op-code
+- [ ] move from::op-code
+- [x] displace::op-code
+- [x] turn to::op-code
+- [x] reset::op-code
+
+- [x] play animation::op-code
 - [x] play sound::op-code
 - [x] stop sound::op-code
 - [x] cut-scene::op-code
-- [x] loop value::op-code
-- [x] play animation::op-code
-- [x] check value::op-code
-- [x] set value::op-code
-- [x] check reference::op-code
-- [x] turn to::op-code
+
+- [ ] check message::op-code
+- [ ] send message::op-code
+
+- [x] set behavior::op-code
+- [ ] check fov::op-code
+- [x] control::op-code
 - [x] run as player::op-code
-- [x] reset::op-code
+
+- [x] find subset::op-code
 - [ ] check membership::op-code
 - [ ] change membership::op-code
-- [ ] move to::op-code
-- [ ] move from::op-code
-- [x] for each::op-code
+
 - [ ] use camera::op-code
-- [x] find subset::op-code
-- [x] control::op-code
-- [x] slide value::op-code
+
 - [x] remove::op-code
 
 ## File format
