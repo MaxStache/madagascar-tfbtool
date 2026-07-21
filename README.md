@@ -1,4 +1,4 @@
-# TFBTool TFBScript tools
+# Madagascar TFBTool tools
 
 Parser and decompiler for TFB script (`.ai`) files, as used by *Madagascar* (2005).
 
