@@ -25,7 +25,7 @@ script.print_tree()
 
 ## Coverage
 
-### 24 / 36 Opcodes -> 12 unimplemented
+### 25 / 36 Opcodes -> 11 unimplemented
 
 - [x] comment::op-code
 - [x] print::op-code
@@ -57,7 +57,7 @@ script.print_tree()
 - [ ] change membership::op-code
 - [ ] move to::op-code
 - [ ] move from::op-code
-- [ ] for each::op-code
+- [x] for each::op-code
 - [ ] use camera::op-code
 - [x] find subset::op-code
 - [x] control::op-code
