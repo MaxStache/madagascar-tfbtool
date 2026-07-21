@@ -40,6 +40,7 @@ from tfbscript.opcodes.op_for_each import OpForEach
 from tfbscript.opcodes.op_loop_value import OpLoopValue
 from tfbscript.opcodes.op_find_variable import OpFindVariable
 from tfbscript.opcodes.op_check_membership import OpCheckMembership
+from tfbscript.opcodes.op_change_membership import OpChangeMembership
 
 __all__ = [
     "OPCODE_REGISTRY",
@@ -80,4 +81,5 @@ __all__ = [
     "OpLoopValue",
     "OpFindVariable",
     "OpCheckMembership",
+    "OpChangeMembership",
 ]

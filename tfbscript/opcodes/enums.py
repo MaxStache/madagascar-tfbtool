@@ -80,4 +80,19 @@ class MembershipTest(IntEnum):
         # assumes format is "set_a <membership_test> element_a" or "set_a <membership_test> set_b"
         return ("in", "not in", "intersects with", "all in")[self.value]
 
+class MembershipCombiner(IntEnum):
+    """Membership combiner for OpChangeMembership."""
+
+    include        = 0 # add a single thing?
+    exclude        = 1 # remove a single thing?
+    intersect_with = 2 
+    be_replaced_by = 3  
+    add            = 4  # concat sets together?
+    exclude_all    = 5  # remove all elements that are also in set b?
+
+    def symbol(self) -> str:
+        # assumes format is "set_a.<membership_combiner>(element_a)" or "set_a.<membership_combiner>(set_b)"
+        return ("include", "remove", "intersectWith", "replaceWith", "add", "removeAll")[self.value]
+
+
 # fmt: on
