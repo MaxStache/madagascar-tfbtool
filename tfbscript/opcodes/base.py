@@ -4,6 +4,7 @@ import sys
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from tfbscript.ansi import flow_control, keyword
 from tfbscript.payload import PayloadReader
 from tfbscript.string_table import StringTable
 
@@ -15,14 +16,18 @@ if TYPE_CHECKING:
 class InstructionFlags:
     """The 32-bit flags word that follows every opcode index."""
 
-    flow_control: int = 0  # bits 0-2 -- flow-control value returned by tfb_walk_children (FUN_00431130)
+    flow_control: int = (
+        0  # bits 0-2 -- flow-control value returned by tfb_walk_children (FUN_00431130)
+    )
     # 0: return - skip to end of script (block)
     # 1: continue - proceed normally
     # 2,3,4...: break - skip the rest of N-1 enclosing levels, then resume
     #           normally one level further up.
-    reserved_low: int = 0  # bits 3-5 
+    reserved_low: int = 0  # bits 3-5
     no_handler: bool = False  # bit 6   -- no handler bound (loader skips construction) (aka disabled at runtime)
-    runtime_scratch: bool = False  # bit 7 -- runtime-only scratch flag (always 0 on disk)
+    runtime_scratch: bool = (
+        False  # bit 7 -- runtime-only scratch flag (always 0 on disk)
+    )
     reserved_high: int = 0
     descendant_span: int = 0  # bits 11-31 -- 21-bit descendant span
 
@@ -54,7 +59,7 @@ class InstructionFlags:
         if self.flow_control == 1:
             return "continue"
         return f"break {self.flow_control - 1}"
-    
+
     def print(self) -> None:
         print(
             "Flags: "
@@ -74,7 +79,7 @@ class ParserContext:
     opcode_table: StringTable
     global_refs: StringTable
     local_refs: StringTable
-    
+
     control_block_counter: int = 0
 
 
@@ -112,9 +117,16 @@ class Opcode:
         return 1 + sum(child.total_span() for child in self.children)
 
     @classmethod
-    def read(cls, reader: "BinaryReader", context: ParserContext, debug_store: dict | None = None) -> "Opcode":
+    def read(
+        cls,
+        reader: "BinaryReader",
+        context: ParserContext,
+        debug_store: dict | None = None,
+    ) -> "Opcode":
         """Read one instruction (and its re-nested descendants) from the stream."""
-        from tfbscript.opcodes.op_behavior_implementation import OpBehaviorImplementation
+        from tfbscript.opcodes.op_behavior_implementation import (
+            OpBehaviorImplementation,
+        )
         from tfbscript.opcodes.op_prescript import OpPrescript
         from tfbscript.opcodes.op_shutdown import OpShutdown
         from tfbscript.opcodes.op_startup import OpStartup
@@ -125,7 +137,7 @@ class Opcode:
 
         behavior_entry = None
 
-        if opcode_index == 0xFF: # Control Blocks
+        if opcode_index == 0xFF:  # Control Blocks
             opcode_name = "control block"
             control_blocks = [OpPrescript, OpStartup, OpShutdown]
             if context.control_block_counter < len(control_blocks):
@@ -138,7 +150,7 @@ class Opcode:
 
             context.control_block_counter += 1
 
-        else: # Normal opcodes
+        else:  # Normal opcodes
             entry = context.opcode_table.get(opcode_index)
             if entry is None:
                 raise ValueError(f"Invalid opcode index: {opcode_index}")
@@ -167,12 +179,12 @@ class Opcode:
         except Exception as e:
             print(
                 f"Error parsing payload for opcode {opcode_class.__name__} "
-                f"(index {opcode_index}, name {opcode_name if opcode_name else 'control block'}): {e}", # type: ignore
+                f"(index {opcode_index}, name {opcode_name if opcode_name else 'control block'}): {e}",  # type: ignore
                 file=sys.stderr,
             )
             instruction = Opcode()
             raise e
-        
+
         instruction.opcode_index = opcode_index
         instruction.flags = flags
         instruction.raw_payload = raw_payload
@@ -216,6 +228,13 @@ class Opcode:
 
     def print_tree(self, indent: int = 0) -> None:
         """Print this instruction and its children as indented pseudo-source."""
-        print(f"{'    ' * indent}{self.source_line()}")
-        for child in self.children:
-            child.print_tree(indent + 1)
+        has_children = len(self.children) > 0
+        children_indent = indent + 1
+
+        print(f"{'    ' * indent}{self.source_line()} {'{' if has_children else ''}")
+
+        if has_children:
+            for child in self.children:
+                child.print_tree(children_indent)
+            print(f"{'    ' * children_indent}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}")
+            print(f"{'    ' * indent}{'}'}")

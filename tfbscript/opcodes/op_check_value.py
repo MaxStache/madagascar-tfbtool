@@ -27,11 +27,4 @@ class OpCheckValue(Opcode):
         if inline:
             return condition
 
-        return f"{keyword('check value (')} {condition} {keyword(') {')}"
-
-    def print_tree(self, indent: int = 0) -> None:
-        super().print_tree(indent)
-        pad = "    " * indent
-        flow = self.flags.flow_control_str()
-        print(f"{pad}    {keyword('flow ')}{flow_control(flow)}")
-        print(f"{pad}{keyword('}')}")
+        return f"{keyword('check value (')} {condition} {keyword(')')}"

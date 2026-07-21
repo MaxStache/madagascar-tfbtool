@@ -31,11 +31,4 @@ class OpControl(Opcode):
         )
     
     def source_line(self, inline: bool = False) -> str:
-        return f"{keyword("control (")} {self.target}, {method("requirement:")} {self.readyness_requirement} {keyword(")")} {keyword("{")} "
-    
-    def print_tree(self, indent: int = 0) -> None:
-        print(f"{'    ' * indent}{self.source_line()}")
-        for child in self.children:
-            child.print_tree(indent + 1)
-
-        print(f"{'    ' * indent}{keyword("}")}")
+        return f"{keyword("control (")} {self.target}, {method("requirement:")} {self.readyness_requirement} {keyword(")")}"

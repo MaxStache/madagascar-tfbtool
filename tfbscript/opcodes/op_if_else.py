@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import cast
 
-from tfbscript.ansi import keyword
+from tfbscript.ansi import flow_control, keyword
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.payload import PayloadReader
 
@@ -33,6 +33,8 @@ class OpIfElse(Opcode):
         for then_child in condition.children:
             then_child.print_tree(indent + 1)
 
+        print(f"{'    ' * (indent + 1)}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}")
+
         else_children = self.children[1:]
 
         # None
@@ -42,10 +44,14 @@ class OpIfElse(Opcode):
         elif len(else_children) == 1 and isinstance(else_children[0], OpIfElse):
             fist_child = cast(OpIfElse, else_children[0])
             fist_child.print_tree(indent, chained=True) # type: ignore
+
+            print(f"{'    ' * (indent + 1)}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}")
         # ELSE
         else:
             print(pad + keyword("} else {"))
             for else_child in else_children:
                 else_child.print_tree(indent + 1)
+
+            print(f"{'    ' * (indent + 1)}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}")
 
             print(pad + keyword("}"))

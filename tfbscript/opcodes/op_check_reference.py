@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from tfbscript.ansi import flow_control, keyword
+from tfbscript.ansi import keyword
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
@@ -25,10 +25,4 @@ class OpCheckReference(Opcode):
         if inline:
             return condition
 
-        return f"{keyword('check reference (')} {condition} {keyword(') {')}"
-
-    def print_tree(self, indent: int = 0) -> None:
-        super().print_tree(indent)
-        pad = "    " * indent
-        print(f"{pad}    {keyword('flow ')}{flow_control(self.flags.flow_control_str())}")
-        print(f"{pad}{keyword('}')}")
+        return f"{keyword('check reference (')} {condition} {keyword(')')}"

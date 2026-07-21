@@ -393,7 +393,7 @@ def render_line(instructions, op_names, i, prefix):
         )
 
     elif op_name == "spawn actor::op-code":
-        # TODO: THIS IS A STUB AND MAY NEEDS REVISION!
+        # TODO: THIS NEEDS REVISION!
 
         p = OpParser(instr["payload"])
         actor_ref = p.readRef()  # actor / prototype to spawn

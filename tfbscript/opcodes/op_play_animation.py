@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from tfbscript.ansi import func_call, number
+from tfbscript.ansi import func_call, method, number, parentheses
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.payload import PayloadReader
 
@@ -15,4 +15,6 @@ class OpPlayAnimation(Opcode):
         return cls(animation_idx=reader.read_u8())
 
     def source_line(self, inline: bool = False) -> str:
+        if self.children:
+            return f"when {method("playAnimation")}{parentheses('(')}{number(self.animation_idx)}{parentheses(')')} is done playing, do:"
         return func_call("playAnimation", number(self.animation_idx))
