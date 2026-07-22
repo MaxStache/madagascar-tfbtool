@@ -27,6 +27,9 @@ class OpCheckMessage(Opcode):
     def parse_payload(cls, reader: PayloadReader) -> "OpCheckMessage":
         message_ref = reader.readRef()
 
+        # Ref: 4b
+        # RelOp: 1b
+        # Rhs: min. 5b
         if reader.size_remaining() >= 4 + 1 + 5:
             sender_ref = reader.readRef()
 
