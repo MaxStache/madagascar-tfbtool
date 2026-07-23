@@ -219,6 +219,7 @@ class Opcode:
     def parse_payload(cls, reader: PayloadReader) -> Self:
         """Parse this opcode's payload. Override in subclasses; the base
         implementation is the generic fallback and parses nothing."""
+        reader.read_bytes(reader.size_remaining())  # consume all remaining bytes
         if cls is not Opcode:
             print(
                 f"Warning: parse_payload not implemented for {cls.__name__}. "
