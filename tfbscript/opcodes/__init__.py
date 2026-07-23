@@ -42,6 +42,7 @@ from tfbscript.opcodes.op_find_variable import OpFindVariable
 from tfbscript.opcodes.op_check_membership import OpCheckMembership
 from tfbscript.opcodes.op_change_membership import OpChangeMembership
 from tfbscript.opcodes.op_check_message import OpCheckMessage
+from tfbscript.opcodes.op_spawn_actor import OpSpawnActor
 
 __all__ = [
     "OPCODE_REGISTRY",
@@ -84,4 +85,5 @@ __all__ = [
     "OpCheckMembership",
     "OpChangeMembership",
     "OpCheckMessage",
+    "OpSpawnActor",
 ]

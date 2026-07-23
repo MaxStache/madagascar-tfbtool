@@ -180,6 +180,16 @@ class Opcode:
 
         try:
             instruction = opcode_class.parse_payload(payload_reader)
+
+            if payload_reader.size_remaining() > 0 and opcode_class is not Opcode:
+                print(
+                    f"Warning: {opcode_class.__name__} did not consume all payload bytes "
+                    + f"(opcode index {opcode_index}, name {opcode_name if opcode_name else 'control block'}): "
+                    + f"{payload_reader.size_remaining()} bytes remaining, "
+                    + f"{payload_reader.offset} bytes read "
+                    + f"-> {payload_reader.offset}/{len(payload_reader.data)} bytes read",
+                    file=sys.stderr,
+                )
         except Exception as e:
             print(
                 f"Error parsing payload for opcode {opcode_class.__name__} "
