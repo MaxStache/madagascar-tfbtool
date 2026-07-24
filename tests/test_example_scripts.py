@@ -11,4 +11,4 @@ scripts = list(SCRIPT_DIR.glob("**/*.ai"))
 
 @pytest.mark.parametrize("script", scripts, ids=lambda p: p.name)
 def test_parse_script(script: Path):
-    ScriptFile.from_path(script, debugOptions={"listUnresolvedOps": True}).print_tree()
+    ScriptFile.from_path(script, debugOptions={"listUnresolvedOps": True, "throwOnPayloadRemaining": True}).print_tree()

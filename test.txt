@@ -1,4 +1,4 @@
-Unresolved ops: {'move to', 'check fov', 'send message', 'move from'}
+Unresolved ops: {'send message', 'move to', 'move from', 'check fov'}
 
 [ PRESCRIPT ] {
 

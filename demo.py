@@ -1,6 +1,6 @@
 from tfbscript import ScriptFile
 
 
-ScriptFile.from_path("example_scripts/ME_BAllo0ns_floating.ai", debugOptions={
+ScriptFile.from_path("example_scripts/ME_Pigeon.ai", debugOptions={
     "listUnresolvedOps": True,
 }).print_tree()

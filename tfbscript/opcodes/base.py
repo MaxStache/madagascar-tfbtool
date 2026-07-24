@@ -126,6 +126,7 @@ class Opcode:
         reader: "BinaryReader",
         context: ParserContext,
         debug_store: DebugStore | None = None,
+        debugOptions: dict[str, bool | int] = {},
     ) -> "Opcode":
         """Read one instruction (and its re-nested descendants) from the stream."""
         from tfbscript.opcodes.op_behavior_implementation import (
@@ -190,6 +191,15 @@ class Opcode:
                     + f"-> {payload_reader.offset}/{len(payload_reader.data)} bytes read",
                     file=sys.stderr,
                 )
+                throwOnPayloadRemaining = debugOptions.get("throwOnPayloadRemaining", False)
+                if throwOnPayloadRemaining:
+                    raise ValueError(
+                        f"Opcode {opcode_class.__name__} did not consume all payload bytes "
+                        + f"(opcode index {opcode_index}, name {opcode_name if opcode_name else 'control block'}): "
+                        + f"{payload_reader.size_remaining()} bytes remaining, "
+                        + f"{payload_reader.offset} bytes read "
+                        + f"-> {payload_reader.offset}/{len(payload_reader.data)} bytes read"
+                    )
         except Exception as e:
             print(
                 f"Error parsing payload for opcode {opcode_class.__name__} "

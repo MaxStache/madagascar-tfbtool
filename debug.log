@@ -1,0 +1,252 @@
+##START## 1
+Clone ref: Local_Prop::user::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Minigame_UI_Controller::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Melman_Pigeon::actor, At ref: self, Facing RHS: global::Mel_Pigeon_Destination.field[0x02]@3
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Big Poop::actor, At ref: self, Facing RHS: 360
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: HayBale_bits::actor, At ref: self, Facing RHS: (global::Global Leader.sub[0x01] - 10)
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: HayBale_bits::actor, At ref: self, Facing RHS: (global::Global Leader.sub[0x01] + 8)
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: HayBale_bits::actor, At ref: self, Facing RHS: (global::Global Leader.sub[0x01] + 3)
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: HayBale_bits::actor, At ref: self, Facing RHS: (global::Global Leader.sub[0x01] + 170)
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: HayBale_bits::actor, At ref: self, Facing RHS: (global::Global Leader.sub[0x01] + 184)
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: HayBale_bits::actor, At ref: self, Facing RHS: (global::Global Leader.sub[0x01] + 180)
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: TG_Powerup-Shield::actor, At ref: self.field[0x02]@3, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: TG_PowerUp-Health::actor, At ref: self.field[0x02]@3, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: TG_PowerUp-Bounce::actor, At ref: self.field[0x02]@3, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: TG_PowerUp-Speed::actor, At ref: self.field[0x02]@3, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Water_Splash::actor, At ref: global::players@1, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Water_Splash::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Water_Splash_Roar::actor, At ref: global::Alex Actor, Facing RHS: global::Alex Actor.sub[0x01]
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Water_Ripple::actor, At ref: global::players@1, Facing RHS: global::players.sub[0x06]@1
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: LocalSet::set::actor, At ref: self, Facing RHS: global::Mel_Pigeon_Destination.field[0x02]@3
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Alex_Ring_CoinEffect::actor, At ref: global::Global Leader, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: zoovenir_remover_template::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: zoovenir_alex_item_1::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: zoovenir_alex_item_2::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: zoovenir_remover_template::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: zoovenir_gloria_bikini::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: zoovenir_gloria_flowers::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: zoovenir_remover_template::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: zoovenir_marty_hat::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: zoovenir_marty_glasses::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: zoovenir_remover_template::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: zoovenir_melman_clock::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: zoovenir_melman_shoebox::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: zoovenir_melman_shoebox::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: zoovenir_melman_shoebox::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: zoovenir_melman_shoebox::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Heli_blades::actor, At ref: [~found], Facing RHS: ([~found].sub[0x01] + 90)
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Heli_streaks::actor, At ref: [~found], Facing RHS: ([~found].sub[0x01] + 90)
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Soda_Can::actor, At ref: self.field[0x02]@1, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Minigame_UI_Controller::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Water_Ripple::actor, At ref: global::FishingLure, Facing RHS: 360
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Water_Splash_Lure::actor, At ref: global::FishingLure, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Water_Ripple::actor, At ref: global::FishingLure, Facing RHS: 360
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Alex_RoarEffect::actor, At ref: self, Facing RHS: self
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Alex_Claws::actor, At ref: self, Facing RHS: (self.sub[0x01] - 100)
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: MangoThrown::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Alex_Claws_Cross::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Alex_Claws_Cross::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Alex_Claws_Cross::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Alex_Claws::actor, At ref: self, Facing RHS: (self.sub[0x01] + 100)
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Water_Ripple::actor, At ref: self, Facing RHS: 360
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Water_Ripple::actor, At ref: self, Facing RHS: 360
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Minigame_UI_Controller::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Minigame_UI_Controller::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Alex Actor_dummy::actor, At ref: global::Alex Actor, Facing RHS: global::Alex Actor.sub[0x01]
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: One Poop::actor, At ref: [~subset]@1, Facing RHS: 360
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Fish_Blue::actor, At ref: global::Fish_Blue.field[0x02]@3, Facing RHS: 360
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Minigame_UI_Controller::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Fish_Yellow::actor, At ref: global::Fish_Blue.field[0x02]@3, Facing RHS: 360
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Fish_Red::actor, At ref: global::Fish_Blue.field[0x02]@3, Facing RHS: 360
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Fish_Green::actor, At ref: global::Fish_Blue.field[0x02]@3, Facing RHS: 360
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Fish_Blue::actor, At ref: global::Fish_Blue.field[0x02]@3, Facing RHS: 360
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Fish_Yellow::actor, At ref: global::Fish_Blue.field[0x02]@3, Facing RHS: 360
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Fish_Red::actor, At ref: global::Fish_Blue.field[0x02]@3, Facing RHS: 360
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Fish_Green::actor, At ref: global::Fish_Blue.field[0x02]@3, Facing RHS: 360
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Fish_Blue::actor, At ref: global::Fish_Blue.field[0x02]@3, Facing RHS: 360
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: fish_wake::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: TG_Shell_Good::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: TG_Shell_Bounce::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Soda::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: Balloon::actor, At ref: global::Crowd_Spawned_04, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Minigame_UI_Controller::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x00'
+##START## 1
+Clone ref: CupWithKid::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Coin20::actor, At ref: self, Facing RHS: global::PenguinFishingController
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Button_Prompter::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: TG_Shell_Good::actor, At ref: [~found], Facing RHS: ([~found].sub[0x01] + 180)
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Balloon_Spawned::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Balloon::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Balloon::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Local_Prop::user::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: TG_Shell_Bad::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: TG_Shell_Bad::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: TG_Shell_Bad::actor, At ref: self, Facing RHS: self.sub[0x01]
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: One Poop::actor, At ref: self, Facing RHS: 0
+Remaining bytes: b'\x01'
+##START## 1
+Clone ref: Water_Ripple::actor, At ref: global::players@1, Facing RHS: global::players.sub[0x06]@1
+Remaining bytes: b'\x00'

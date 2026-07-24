@@ -18,35 +18,37 @@ from enum import Enum
 _RESET = "\033[0m"
 
 
-def _enable_windows_vt100() -> bool:
-    """Turn on ANSI (virtual terminal) processing for the Windows console.
+if sys.platform == "win32":
 
-    Modern Windows terminals already do this, but cmd.exe / old consoles
-    need it switched on per-process or escape codes print as garbage.
-    """
-    try:
-        import ctypes
+    def _enable_windows_vt100() -> bool:
+        """Turn on ANSI (virtual terminal) processing for the Windows console."""
+        try:
+            import ctypes
 
-        STD_OUTPUT_HANDLE = -11
-        ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+            STD_OUTPUT_HANDLE = -11
+            ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
 
-        if not hasattr(ctypes, "windll"):
-            return False
-        kernel32 = ctypes.windll.kernel32  # pyright: ignore[reportAttributeAccessIssue]
-        handle = kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
+            kernel32 = ctypes.windll.kernel32
+            handle = kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
 
-        mode = ctypes.c_uint32()
-        if not kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
-            return False
+            mode = ctypes.c_uint32()
+            if not kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
+                return False
 
-        return bool(
-            kernel32.SetConsoleMode(
-                handle, mode.value | ENABLE_VIRTUAL_TERMINAL_PROCESSING
+            return bool(
+                kernel32.SetConsoleMode(
+                    handle,
+                    mode.value | ENABLE_VIRTUAL_TERMINAL_PROCESSING,
+                )
             )
-        )
-    except Exception:
-        return False
+        except Exception:
+            return False
 
+else:
+
+    def _enable_windows_vt100() -> bool:
+        """No-op on non-Windows platforms."""
+        return True
 
 def _detect_default() -> bool:
     if os.environ.get("NO_COLOR") is not None:

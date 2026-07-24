@@ -42,7 +42,7 @@ class ScriptFile:
         instructions_read = 0
         try:
             while instructions_read < instruction_count:
-                instruction = Opcode.read(reader, context, debug_store=debug_store)
+                instruction = Opcode.read(reader, context, debug_store=debug_store, debugOptions=debugOptions)
                 instructions.append(instruction)
                 # Count the instruction and its descendants.
                 instructions_read += instruction.total_span()

@@ -46,8 +46,6 @@ class OpIfElse(Opcode):
         elif len(else_children) == 1 and isinstance(else_children[0], OpIfElse):
             fist_child = else_children[0]
             fist_child.print_tree(indent, chained=True) # type: ignore
-
-            print(f"{'    ' * (indent + 1)}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}")
         # ELSE
         else:
             print(pad + keyword("} else {"))
