@@ -1,14 +1,14 @@
 """Instruction flags, parser context, opcode registry and the Opcode base class."""
 
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Self
 
 from tfbscript.ansi import flow_control, keyword
 from tfbscript.debug import DebugStore
 from tfbscript.payload import PayloadReader
 from tfbscript.string_table import StringTable
-from typing import Self
 
 if TYPE_CHECKING:
     from tfbscript.binary import BinaryReader
@@ -207,7 +207,7 @@ class Opcode:
                 file=sys.stderr,
             )
             instruction = Opcode()
-            raise e
+            raise
 
         instruction.opcode_index = opcode_index
         instruction.flags = flags
