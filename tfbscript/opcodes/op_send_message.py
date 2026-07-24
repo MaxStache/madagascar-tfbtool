@@ -13,17 +13,22 @@ from tfbscript.rhs import Rhs
 class OpSendMessage(Opcode):
     message_ref: Reference = field(default_factory=Reference)
     reciver_Ref: Reference = field(default_factory=Reference)
-    unknown: int = field(default=0)
     value: Rhs = field(default_factory=Rhs)
 
     @classmethod
     @override
     def parse_payload(cls, reader: PayloadReader) -> "OpSendMessage":
+        message_ref = reader.readRef()
+        reciver_ref = reader.readRef()
+        _relop = reader.skip(1)
+        # Send Message uses same payload parser as check message
+        # Relop is unused here in send and discarded
+
+        value = reader.readRHS()
         return cls(
-            message_ref=reader.readRef(),
-            reciver_Ref=reader.readRef(),
-            unknown=reader.read_u8(),
-            value=reader.readRHS(),
+            message_ref=message_ref,
+            reciver_Ref=reciver_ref,
+            value=value,
         )
 
     @override
@@ -32,6 +37,5 @@ class OpSendMessage(Opcode):
             "sendMessage",
             str(self.message_ref),
             f"to: {self.reciver_Ref}",
-            f"unknown: {self.unknown}",
             f"value: {self.value}",
         )
