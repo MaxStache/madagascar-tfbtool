@@ -1,167 +1,67 @@
-Unresolved ops: {'move to', 'check fov', 'send message', 'move from'}
+Unresolved ops: {'move to'}
 
 [ PRESCRIPT ] {
 
     [ STARTUP ] {
-        check value ( global::Current Leader == 1 ) {
-            self.remove(); 
-            flow continue
-        }
-        var Hurt Delay : value; 
-        var MY_HURT_ID : value; 
-        set MY_HURT_ID = 3; 
-        global::Pigeons_Set.include(self); 
-        set self.field[0x0a] = 15; 
-        var I am Scared : value; 
-        var temp : value; 
-        var the_player : actor; 
-        var Switch : value; 
-        var old camera : camera; 
-        var timer : value; 
-        var Original Facing : value; 
-        set Original Facing = self.sub[0x01]; 
-        var Altittude Adjustment Timer : value; 
-        var Poop TImer : value; 
-        var My Poop : actor; 
-        var Random : value; 
-        var test : value; 
-        var MY Feathers : particle; 
-        var Feather Timer : value; 
-        var I have assigned a hurt : value; 
-        set I have assigned a hurt = 0; 
+        var Timer::user::value : value; 
+        set Timer::user::value = global::Script Time::value; 
+        var Debounce::user::value : value; 
+        set Debounce::user::value = 0; 
+        var ObjectIAmTakingHome::user::actor : actor; 
         set self.field[0x2c] = 1; 
+        set self.field[0x2d] = 1; 
+        set self.field[0x37].sub[0x04] = 255; 
+        set self.field[0x37] = Color(255, 255, 255, 255); 
+        set self.field[0x31] = 0; 
+        var Splash timer::user::value : value; 
+        set Splash timer::user::value = 9999; 
+        var Control_Coin?::user::value : value; 
+        set Control_Coin?::user::value = 0; 
+        var Coin_Ref::user::actor : actor; 
+        var PrintDebounce::user::value : value; 
+        set PrintDebounce::user::value = 0; 
+        var FishSplashy::set::particle : particle; 
+        var Anim_State::user::value : value; 
+        set Anim_State::user::value = 2; 
+        set self.field[0x33] = 1; 
+        var My Sploosh::user::particle : particle; 
+        set global::animation mapping::animation mapping.field[0x01] = 0; 
+        set global::animation mapping::animation mapping.field[0x09] = 8; 
+        var SoundDebounce::user::value : value; 
+        set SoundDebounce::user::value = 0; 
         flow continue
     }
     [ STARTUP: END ]
 
 
     [ SHUTDOWN ] {
-        global::Pigeons_Set.remove(self); 
-        flow continue
-    }
-    [ SHUTDOWN: END ]
-
-    if ( I am Scared == 1 ) {
-        set Hurt Delay = (global::Script Time + 3); 
-        // If I am already running, nothing affects me. 
-        flow continue
-    } else {
-        // Did Alex roar at me? 
-        check message ( global::Alex has roared!, sent by: global::Alex Actor, where: value >= 0 ) {
-            set temp = 0; 
-            control ( [~found], requirement: lenient ) {
-                // Verticle Altitude check 
-                check value ( global::Alex Actor.sub[0x07] <= 13 ) {
-                    // First, check a long, skinny shaped cone. 
-                    if ( check fov::op-code, Opcode, payload: 0201c0ffff00000000000000460000000080ffff00001600000000 ) {
-                        set temp = 1; 
-                        print(self, "Hit in the long, skinny cone."); 
-                        flow continue
-                    } else {
-                        check fov::op-code, Opcode, payload: 0201c0ffff00000000000000e60000000080ffff00000a00000000 {
-                            set temp = 1; 
-                            print(self, "Hit in the fat, short cone."); 
-                            flow continue
-                        }
-                        flow continue
-                    }
-                    flow continue
-                }
-                flow continue
-            }
-            check value ( temp == 1 ) {
-                set I am Scared = 1; 
-                set test = 0; 
-                for each ( global::Pigeons_Set ) {
-                    test ++; 
-                    flow continue
-                }
-                print(test, "...it affects me."); 
-                global::Pigeons_Set.remove(self); 
-                set test = 0; 
-                for each ( global::Pigeons_Set ) {
-                    test ++; 
-                    flow continue
-                }
-                print(test, "REMOVING MYSELF FROM SET"); 
-                set self.field[0x0c] = 0; 
-                set self.field[0x0b] = 0; 
-                set self.field[0x1b] = 200; 
-                set Switch = 0; 
-                set reference *the_player = global::players@1; 
-                set Switch = 0; 
-                setBehavior(I am Scared and Flying); 
-                flow continue
-            }
+        set global::LureHasAnItem::user::value = 0; 
+        My Sploosh::user::particle.remove(); 
+        for each ( FishSplashy::set::particle ) {
+            FishSplashy::set::particle.remove([~each]); 
+            [~each].remove(); 
+            flow continue
+        }
+        find variable ( global::Crosshairs_Debounce::user::value in global::PenguingFishingSegmentController::actor ) {
+            set [~found_variable] = 2; 
             flow continue
         }
         flow continue
     }
-    check value ( Hurt Delay <= global::Script Time ) {
-        check message ( global::hit actor, sent by: global::Global Leader, where: value >= 0 ) {
-            // I've hit the player! 
-            check value ( global::Dialogue_Active <= 0 ) {
-                set self.field[0x34] = 33; 
-                send message::op-code, Opcode, payload: 0040020000800200020000000000 
-                flow continue
-            }
-            find variable ( global::climbing? in global::edge_climber ) {
-                check value ( [~found_variable] == 0 ) {
-                    // (below) Tell the player he's been hurt! 
-                    set I have assigned a hurt = 1; 
-                    set Hurt Delay = (global::Script Time + 1); 
-                    spawn actor (global::rumble, at: self, facing: 0); {
-                        set self.field[0x02] = 60; 
-                        set self.field[0x03] = 0.25; 
-                        flow continue
-                    }
-                    find variable ( global::Hurt_Index_New in global::Global Leader ) {
-                        // (below) Differentiate between 'Simple' and 'Undeniable' Hurt effects. 
-                        // 'Simple' effects have IDs less than 100. 'Undeniable' effects have IDs >= 100. 
-                        if ( MY_HURT_ID >= 100 ) {
-                            print(self, "My Hurt is UNDENIABLE, so I do it!"); 
-                            // Undeniable effect.  Make it happen! 
-                            // Set the player's 'Hurt_Index_New' vairable to my hurt ID. 
-                            set [~found_variable] = MY_HURT_ID; 
-                            // (below) Reach into the current player and find their 'guy_who_hurt_me' actor reference variable. 
-                            find variable ( global::guy_who_hurt_me in global::players@1 ) {
-                                // (below) Set the player's 'guy_who_hurt_me' actor reference variable to myself. 
-                                set reference *[~found_variable] = self; 
-                                flow continue
-                            }
-                            flow continue
-                        } else {
-                            // (below) We've determined that this is a 'Simple' hurt effect (ID < 100). 
-                            // Now we have to see if the player has already been hurt this frame. 
-                            // If so, their Hurt_Index_New will be greather than 0, and since this is a simple effect, it will not do anything. 
-                            if ( [~found_variable] == 0 ) {
-                                print(self, "Player is not processing a new hurt this frame, so I'll CAN set a new hurt value."); 
-                                // Hurt_Index_New = 0, so we can go ahead and submit a new Hurt effect to the player 
-                                // by setting his local variable Hurt_Index_New to our own HURT_ID value. 
-                                set [~found_variable] = MY_HURT_ID; 
-                                // (below) Now we the player know who hurt him by sticking ourself into 
-                                //     the player's local actor reference *guy_who_hurt_me. 
-                                find variable ( global::guy_who_hurt_me in global::Global Leader ) {
-                                    set reference *[~found_variable] = self; 
-                                    flow continue
-                                }
-                                flow continue
-                            } else {
-                                print(self, "Player already has a new hurt this frame.  CANNOT set new hurt value."); 
-                                // The player's Hurt_Index_New  was NOT 0, meaning he had already been hurt this frame. 
-                                // Therefore, since we are a Simple hurt, we cannot affect the player. 
-                                flow continue
-                            }
-                            flow continue
-                        }
-                        flow continue
-                    }
-                    // PUT ATTACK_HITS SOUND HERE 
-                    global::Pigeon_Squak.play(); 
-                    flow continue
-                }
-                flow continue
-            }
+    [ SHUTDOWN: END ]
+
+    check value ( Debounce::user::value == 1 ) {
+        setBehavior(MoveToPlayer::behavior); 
+        teleportTo(self, facing global::PenguinFishingController::actor, direction: forward, over 0 seconds); 
+        set Timer::user::value = (global::Script Time::value + 1000); 
+        set self.field[0x2c] = 0; 
+        set self.field[0x2d] = 0; 
+        set self.field[0x12] = 4; 
+        set self.field[0x0e] = 250; 
+        set self.field[0x13] = 250; 
+        set Debounce::user::value = 2; 
+        check value ( global::PenguinFishingController::actor.sub[0x07] > 0 ) {
+            self.field[0x07].displace(relative, length: self.sub[0x01], heading: 90, pitch: global::PenguinFishingController::actor.sub[0x07]); 
             flow continue
         }
         flow continue
@@ -171,216 +71,90 @@ Unresolved ops: {'move to', 'check fov', 'send message', 'move from'}
 [ PRESCRIPT: END ]
 
 
-[ Behavior: Idlke ] {
-    check value ( global::Global Leader <= 24 ) {
-        set timer = 0; 
-        set Switch = 0; 
-        global::Pigeon Wing Flap.play(); 
-        if ( self.field[0x34] == 33 ) {
-            self.field[0x07].displace(relative, length: 0, heading: 90, pitch: 30); 
-            setBehavior(Freak Out Two); 
-            flow end
-        } else {
-            setBehavior(Freak Out One); 
-            flow end
-        }
-        flow continue
-    }
-    check value ( Switch == 0 ) {
-        playAnimation(1); 
-        set timer = (global::Script Time + 2); 
-        Switch ++; 
-        flow continue
-    }
-    check value ( Switch == 1 ) {
-        check value ( timer <= global::Script Time ) {
-            playAnimation(1); 
-            turnTo((Original Facing + 90), animation: 0); {
-                playAnimation(12); 
-                Switch ++; 
+[ Behavior: Startup ] {
+    check value ( Splash timer::user::value < global::Script Time::value ) {
+        control ( My Sploosh::user::particle, requirement: strict ) {
+            set self.field[0x01] = 0; 
+            check value ( Splash timer::user::value < (global::Script Time::value - 2) ) {
+                My Sploosh::user::particle.remove(); 
                 flow continue
             }
             flow continue
         }
         flow continue
     }
-    check value ( Switch == 2 ) {
-        turnTo((global::Global Leader.sub[0x04] + 180), animation: 0); 
-        set timer = (global::Script Time + 3); 
-        playAnimation(12); 
-        Switch ++; 
-        flow continue
-    }
-    check value ( Switch == 3 ) {
-        check value ( timer <= global::Script Time ) {
-            playAnimation(1); 
-            turnTo((Original Facing - 120), animation: 0); {
-                playAnimation(4); 
-                set Switch = 0; 
+    check message ( global::hit ground::message ) {
+        if ( check message ( global::hit face trigger::message ) ) {
+            check value ( SoundDebounce::user::value == 0 ) {
+                global::Fishing_Game_Splash1::sound.play(); 
+                set SoundDebounce::user::value = 1; 
                 flow continue
             }
-            flow continue
-        }
-        flow continue
-    }
-    flow continue
-}
-[ Behavior Idlke: END ]
-
-
-[ Behavior: Freak Out One ] {
-    turnTo(global::Global Leader.sub[0x04], animation: 0); 
-    check value ( Switch == 0 ) {
-        playAnimation(16); 
-        self.field[0x07].displace(relative, length: 0, heading: 90, pitch: 35); 
-        set timer = (global::Script Time + 1.5); 
-        Switch ++; 
-        flow continue
-    }
-    check value ( Switch == 1 ) {
-        check value ( global::Global Leader >= 30 ) {
-            setBehavior(Idlke); 
-            set Switch = 0; 
-            flow end
-        }
-        if ( check message ( global::hit actor, sent by: self, where: value <= 0 ) ) {
-            playAnimation(1); 
-            flow continue
-        }
-        if ( check message ( global::hit ground ) ) {
-            playAnimation(1); 
-            flow continue
-        }
-        check value ( timer <= global::Script Time ) {
-            global::Pigeon_Squak.play(); 
-            set Switch = 0; 
-            flow continue
-        }
-        flow continue
-    }
-    flow continue
-}
-[ Behavior Freak Out One: END ]
-
-
-[ Behavior: Freak Out Two ] {
-    // Dop A Poop 
-    if ( global::Alex Actor <= 35 ) {
-        check value ( global::Cut-scene Active == 1 ) {
-            set Switch = 0; 
-            setBehavior(I am Scared and Flying); 
-            flow end
-        }
-        set self.field[0x2d] = 1; 
-        flow continue
-    } else {
-        set self.field[0x2d] = 0; 
-        flow continue
-    }
-    check value ( Poop TImer <= global::Script Time ) {
-        spawn actor (global::One Poop, at: self, facing: 0); {
-            set self.sub[0x01] = 300; 
-            flow continue
-        }
-        set Random = 4; 
-        set Random = (Random + 5); 
-        set Poop TImer = (global::Script Time + Random); 
-        flow continue
-    }
-    // Adjust my altitude if I am getting too low 
-    if ( global::Alex Actor.sub[0x05] <= 0 ) {
-        // Go down.  Unless ground is getting too close 
-        if ( global::Global Leader.sub[0x07] <= 8 ) {
-            self.field[0x07].displace(relative, length: 0, heading: 90, pitch: 1); 
             flow continue
         } else {
-            self.field[0x07].displace(relative, length: 0, heading: 270, pitch: 1); 
-            flow continue
-        }
-        flow continue
-    } else {
-        // Go Up 
-        self.field[0x07].displace(relative, length: 0, heading: 90, pitch: 1); 
-        flow continue
-    }
-    //  
-    check value ( Switch == 0 ) {
-        move from::op-code, Opcode, payload: 00c0010005000e000000 {
-            Switch ++; 
-            set timer = (global::Script Time + 2); 
-            flow continue
-        }
-        flow continue
-    }
-    check value ( Switch == 1 ) {
-        playAnimation(16); 
-        self.field[0x07].displace(relative, length: 0, heading: 0, pitch: 0); 
-        turnTo(global::Global Leader.sub[0x04], animation: 0); 
-        check value ( timer <= global::Script Time ) {
-            find variable ( global::climbing? in global::edge_climber ) {
-                check value ( [~found_variable] == 0 ) {
-                    Switch ++; 
-                    flow continue
-                }
+            set global::animation mapping::animation mapping.field[0x01] = 12; 
+            set global::animation mapping::animation mapping.field[0x09] = 11; 
+            check value ( SoundDebounce::user::value == 0 ) {
+                global::Fishing_Game_Cement1::sound.play(); 
+                set SoundDebounce::user::value = 1; 
                 flow continue
             }
             flow continue
         }
-        flow continue
-    }
-    check value ( Switch == 2 ) {
-        move to::op-code, Opcode, payload: 00c0010000050008000000 {
-            global::Pigeon_Squak.play(); 
-            set Switch = 0; 
+        set Anim_State::user::value = 3; 
+        check value ( Splash timer::user::value == 9999 ) {
+            spawn actor (global::Water_Splashies::particle, at: self, facing: 0); {
+                set Splash timer::user::value = (global::Script Time::value + 0.1); 
+                set self.field[0x0e] = 3; 
+                set self.field[0x16] = 2; 
+                set reference *My Sploosh::user::particle = self; 
+                flow continue
+            }
             flow continue
         }
-        flow continue
-    }
-    flow continue
-}
-[ Behavior Freak Out Two: END ]
-
-
-[ Behavior: I am Scared and Flying ] {
-    check value ( Switch == 0 ) {
         self.field[0x07].displace(absolute, length: 0, heading: 0, pitch: 0); 
-        playAnimation(15); 
-        spawn actor (global::Feather_explosion, at: self, facing: 0); {
-            set reference *MY Feathers = self; 
-            set Feather Timer = (global::Script Time + 0.2); 
-            flow continue
-        }
-        self.displace(relative, length: (global::Global Leader.sub[0x04] + 180), heading: 0, pitch: 10); 
-        global::Pigeon_Squak.play(); 
-        Switch ++; 
-        // Modify Pigeon Sprites fro Mini game 
         flow continue
     }
-    check value ( Switch == 1 ) {
-        playAnimation(15); 
-        check value ( Feather Timer <= global::Script Time ) {
-            Switch ++; 
-            set timer = (global::Script Time + 0.5); 
-            control ( MY Feathers, requirement: strict ) {
-                set self.field[0x01] = 0; 
+    check message ( global::hit wall::message ) {
+        self.field[0x07].displace(absolute, length: 0, heading: 0, pitch: 0); 
+        flow continue
+    }
+    check message ( global::hit actor::message, sent by: global::message senders::set::actor, where: value >= 0 ) {
+        if ( *[~found] is reference to global::Marty Actor::actor ) {
+            flow continue
+        } else {
+            check value ( PrintDebounce::user::value == 0 ) {
+                print([~found], "Hitting an Actor!"); 
+                set PrintDebounce::user::value = 1; 
                 flow continue
             }
-            flow continue
-        }
-        flow continue
-    }
-    check value ( Switch == 2 ) {
-        check value ( timer >= global::Script Time ) 
-        set self.field[0x1a] = 100; 
-        self.field[0x07].displace(relative, length: Original Facing, heading: 70, pitch: 3); 
-        playAnimation(4); 
-        turnTo(Original Facing, animation: 0); 
-        move from::op-code, Opcode, payload: 00c0ffff01000a000000 
-        check value ( global::players@1 >= 100 ) {
-            check value ( timer <= global::Script Time ) {
-                MY Feathers.remove(); 
-                self.field[0x37].sub[0x04].slide(to 0, over 1, ease in global::Current Leader, ease out global::Current Leader); {
-                    self.remove(); 
+            check value ( SoundDebounce::user::value == 0 ) {
+                global::Fishing_Game_Cement1::sound.play(); 
+                set SoundDebounce::user::value = 1; 
+                flow continue
+            }
+            if ( [~found].field[0x34] == global::ID_Catchable::user::value ) {
+                // This means that the object isn't supposed to be hooked immediately - wait for circle button release 
+                flow continue
+            } else {
+                // This means that the object is supposed to react immediately 
+                set Anim_State::user::value = 3; 
+                self.field[0x07].displace(absolute, length: 0, heading: 0, pitch: 0); 
+                if ( [~found].field[0x34] == 25 ) {
+                    set reference *Coin_Ref::user::actor = [~found]; 
+                    set Control_Coin?::user::value = 1; 
+                    flow continue
+                } else {
+                    // If we have a coin, we shouldn't tell another object that the lure is grabbing it 
+                    check value ( global::LureHasAnItem::user::value == 0 ) {
+                        find variable ( global::Remote_Activated::user::value in [~found] ) {
+                            set [~found_variable] = 1; 
+                            flow continue
+                        }
+                        sendMessage(global::I_Know_Who_My_Spawner_Is::message, to: [~found], unknown: 0, value: 15); 
+                        set global::LureHasAnItem::user::value = 1; 
+                        flow continue
+                    }
                     flow continue
                 }
                 flow continue
@@ -389,7 +163,120 @@ Unresolved ops: {'move to', 'check fov', 'send message', 'move from'}
         }
         flow continue
     }
+    check value ( Control_Coin?::user::value == 1 ) {
+        control ( Coin_Ref::user::actor, requirement: strict ) {
+            teleportTo([~controlled], facing global::players::set::actor@1, direction: forward, over 0 seconds); 
+            flow continue
+        }
+        flow continue
+    }
+    if ( Anim_State::user::value == 0 ) {
+        // Idle 
+        playAnimation(1); 
+        flow continue
+    } else if ( Anim_State::user::value == 1 ) {
+        // Getting Bit 
+        playAnimation(7); 
+        flow continue
+    } else if ( Anim_State::user::value == 2 ) {
+        // In the air 
+        playAnimation(4); 
+        flow continue
+    } else {
+        // Hit the water 
+        when playAnimation(9) is done playing, do: {
+            set Anim_State::user::value = 0; 
+            flow continue
+        }
+        flow continue
+    }
+    check value ( global::controller 1::controller.field[0x01] == 0 ) {
+        My Sploosh::user::particle.remove(); 
+        set global::animation mapping::animation mapping.field[0x01] = 0; 
+        set global::animation mapping::animation mapping.field[0x09] = 8; 
+        set Anim_State::user::value = 2; 
+        set Debounce::user::value = 1; 
+        set PrintDebounce::user::value = 0; 
+        check value ( global::LureHasAnItem::user::value == 0 ) {
+            check message ( global::hit actor::message, sent by: global::message senders::set::actor, where: value >= 0 ) {
+                print([~found], "Hit Actor, LureHasAnItem equals zero"); 
+                find variable ( global::Remote_Activated::user::value in [~found] ) {
+                    set [~found_variable] = 1; 
+                    print(self, "I found it, and I set it"); 
+                    flow continue
+                }
+                sendMessage(global::I_Know_Who_My_Spawner_Is::message, to: [~found], unknown: 0, value: 15); 
+                set global::LureHasAnItem::user::value = 1; 
+                self.field[0x07].displace(absolute, length: 0, heading: 0, pitch: 0); 
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
     flow continue
 }
-[ Behavior I am Scared and Flying: END ]
+[ Behavior Startup: END ]
+
+
+[ Behavior: MoveToPlayer ] {
+    playAnimation(4); 
+    check message ( global::I_Spawned_You::message, sent by: global::message senders::set::actor, where: value <= 5 ) {
+        set reference *ObjectIAmTakingHome::user::actor = [~found]; 
+        flow continue
+    }
+    check value ( global::Cut-scene Active::value == 1 ) {
+        // RW 10/13/04 - added this to ensure that you can't double-bounce the cutscenes 
+        find variable ( global::LureDebounce::user::value in global::PenguinFishingController::actor ) {
+            set [~found_variable] = 0; 
+            flow continue
+        }
+        find variable ( global::SoundDebounce::user::value in global::PenguinFishingController::actor ) {
+            set [~found_variable] = 1; 
+            flow continue
+        }
+        set global::FishEatingBait::user::value = 0; 
+        ObjectIAmTakingHome::user::actor.reset(); 
+        self.remove(); 
+        flow end
+    }
+    move to::op-code, Opcode, payload: 0040010000040007000000 {
+        check value ( Control_Coin?::user::value == 1 ) {
+            control ( global::PenguinSegmentStarter::actor, requirement: strict ) 
+            control ( global::Marty Actor::actor, requirement: strict ) {
+                self.displace(relative, length: global::PenguinFishingController::actor.sub[0x01], heading: 0, pitch: 15); 
+                flow continue
+            }
+            control ( Coin_Ref::user::actor, requirement: strict ) {
+                teleportTo(global::Marty Actor::actor, facing global::PenguinFishingController::actor, direction: forward, over 0 seconds); 
+                set Control_Coin?::user::value = 0; 
+                flow continue
+            }
+            flow continue
+        }
+        set self.field[0x37].sub[0x04] = 0; 
+        check value ( global::controller 1::controller.field[0x01] == 1 ) 
+        find variable ( global::LureDebounce::user::value in global::PenguinFishingController::actor ) {
+            set [~found_variable] = 0; 
+            flow continue
+        }
+        find variable ( global::SoundDebounce::user::value in global::PenguinFishingController::actor ) {
+            set [~found_variable] = 1; 
+            flow continue
+        }
+        set global::FishEatingBait::user::value = 0; 
+        ObjectIAmTakingHome::user::actor.reset(); 
+        self.remove(); 
+        flow end
+    }
+    check value ( Control_Coin?::user::value == 1 ) {
+        control ( Coin_Ref::user::actor, requirement: strict ) {
+            teleportTo([~controlled], facing global::players::set::actor@1, direction: forward, over 0 seconds); 
+            flow continue
+        }
+        flow continue
+    }
+    flow continue
+}
+[ Behavior MoveToPlayer: END ]
 

@@ -1,10 +1,11 @@
 from pathlib import Path
+
 from tfbscript.binary import BinaryReader
 from tfbscript.string_table import StringTable
 
 folder = Path("example_scripts")
 
-OP_CODE = "spawn actor"
+OP_CODE = "send message"
 
 def check_occurance(file: Path):
     with open(file, "rb") as f:

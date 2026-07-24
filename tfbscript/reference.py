@@ -62,13 +62,13 @@ class Reference:
             raise ValueError("a reference is 4 bytes")
 
         raw = reader.read_u32()
-        fields = dict(
-            raw=raw,
-            index=raw >> 14,
-            member=(raw >> 8) & 0x3F,
-            scope=(raw >> 6) & 3,
-            sub=raw & 0x3F,
-        )
+        fields = {
+            "raw": raw,
+            "index": raw >> 14,
+            "member": (raw >> 8) & 0x3F,
+            "scope": (raw >> 6) & 3,
+            "sub": raw & 0x3F,
+        }
         index = fields["index"]
 
         if raw == NULL_REF:
@@ -94,9 +94,9 @@ class Reference:
             return "<null>"
 
         if self.kind == "global":
-            s = variable_global(f"global::{self.name.split('::')[0]}")
+            s = variable_global(f"global::{self.name}")
         elif self.kind == "local" and self.entry is not None:
-            s = variable(self.entry.name)
+            s = variable(self.name)
         elif self.kind == "builtin":
             s = builtin(self.name)
         else:
