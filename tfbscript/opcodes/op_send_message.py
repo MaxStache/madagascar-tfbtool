@@ -22,7 +22,7 @@ class OpSendMessage(Opcode):
         reciver_ref = reader.readRef()
         _relop = reader.skip(1)
         # Send Message uses same payload parser as check message
-        # Relop is unused here in send and discarded
+        # Relop is unused here in send and discarded in runtime (probably)
 
         value = reader.readRHS()
         return cls(

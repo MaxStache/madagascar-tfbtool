@@ -94,5 +94,76 @@ class MembershipCombiner(IntEnum):
         # assumes format is "set_a.<membership_combiner>(element_a)" or "set_a.<membership_combiner>(set_b)"
         return ("include", "remove", "intersectWith", "replaceWith", "add", "removeAll")[self.value]
 
+class AnimationMapping(IntEnum):
+    """Animation mapping for ops that play an animation."""
+
+    NO_ANIMATION = 0x00
+    ambient = 0x01
+    slowest_move = 0x02
+    slow_move = 0x03
+    fast_move = 0x04
+    jump = 0x05
+    fall = 0x06
+    youch = 0x07
+    slide = 0x08
+    attack_1 = 0x09
+    attack_2 = 0x0A
+    tumble = 0x0B
+    extra_1 = 0x0C
+    extra_2 = 0x0D
+    extra_3 = 0x0E
+    extra_4 = 0x0F
+    extra_5 = 0x10
+    extra_6 = 0x11
+    extra_7 = 0x12
+    extra_8 = 0x13
+    extra_9 = 0x14
+    extra_10 = 0x15
+    extra_11 = 0x16
+    extra_12 = 0x17
+    extra_13 = 0x18
+    extra_14 = 0x19
+    extra_15 = 0x1A
+    extra_16 = 0x1B
+    extra_17 = 0x1C
+    extra_18 = 0x1D
+    extra_19 = 0x1E
+    extra_20 = 0x1F
+    extra_21 = 0x20
+    extra_22 = 0x21
+    extra_23 = 0x22
+    extra_24 = 0x23
+    extra_25 = 0x24
+    extra_26 = 0x25
+    extra_27 = 0x26
+    extra_28 = 0x27
+    extra_29 = 0x28
+    extra_30 = 0x29
+    extra_31 = 0x2A
+    extra_32 = 0x2B
+    left_turn = 0x2C
+    right_turn = 0x2D
+    jump_land_slow = 0x2E
+    jump_land_running = 0x2F
+    jump_land_hard = 0x30
+    stop_from_full_speed = 0x31
+    stop_from_slow_speed = 0x32
+    running_180_change = 0x33
+    player_9 = 0x34
+    player_10 = 0x35
+    player_11 = 0x36
+    player_12 = 0x37
+    player_13 = 0x38
+    player_14 = 0x39
+    lean_left_slow = 0x3A
+    lean_left_medium = 0x3B
+    lean_left_fast = 0x3C
+    lean_right_slow = 0x3D
+    lean_right_medium = 0x3E
+    lean_right_fast = 0x3F
+
+    @override
+    def __str__(self) -> str:
+        return self.name.replace("_", " ")
 
 # fmt: on

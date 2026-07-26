@@ -3,37 +3,36 @@ from typing import override
 
 from tfbscript.ansi import func_call
 from tfbscript.opcodes.base import Opcode, opcode
-from tfbscript.opcodes.enums import SetDirection
+from tfbscript.opcodes.enums import AnimationMapping, SetDirection
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
 from tfbscript.rhs import Rhs
 
 
-@opcode("teleport to")
+@opcode("move to")
 @dataclass
-class OpTeleportTo(Opcode):
+class OpMoveTo(Opcode):
     target_ref: Reference = field(default_factory=Reference)
     set_direction: SetDirection = field(default=SetDirection.forward)
-    facing: Rhs = field(default_factory=Rhs)
-
-    duration: Rhs = field(default_factory=Rhs)
+    with_anim: AnimationMapping = field(default=AnimationMapping.ambient)
+    until_within: Rhs = field(default_factory=Rhs)
 
     @classmethod
     @override
-    def parse_payload(cls, reader: PayloadReader) -> "OpTeleportTo":
+    def parse_payload(cls, reader: PayloadReader) -> "OpMoveTo":
         return cls(
             target_ref=reader.readRef(),
             set_direction=SetDirection(reader.read_u8()),
-            facing=reader.readRHS(),
-            duration=reader.readRHS(),
+            with_anim=AnimationMapping(reader.read_u8()),
+            until_within=reader.readRHS(),
         )
 
     @override
     def source_line(self, inline: bool = False) -> str:
         return func_call(
-            "teleportTo",
+            "moveTo",
             str(self.target_ref),
-            f"facing {self.facing}",
-            f"direction: {self.set_direction}",
-            f"over {self.duration} seconds",
+            f"set_dir: {self.set_direction}",
+            f"animation: {self.with_anim}",
+            f"until_within: {self.until_within}",
         )

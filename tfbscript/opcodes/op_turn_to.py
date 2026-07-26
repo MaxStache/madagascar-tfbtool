@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
-
-from tfbscript.ansi import func_call, number
-from tfbscript.opcodes.base import Opcode, opcode
 from typing import override
+
+from tfbscript.ansi import func_call
+from tfbscript.opcodes.base import Opcode, opcode
+from tfbscript.opcodes.enums import AnimationMapping
 from tfbscript.payload import PayloadReader
 from tfbscript.rhs import Rhs
 
@@ -11,13 +12,13 @@ from tfbscript.rhs import Rhs
 @dataclass
 class OpTurnTo(Opcode):
     rhs: Rhs = field(default_factory=Rhs) # angle or actor reference
-    animation_idx: int = 0 # index of animation to play while turning
+    animation: AnimationMapping = field(default=AnimationMapping.ambient)
 
     @classmethod
     @override
     def parse_payload(cls, reader: PayloadReader) -> "OpTurnTo":
-        return cls(rhs=reader.readRHS(), animation_idx=reader.read_u8())
+        return cls(rhs=reader.readRHS(), animation=AnimationMapping(reader.read_u8()))
 
     @override
     def source_line(self, inline: bool = False) -> str:
-        return func_call("turnTo", str(self.rhs), f"animation: {number(self.animation_idx)}")
+        return func_call("turnTo", str(self.rhs), f"animation: {self.animation}")

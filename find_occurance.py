@@ -5,7 +5,7 @@ from tfbscript.string_table import StringTable
 
 folder = Path("example_scripts")
 
-OP_CODE = "send message"
+OP_CODE = "move from"
 
 def check_occurance(file: Path):
     with open(file, "rb") as f:

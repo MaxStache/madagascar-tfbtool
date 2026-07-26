@@ -1,5 +1,3 @@
-"""The 4-byte bit-packed variable reference used throughout opcode payloads."""
-
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
@@ -9,24 +7,17 @@ from tfbscript.string_table import StringTable, StringTableEntry
 if TYPE_CHECKING:
     from tfbscript.binary import BinaryReader
 
-# --- constants from FUN_00432f70 ------------------------------------------
-LOCAL_BASE = 0x3FC0D  # index >= this (and < BUILTIN_BASE) => script-local
-BUILTIN_BASE = 0x3FFFA  # index >= this => engine built-in object
+LOCAL_BASE = 0x3FC0D
+BUILTIN_BASE = 0x3FFFA 
 NULL_REF = 0xFFFFFFFF
 
-# index -> built-in name. Each FUN_00433140(kind) call walks backward through
-# enclosing scopes for the nearest one whose OWN category getter (vtbl+0x2c)
-# returns `kind` -- these are not fixed global sentinels, they're dynamically
-# resolved relative to where the reference appears (same mechanism as `self`).
 BUILTINS = {
-    0x3FFFF: "self",  # FUN_00433140(2)    -- confirmed: nearest enclosing actor scope
-    0x3FFFE: "[~controlled]",  # FUN_00433140(0)     -- provisional builtin(0)
-    0x3FFFD: "[~each]",  # FUN_00433140(0x65)  -- confirmed: nearest enclosing `for each`'s
-    #   current item (for_each's own category getter, FUN_0043cc70,
-    #   returns 0x65; seen in the wild assigned out of a for-each body)
-    0x3FFFC: "[~subset]",  # FUN_00433140(3)     -- provisional builtin(3)
-    0x3FFFB: "[~found]",  # FUN_00436e30()      -- provisional
-    0x3FFFA: "[~found_variable]",  # FUN_00433140(6)     -- provisional builtin(6)
+    0x3FFFF: "self",
+    0x3FFFE: "[~controlled]",
+    0x3FFFD: "[~each]",
+    0x3FFFC: "[~subset]",
+    0x3FFFB: "[~found]",
+    0x3FFFA: "[~found_variable]",
 }
 
 

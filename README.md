@@ -25,7 +25,7 @@ script.print_tree()
 
 ## Coverage
 
-### 32 / 36 Opcodes -> 4 unimplemented
+### 34 / 36 Opcodes -> 2 unimplemented
 
 - [x] comment::op-code
 - [x] print::op-code
@@ -46,8 +46,8 @@ script.print_tree()
 
 - [x] spawn actor::op-code
 - [x] teleport to::op-code
-- [ ] move to::op-code
-- [ ] move from::op-code
+- [x] move to::op-code
+- [x] move from::op-code
 - [x] displace::op-code
 - [x] turn to::op-code
 - [x] reset::op-code

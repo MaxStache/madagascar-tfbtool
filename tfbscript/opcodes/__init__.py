@@ -31,6 +31,8 @@ from tfbscript.opcodes.op_for_each import OpForEach
 from tfbscript.opcodes.op_if_else import OpIfElse
 from tfbscript.opcodes.op_inc_value import OpIncValue
 from tfbscript.opcodes.op_loop_value import OpLoopValue
+from tfbscript.opcodes.op_move_from import OpMoveFrom
+from tfbscript.opcodes.op_move_to import OpMoveTo
 from tfbscript.opcodes.op_play_animation import OpPlayAnimation
 from tfbscript.opcodes.op_play_sound import OpPlaySound
 from tfbscript.opcodes.op_prescript import OpPrescript
@@ -72,6 +74,8 @@ __all__ = [
     "OpIfElse",
     "OpIncValue",
     "OpLoopValue",
+    "OpMoveFrom",
+    "OpMoveTo",
     "OpPlayAnimation",
     "OpPlaySound",
     "OpPrescript",

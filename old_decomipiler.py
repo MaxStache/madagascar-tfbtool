@@ -1,13 +1,12 @@
 # type: ignore
 
+import sys
 from enum import IntEnum
 
 from formats.lib.parser import Parser
 from formats.lib.sytax_hilighting import Color, color_text
 from formats.lib.tfb_reference import Reference, parse_reference
 from formats.lib.tfb_rhs import readRHS, rhs_to_string
-
-import sys
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -815,10 +814,9 @@ def parse_tfbscirpt_file(filename):
         for instr in instructions:
             if instr["opcode"] == 0xFF:
                 op_names.append(
-                    "[%s]"
-                    % SECTION_NAMES.get(
-                        section_index, "UNKNOWN SECTION %d" % section_index
-                    )
+                    "[{}]".format(SECTION_NAMES.get(
+                        section_index, "UNKNOWN SECTION %d" % section_index  # noqa: UP031
+                    ))
                 )
                 section_index += 1
             else:
