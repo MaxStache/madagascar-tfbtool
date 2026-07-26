@@ -38,6 +38,13 @@ script = ScriptFile.from_path("example_scripts/Teleporter.ai")
 script.print_tree()
 ```
 
+## Thanks
+
+A HUGE thanks to the Skylanders reverse engineering Discord server and its members, especially maff, bone and nefarioustechsupport.
+
+Another GIGANTIC ENORMOUS thanks to all the contributors to igRewrite8, and to [this fork](https://github.com/bonesinmysoup/igRewrite8/tree/trapteam-but-real).
+
+
 ## Opcode coverage
 
 **34 / 36 opcodes implemented** - 2 remaining.
@@ -88,9 +95,3 @@ script.print_tree()
 Contributions as issues, pull requests, or any other form are welcome and wanted.
 
 Please run `pytest` after changes to verify against all scripts in `example_scripts/`, and `pyright` for type checking.
-
-## Thanks
-
-A HUGE thanks to the Skylanders reverse engineering Discord server and its members, especially maff, bone and nefarioustechsupport.
-
-Another GIGANTIC ENORMOUS thanks to all the contributors to igRewrite8, and to [this fork](https://github.com/bonesinmysoup/igRewrite8/tree/trapteam-but-real).
