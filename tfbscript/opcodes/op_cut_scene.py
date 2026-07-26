@@ -6,7 +6,7 @@ from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import CutsceneCommand
 from tfbscript.payload import PayloadReader
 
-# TODO: TODO: TODO: Verify
+# TODO: Verify
 
 @opcode("cut-scene")
 @dataclass

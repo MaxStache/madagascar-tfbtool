@@ -196,7 +196,7 @@ def quoted_string(text: str) -> str:
     return string(f'"{text}"')
 
 
-def func_call(func_name: str, *args: str) -> str:
+def func_call(func_name: str, *args: str, add_semicolon=True) -> str:
     """Format a function call with syntax highlighting."""
     args_str = ", ".join(args)
-    return f"{method(func_name)}{parentheses('(')}{args_str}{parentheses(')')};"
+    return f"{method(func_name)}{parentheses('(')}{args_str}{parentheses(')')}{';' if add_semicolon else ''}"

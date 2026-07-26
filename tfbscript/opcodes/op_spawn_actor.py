@@ -7,6 +7,7 @@ from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
 from tfbscript.rhs import Rhs
 
+# TODO: RESEARCH REMAINING BYTE PURPOSE
 
 @opcode("spawn actor")
 @dataclass

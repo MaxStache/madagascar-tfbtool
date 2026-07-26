@@ -27,9 +27,14 @@ class OpMoveFrom(Opcode):
 
     @override
     def source_line(self, inline: bool = False) -> str:
-        return func_call(
+        base = func_call(
             "moveFrom",
             str(self.target_ref),
             f"animation: {self.with_anim}",
             f"until_beyond: {self.until_beyond}",
+            add_semicolon=not self.children,
         )
+
+        if self.children:
+            return f"when {base} is done, do:"
+        return base
