@@ -51,6 +51,7 @@ from tfbscript.opcodes.op_startup import OpStartup
 from tfbscript.opcodes.op_stop_sound import OpStopSound
 from tfbscript.opcodes.op_teleport_to import OpTeleportTo
 from tfbscript.opcodes.op_turn_to import OpTurnTo
+from tfbscript.opcodes.op_check_fov import OpCheckFOV
 
 __all__ = [
     "OPCODE_REGISTRY",
@@ -97,4 +98,5 @@ __all__ = [
     "Opcode",
     "ParserContext",
     "RelOp",
+    "OpCheckFOV",
 ]

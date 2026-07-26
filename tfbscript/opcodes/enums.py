@@ -166,4 +166,15 @@ class AnimationMapping(IntEnum):
     def __str__(self) -> str:
         return self.name.replace("_", " ")
 
+class CheckFOVMode(IntEnum):
+    """Mode for OpCheckFOV."""
+
+    ignore_obstructions = 0
+
+    consider_obstructions = 1
+
+    @override
+    def __str__(self) -> str:
+        return ("ignore obstructions", "consider obstructions")[self.value]
+
 # fmt: on

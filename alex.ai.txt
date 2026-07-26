@@ -1,0 +1,2240 @@
+
+[ PRESCRIPT ] {
+
+    [ STARTUP ] {
+        check value ( global::Design Build::value == 1 ) {
+            set global::ZoosterHealthContainers::user::value = 7; 
+            flow continue
+        }
+        print(self, "---------------------> I'm alive!"); 
+        // Common to All Players 
+        set self.field[0x34] = global::ID_Player::user::value; 
+        set self.field[0x35] = 1; 
+        var Clobber Delay::user::value : value; 
+        set Clobber Delay::user::value = 92; 
+        var ScaledVelocity::user::value : value; 
+        var LastCheckpoint::user::actor : actor; 
+        set reference *LastCheckpoint::user::actor = self; 
+        var LastCheckpointFacing::user::value : value; 
+        set LastCheckpointFacing::user::value = self.sub[0x01]; 
+        // Normal parameters 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            var NORMAL_GROUND_TOP_SPEED::user::value : value; 
+            set NORMAL_GROUND_TOP_SPEED::user::value = self.field[0x0e]; 
+            flow continue
+        }
+        // Roaring variables and parameters 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            var ROAR_DELAY::user::value : value; 
+            set ROAR_DELAY::user::value = 0.6; 
+            set ROAR_DELAY::user::value = 0.5; 
+            var RUNNING_ROAR_DELAY::user::value : value; 
+            set RUNNING_ROAR_DELAY::user::value = 0.867; 
+            set RUNNING_ROAR_DELAY::user::value = 0.5; 
+            // DG - Effect variables 
+            var roar_particle_2::user::particle : particle; 
+            var roar_particle_1::user::particle : particle; 
+            var roar_NULL_PARTICLE::user::particle : particle; 
+            var roar math scratch::user::angle : angle; 
+            var roar speed scratch::user::value : value; 
+            var roar effect switch::user::value : value; 
+            set roar speed scratch::user::value = 50; 
+            var roar shout effect::user::actor : actor; 
+            var roar effect timer::user::value : value; 
+            // I'm using this null particle to stop Alex from hanging on to effects he doesn't need 
+            // Utilizing landing_dust since it's a really cheap particle 
+            set reference *roar_NULL_PARTICLE::user::particle = global::Landing_Dust::particle; 
+            flow continue
+        }
+        // Dash (speed power-up) variables and parameters 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            var dashing?::user::value : value; 
+            var timer_dash::user::value : value; 
+            var DASH_DURATION::user::value : value; 
+            set DASH_DURATION::user::value = 3.0; 
+            var DASH_SPEED_BONUS::user::value : value; 
+            set DASH_SPEED_BONUS::user::value = 50; 
+            flow continue
+        }
+        // Claw Attack (and pounce) variables and parameters 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            set global::Alex_Claws::actor.field[0x37].sub[0x04] = 0; 
+            // PR says... Unless there's a really good reason, only targets should be aware of injury... 
+            // And this array below seems too specific... 
+            // DG - Removed any specific references. All Alex (via the claws) does is set a couple variables 
+            var clawed?::user::value : value; 
+            var claw swipe delta::user::value : value; 
+            var my claw swipe::user::actor : actor; 
+            var last claw target::user::actor : actor; 
+            var claw swipe direction::user::value : value; 
+            var claw swipe timer::user::value : value; 
+            var claw swipe phase::user::value : value; 
+            var negative eighty::user::angle : angle; 
+            var downward angle math::user::angle : angle; 
+            var air claw speed math::user::value : value; 
+            var claw debouncer::user::value : value; 
+            var clawing status?::user::value : value; 
+            var claw timer::user::value : value; 
+            var claw continuation timer::user::value : value; 
+            var air claw attack on::user::value : value; 
+            set negative eighty::user::angle = -80; 
+            var downward animation::user::value : value; 
+            var air claw auto-aim?::user::value : value; 
+            var clawing ground decel::user::value : value; 
+            var remembered jump vel::user::value : value; 
+            var remembered ground decel::user::value : value; 
+            var remembered ground speed::user::value : value; 
+            set remembered ground speed::user::value = self.field[0x0e]; 
+            set remembered jump vel::user::value = self.field[0x18]; 
+            set remembered ground decel::user::value = self.field[0x11]; 
+            set clawing ground decel::user::value = 220; 
+            // END CLAW STUFF 
+            flow continue
+        }
+        // Super Roar variables and parameters 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            var prohibit_camera_modification::user::value : value; 
+            var super roar phase::user::value : value; 
+            var super roar remembered cam fov::user::value : value; 
+            var super roar remembered cam look from v-offset::user::value : value; 
+            var super roar remembered cam look at v-offset::user::value : value; 
+            var super roar particles::set::particle : particle; 
+            var super roar particle on::user::value : value; 
+            var super roar camera switch::user::value : value; 
+            var super roar camera random amount::user::value : value; 
+            var super roar timer::user::value : value; 
+            var super roar tick timer::user::value : value; 
+            set super roar tick timer::user::value = 100; 
+            var super roar camera::user::camera : camera; 
+            flow continue
+        }
+        // Mango-Throwing variables and parameters 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            var timer_mango::user::value : value; 
+            var state_mango::user::value : value; 
+            var my_mango::user::actor : actor; 
+            var my_mango_target::user::actor : actor; 
+            var MANGO_RELEASE_DELAY::user::value : value; 
+            set MANGO_RELEASE_DELAY::user::value = 0.38; 
+            var MANGO_PITCH::user::value : value; 
+            set MANGO_PITCH::user::value = 6.0; 
+            var MANGO_VELOCITY::user::value : value; 
+            set MANGO_VELOCITY::user::value = 160.0; 
+            check value ( alex_prohibit_mangos::user::value == 0 ) {
+                set global::MangoCounterNumber::sprite.field[0x07] = 1; 
+                set global::MangoCounterArt::sprite.field[0x07] = 1; 
+                flow continue
+            }
+            flow continue
+        }
+        // Ability disabling flags (1=ability is disabled) --- 
+        var alex_prohibit_roar::user::value : value; 
+        var alex_prohibit_double_jump::user::value : value; 
+        var alex_prohibit_mangos::user::value : value; 
+        var alex_prohibit_claws::user::value : value; 
+        // Hurt sound effects 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            var hurt_sounds::set::sound : sound; 
+            hurt_sounds::set::sound.include(global::Hurt_alex_1::sound); 
+            hurt_sounds::set::sound.include(global::Hurt_alex_2::sound); 
+            hurt_sounds::set::sound.include(global::Hurt_alex_3::sound); 
+            hurt_sounds::set::sound.include(global::Hurt_alex_4::sound); 
+            hurt_sounds::set::sound.include(global::Hurt_alex_5::sound); 
+            flow continue
+        }
+        // DEBUGGING SETTINGS 
+        var COLLISION_WITH_ACTORS::user::value : value; 
+        var CHEATS_ACTIVE::user::value : value; 
+        var temp::user::value : value; 
+        var timer_darkness::user::value : value; 
+        // (below) Health-tracking variables 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            var Hurt_Index_New::user::value : value; 
+            var Hurt_Index_Old::user::value : value; 
+            var timer_post_hurt_immunity::user::value : value; 
+            var timer_hurt_youch::user::value : value; 
+            var hurt_alpha_flicker::user::value : value; 
+            var timer_hurt_flicker::user::value : value; 
+            var guy_who_hurt_me::user::actor : actor; 
+            var state_dying::user::value : value; 
+            var dying?::user::value : value; 
+            flow continue
+        }
+        // Double-jump variables and parameters 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            var DOUBLE_JUMP_DISPLACE_AMOUNT::user::value : value; 
+            set DOUBLE_JUMP_DISPLACE_AMOUNT::user::value = 54; 
+            var double-jumping?::user::value : value; 
+            var used_double_jump_this_jump?::user::value : value; 
+            flow continue
+        }
+        var player_in_air::user::value : value; 
+        var debounce_x_button::user::value : value; 
+        var player_jumped::user::value : value; 
+        set COLLISION_WITH_ACTORS::user::value = 1; 
+        set CHEATS_ACTIVE::user::value = 1; 
+        var debounce_triangle_button::user::value : value; 
+        var debounce_square_button::user::value : value; 
+        var interrupted?::user::value : value; 
+        // Zoovenir stuff 
+        if ( find variable ( global::alex_actor_to_be_clothed::user::actor in global::Zoovenirs_Master::actor ) ) {
+            set reference *[~found_variable] = self; 
+            flow continue
+        } else {
+            print(self, "Could NOT set reference in ZOOVENIR master."); 
+            flow continue
+        }
+        //  
+        set debounce_square_button::user::value = 1; 
+        set debounce_triangle_button::user::value = 1; 
+        set debounce_x_button::user::value = 1; 
+        //  
+        // Actors in this set won't be reset upon my death. 
+        var don't_reset_these_actors::set::actor : actor; 
+        don't_reset_these_actors::set::actor.include(global::Error_Master::actor); 
+        don't_reset_these_actors::set::actor.include(global::SaveGame_Master::actor); 
+        flow continue
+    }
+    [ STARTUP: END ]
+
+
+    [ SHUTDOWN ] 
+    [ SHUTDOWN: END ]
+
+    // Alex handles his interrupts differently, because his script is OLD and doesn't use behaviors for special moves. 
+    // DG - I need certain things to happen regardless of the interrupted? value. I'll use this >0 to allow that 
+    check value ( interrupted?::user::value > 0 ) {
+        // DG - This is not the way it's being done in Marty's script, but I'll leave it like this for now 
+        // DG - Restore my variables if I was in a special behavior 
+        check reference ( *global::behavior::user::behavior is reference to Claw attacks::behavior ) {
+            check value ( self.field[0x01] == self.field[0x01] ) {
+                set clawing status?::user::value = 0; 
+                set claw swipe phase::user::value = 0; 
+                set claw debouncer::user::value = 1; 
+                set claw swipe phase::user::value = 0; 
+                set air claw attack on::user::value = 0; 
+                if ( *my claw swipe::user::actor is reference to self ) {
+                    flow continue
+                } else {
+                    my claw swipe::user::actor.remove(); 
+                    set reference *my claw swipe::user::actor = self; 
+                    flow continue
+                }
+                set reference *last claw target::user::actor = self; 
+                // In case the player is in a clawing state where his parameters are altered 
+                set self.field[0x11] = remembered ground decel::user::value; 
+                set self.field[0x0e] = remembered ground speed::user::value; 
+                set self.field[0x18] = remembered jump vel::user::value; 
+                setBehavior(Leader::behavior); 
+                playAnimation(ambient); 
+                flow continue
+            }
+            flow continue
+        }
+        check reference ( *global::behavior::user::behavior is reference to Super Roar::behavior ) {
+            set super roar camera::user::camera.field[0x03] = super roar remembered cam look from v-offset::user::value; 
+            set super roar camera::user::camera.field[0x08] = super roar remembered cam look at v-offset::user::value; 
+            set super roar camera::user::camera.field[0x0b] = super roar remembered cam fov::user::value; 
+            for each ( super roar particles::set::particle ) {
+                [~each].remove(); 
+                super roar particles::set::particle.remove([~each]); 
+                flow continue
+            }
+            set global::MOTION BLUR::MOTION BLUR.field[0x01] = 0; 
+            set global::Alex_SuperRoaring::user::value = 0; 
+            set global::Power_AlexSuperRoar_Counter::user::value = 0; 
+            // DG - In case the cam switched... let go of my reference 
+            set reference *super roar camera::user::camera = global::camera::user::camera; 
+            setBehavior(Leader::behavior); 
+            playAnimation(ambient); 
+            flow continue
+        }
+        check reference ( *global::behavior::user::behavior is reference to Throw Mango::behavior ) {
+            if ( *my_mango::user::actor is reference to self ) {
+                flow continue
+            } else {
+                my_mango::user::actor.remove(); 
+                set reference *my_mango::user::actor = self; 
+                set reference *my_mango_target::user::actor = self; 
+                flow continue
+            }
+            setBehavior(Leader::behavior); 
+            playAnimation(ambient); 
+            flow continue
+        }
+        if ( interrupted?::user::value == 1 ) {
+            print(global::behavior::user::behavior, ""); 
+            set interrupted?::user::value = 0; 
+            check reference ( *global::behavior::user::behavior is reference to Leader::behavior ) {
+                // Roar effect removals 
+                check value ( self.field[0x01] == self.field[0x01] ) {
+                    set roar effect switch::user::value = 10; 
+                    if ( *roar_particle_1::user::particle is reference to roar_NULL_PARTICLE::user::particle ) {
+                        flow continue
+                    } else {
+                        roar_particle_1::user::particle.remove(); 
+                        set reference *roar_particle_1::user::particle = roar_NULL_PARTICLE::user::particle; 
+                        flow continue
+                    }
+                    if ( *roar_particle_2::user::particle is reference to roar_NULL_PARTICLE::user::particle ) {
+                        flow continue
+                    } else {
+                        roar_particle_2::user::particle.remove(); 
+                        set reference *roar_particle_2::user::particle = roar_NULL_PARTICLE::user::particle; 
+                        flow continue
+                    }
+                    if ( *roar shout effect::user::actor is reference to self ) {
+                        flow continue
+                    } else {
+                        roar shout effect::user::actor.remove(); 
+                        set reference *roar shout effect::user::actor = self; 
+                        flow continue
+                    }
+                    flow continue
+                }
+                check value ( global::AlexRoar::user::value != 0 ) {
+                    print(self, "Restored Roar animation mapping after Interrupt."); 
+                    set global::AlexRoar::user::value = 0; 
+                    set global::animation mapping::animation mapping.field[0x03] = 2; 
+                    set global::animation mapping::animation mapping.field[0x02] = 1; 
+                    set global::animation mapping::animation mapping.field[0x04] = 3; 
+                    set global::animation mapping::animation mapping.field[0x01] = 0; 
+                    playAnimation(ambient); 
+                    flow continue
+                }
+                check value ( self.field[0x01] == self.field[0x01] ) {
+                    self.field[0x07].displace(absolute, length: 0, heading: 0, pitch: 0); 
+                    self.displace(relative, length: self.sub[0x01], heading: 270, pitch: self.field[0x08]); 
+                    set player_jumped::user::value = 0; 
+                    flow continue
+                }
+                flow continue
+            }
+            check value ( double-jumping?::user::value != 0 ) {
+                set player_in_air::user::value = 0; 
+                set double-jumping?::user::value = 0; 
+                set global::animation mapping::animation mapping.field[0x05] = 4; 
+                flow continue
+            }
+            flow continue
+        } else {
+            check value ( interrupted?::user::value == 2 ) {
+                print(global::behavior::user::behavior, ""); 
+                set interrupted?::user::value = 0; 
+                check reference ( *global::behavior::user::behavior is reference to Leader::behavior ) {
+                    // Roar effect removals 
+                    check value ( self.field[0x01] == self.field[0x01] ) {
+                        set roar effect switch::user::value = 10; 
+                        if ( *roar_particle_1::user::particle is reference to roar_NULL_PARTICLE::user::particle ) {
+                            flow continue
+                        } else {
+                            roar_particle_1::user::particle.remove(); 
+                            set reference *roar_particle_1::user::particle = roar_NULL_PARTICLE::user::particle; 
+                            flow continue
+                        }
+                        if ( *roar_particle_2::user::particle is reference to roar_NULL_PARTICLE::user::particle ) {
+                            flow continue
+                        } else {
+                            roar_particle_2::user::particle.remove(); 
+                            set reference *roar_particle_2::user::particle = roar_NULL_PARTICLE::user::particle; 
+                            flow continue
+                        }
+                        if ( *roar shout effect::user::actor is reference to self ) {
+                            flow continue
+                        } else {
+                            roar shout effect::user::actor.remove(); 
+                            set reference *roar shout effect::user::actor = self; 
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    check value ( global::AlexRoar::user::value != 0 ) {
+                        print(self, "Restored Roar animation mapping after Interrupt."); 
+                        set global::AlexRoar::user::value = 0; 
+                        set global::animation mapping::animation mapping.field[0x03] = 2; 
+                        set global::animation mapping::animation mapping.field[0x02] = 1; 
+                        set global::animation mapping::animation mapping.field[0x04] = 3; 
+                        set global::animation mapping::animation mapping.field[0x01] = 0; 
+                        playAnimation(ambient); 
+                        flow continue
+                    }
+                    check value ( double-jumping?::user::value != 0 ) {
+                        print(self, "interrupt = 2!"); 
+                        set player_in_air::user::value = 0; 
+                        set double-jumping?::user::value = 0; 
+                        set global::animation mapping::animation mapping.field[0x05] = 4; 
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
+    // (below) maintain 'player_jumped' and 'player_in_air' variables' 
+    check value ( self.field[0x01] == self.field[0x01] ) {
+        check message ( global::jump started::message ) {
+            set player_jumped::user::value = 1; 
+            set debounce_x_button::user::value = 1; 
+            global::generic_jump::sound.play(); 
+            flow continue
+        }
+        if ( self.field[0x08] > 0 ) {
+            check value ( player_in_air::user::value == 0 ) {
+                set player_in_air::user::value = 1; 
+                set jump_frame_counter::user::value = 0; 
+                flow continue
+            }
+            flow continue
+        } else {
+            check value ( player_in_air::user::value == 1 ) {
+                set player_in_air::user::value = 0; 
+                global::generic_land::sound.play(); 
+                set used_double_jump_this_jump?::user::value = 0; 
+                set player_jumped::user::value = 0; 
+                set double-jumping?::user::value = 0; 
+                set jump_frame_counter::user::value = 0; 
+                flow continue
+            }
+            flow continue
+        }
+        check value ( player_jumped::user::value == 1 ) {
+            var jump_frame_counter::user::value : value; 
+            jump_frame_counter::user::value ++; 
+            flow continue
+        }
+        check value ( global::controller 1::controller.field[0x03] == 0 ) {
+            set debounce_x_button::user::value = 0; 
+            flow continue
+        }
+        flow continue
+    }
+    check value ( global::health_alex::user::value > 0 ) {
+        // Respond to a new Hurt 
+        // (at Hurt value >= 100 means that it is undeniable -- like a fall to death.) 
+        // NOTE: The player might be in an unusual state, like in a Crawl Box.  What should we do in this case? 
+        check value ( Hurt_Index_New::user::value > 0 ) {
+            print(self, "Player got hit by something that could hurt him..."); 
+            set temp::user::value = 0; 
+            if ( Hurt_Index_Old::user::value > 0 ) {
+                print(self, "...but Player is still reacting to an earlier Hurt..."); 
+                if ( Hurt_Index_New::user::value >= 100 ) {
+                    print(self, "...BUT...the new Hurt effect is UNDENIABLE!"); 
+                    set temp::user::value = 1; 
+                    flow continue
+                } else {
+                    print(self, "...and so, is immune to a hurt of this type."); 
+                    set Hurt_Index_New::user::value = 0; 
+                    flow continue
+                }
+                flow continue
+            } else {
+                // DG - Put this line in to make Alex hurt-immune while charging up for his super roar 
+                if ( *global::behavior::user::behavior is reference to Super Roar::behavior ) {
+                    print(self, "... but player is SUPER ROARING"); 
+                    set Hurt_Index_New::user::value = 0; 
+                    flow continue
+                } else {
+                    print(self, "...and Player is available to be hurt."); 
+                    set temp::user::value = 1; 
+                    flow continue
+                }
+                flow continue
+            }
+            check value ( temp::user::value == 1 ) {
+                // So we are FINALLY gonna affect the player 
+                // It is possible that the player is in some kind of special mode, like crawling or coptering, etc. 
+                // so we need to restore the actor to a vanilla state. 
+                // (below) Restore normal movement characteristics, animations and extents 
+                check value ( self.field[0x01] == self.field[0x01] ) {
+                    set global::animation mapping::animation mapping.field[0x01] = 0; 
+                    set global::animation mapping::animation mapping.field[0x02] = 1; 
+                    set global::animation mapping::animation mapping.field[0x03] = 2; 
+                    set global::animation mapping::animation mapping.field[0x04] = 3; 
+                    set global::animation mapping::animation mapping.field[0x05] = 4; 
+                    set global::animation mapping::animation mapping.field[0x06] = 5; 
+                    set global::animation mapping::animation mapping.field[0x07] = 6; 
+                    set global::animation mapping::animation mapping.field[0x08] = 7; 
+                    set global::animation mapping::animation mapping.field[0x09] = 8; 
+                    set global::animation mapping::animation mapping.field[0x0a] = 9; 
+                    set global::animation mapping::animation mapping.field[0x0b] = 10; 
+                    set double-jumping?::user::value = 0; 
+                    set dashing?::user::value = 0; 
+                    flow continue
+                }
+                // We need to restore claw-based variables too 
+                check value ( self.field[0x01] == self.field[0x01] ) {
+                    set clawing status?::user::value = 0; 
+                    set claw swipe phase::user::value = 0; 
+                    set claw debouncer::user::value = 1; 
+                    set claw swipe phase::user::value = 0; 
+                    set air claw attack on::user::value = 0; 
+                    if ( *my claw swipe::user::actor is reference to self ) {
+                        flow continue
+                    } else {
+                        my claw swipe::user::actor.remove(); 
+                        set reference *my claw swipe::user::actor = self; 
+                        flow continue
+                    }
+                    set reference *last claw target::user::actor = self; 
+                    // In case the player is in a clawing state where his parameters are altered 
+                    set self.field[0x11] = remembered ground decel::user::value; 
+                    set self.field[0x0e] = remembered ground speed::user::value; 
+                    set self.field[0x18] = remembered jump vel::user::value; 
+                    flow continue
+                }
+                // I also might miss settings on some roar effects which need to be restored 
+                check value ( self.field[0x01] == self.field[0x01] ) {
+                    set roar_particle_1::user::particle.field[0x01] = 0; 
+                    set roar_particle_2::user::particle.field[0x01] = 0; 
+                    // I'll let some of the little persistant effects float around and remove them in a bit 
+                    set roar effect switch::user::value = 4; 
+                    set roar effect timer::user::value = (global::Script Time::value + 0.6); 
+                    flow continue
+                }
+                // DG - If I have a mango in my hand, I better damn well get rid of it! 
+                if ( *my_mango::user::actor is reference to self ) {
+                    flow continue
+                } else {
+                    my_mango::user::actor.remove(); 
+                    set reference *my_mango::user::actor = self; 
+                    set reference *my_mango_target::user::actor = self; 
+                    flow continue
+                }
+                // (below) Hurt-specific effects follow... 
+                // Hurt #1 is a simple 1 hit point hurt, which knocks the player back a ways. 
+                check value ( Hurt_Index_New::user::value == 1 ) {
+                    spawn actor (global::rumble::rumble, at: self, facing: 0); {
+                        set self.field[0x01] = 50; 
+                        set self.field[0x03] = 0.25; 
+                        flow continue
+                    }
+                    setBehavior(Hurt Simple::behavior); 
+                    global::health_alex::user::value --; 
+                    set Hurt_Index_Old::user::value = Hurt_Index_New::user::value; 
+                    set Hurt_Index_New::user::value = 0; 
+                    set timer_hurt_youch::user::value = (global::Script Time::value + 0.2); 
+                    set timer_post_hurt_immunity::user::value = (global::Script Time::value + 1.5); 
+                    self.field[0x07].displace(absolute, length: self.sub[0x01], heading: 0, pitch: 0); 
+                    self.field[0x07].displace(relative, length: (guy_who_hurt_me::user::actor.sub[0x04] + 180), heading: 45, pitch: 45); 
+                    playAnimation(jump); 
+                    global:: ALL ::sound.stop(); 
+                    hurt_sounds::set::sound@3.play(); 
+                    flow continue
+                }
+                // Hurt #2 is a simple 1 hit point hurt, which knocks the player up a little, but NOT back. 
+                check value ( Hurt_Index_New::user::value == 2 ) {
+                    spawn actor (global::rumble::rumble, at: self, facing: 0); {
+                        set self.field[0x01] = 50; 
+                        set self.field[0x03] = 0.25; 
+                        flow continue
+                    }
+                    setBehavior(Hurt Simple::behavior); 
+                    global::health_alex::user::value --; 
+                    set Hurt_Index_Old::user::value = Hurt_Index_New::user::value; 
+                    set Hurt_Index_New::user::value = 0; 
+                    set timer_hurt_youch::user::value = (global::Script Time::value + 0.2); 
+                    set timer_post_hurt_immunity::user::value = (global::Script Time::value + 1.5); 
+                    self.field[0x07].displace(absolute, length: self.sub[0x01], heading: 0, pitch: 0); 
+                    self.field[0x07].displace(relative, length: (guy_who_hurt_me::user::actor.sub[0x04] + 180), heading: 90, pitch: 30); 
+                    playAnimation(jump); 
+                    global:: ALL ::sound.stop(); 
+                    hurt_sounds::set::sound@3.play(); 
+                    flow continue
+                }
+                // Hurt #3 does NO damage, it just knocks the player back a ways. 
+                check value ( Hurt_Index_New::user::value == 3 ) {
+                    spawn actor (global::rumble::rumble, at: self, facing: 0); {
+                        set self.field[0x01] = 50; 
+                        set self.field[0x03] = 0.25; 
+                        flow continue
+                    }
+                    setBehavior(Hurt Simple::behavior); 
+                    set Hurt_Index_Old::user::value = 0; 
+                    set Hurt_Index_New::user::value = 0; 
+                    set timer_hurt_youch::user::value = (global::Script Time::value + 0.2); 
+                    set timer_post_hurt_immunity::user::value = (global::Script Time::value + 1.5); 
+                    self.field[0x07].displace(absolute, length: self.sub[0x01], heading: 0, pitch: 0); 
+                    self.field[0x07].displace(relative, length: (guy_who_hurt_me::user::actor.sub[0x04] + 180), heading: 45, pitch: 45); 
+                    playAnimation(jump); 
+                    flow continue
+                }
+                // Hurt #4 does 1 point damage, and does not move the player at all 
+                check value ( Hurt_Index_New::user::value == 4 ) {
+                    spawn actor (global::rumble::rumble, at: self, facing: 0); {
+                        set self.field[0x01] = 50; 
+                        set self.field[0x03] = 0.25; 
+                        flow continue
+                    }
+                    setBehavior(Hurt Simple::behavior); 
+                    global::health_alex::user::value --; 
+                    set Hurt_Index_Old::user::value = Hurt_Index_New::user::value; 
+                    set Hurt_Index_New::user::value = 0; 
+                    set timer_hurt_youch::user::value = (global::Script Time::value + 0.2); 
+                    set timer_post_hurt_immunity::user::value = (global::Script Time::value + 1.5); 
+                    playAnimation(jump); 
+                    global:: ALL ::sound.stop(); 
+                    hurt_sounds::set::sound@3.play(); 
+                    flow continue
+                }
+                // Hurt #101 is an instant death Hurt effect 
+                check value ( Hurt_Index_New::user::value == 101 ) {
+                    setBehavior(Fade In-Out to checkpoint::behavior); 
+                    use camera::op-code, Opcode, payload: 000005000000000000010000003f 
+                    global::health_alex::user::value --; 
+                    set dying?::user::value = 1; 
+                    set Hurt_Index_Old::user::value = Hurt_Index_New::user::value; 
+                    set Hurt_Index_New::user::value = 0; 
+                    set timer_hurt_youch::user::value = 0; 
+                    set self.field[0x37].sub[0x04] = 255; 
+                    set self.field[0x31] = 0; 
+                    self.field[0x07].displace(absolute, length: self.sub[0x01], heading: 0, pitch: 0); 
+                    flow continue
+                }
+                // Hurt #102 is an instant death Hurt effect, which presumes the screen is already black. 
+                check value ( Hurt_Index_New::user::value == 102 ) {
+                    setBehavior(wait in darkness::behavior); 
+                    use camera::op-code, Opcode, payload: 000005000000000000010000003f 
+                    global::health_alex::user::value --; 
+                    set dying?::user::value = 1; 
+                    set Hurt_Index_Old::user::value = Hurt_Index_New::user::value; 
+                    set Hurt_Index_New::user::value = 0; 
+                    set timer_hurt_youch::user::value = 0; 
+                    set self.field[0x37].sub[0x04] = 255; 
+                    set self.field[0x31] = 0; 
+                    set timer_darkness::user::value = 0; 
+                    flow continue
+                }
+                // Hurt #103 is an instant death Hurt effect, which presumes the screen is already black. 
+                // the main difference between 102 and 103 is that 103 does not reset all sprites and actors 
+                // this hurt type is only used for ALEX in the FINAL BATTLE 
+                check value ( Hurt_Index_New::user::value == 103 ) {
+                    setBehavior(wait in darkness-special for Final Battle hurt type 103::behavior); 
+                    use camera::op-code, Opcode, payload: 000005000000000000010000003f 
+                    global::health_alex::user::value --; 
+                    set dying?::user::value = 1; 
+                    set Hurt_Index_Old::user::value = Hurt_Index_New::user::value; 
+                    set Hurt_Index_New::user::value = 0; 
+                    set timer_hurt_youch::user::value = 0; 
+                    set self.field[0x37].sub[0x04] = 255; 
+                    set self.field[0x31] = 0; 
+                    set timer_darkness::user::value = 0; 
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        // Manage a Hurt that's active 
+        check value ( Hurt_Index_Old::user::value > 0 ) {
+            // Don't do the normal processing for undeniable hurts 
+            check value ( Hurt_Index_Old::user::value < 100 ) {
+                print(guy_who_hurt_me::user::actor, ""); 
+                if ( global::Script Time::value >= timer_post_hurt_immunity::user::value ) {
+                    print(self, "Hurt immunity DONE."); 
+                    set Hurt_Index_Old::user::value = 0; 
+                    set self.field[0x37] = Color(128, 128, 128, 255); 
+                    set self.field[0x31] = 0; 
+                    flow continue
+                } else {
+                    check value ( global::Script Time::value > timer_hurt_flicker::user::value ) {
+                        set self.field[0x31] = 1; 
+                        if ( hurt_alpha_flicker::user::value == 0 ) {
+                            set self.field[0x37] = Color(160, 96, 96, 255); 
+                            set hurt_alpha_flicker::user::value = 1; 
+                            flow continue
+                        } else {
+                            set self.field[0x37] = Color(96, 96, 96, 255); 
+                            set hurt_alpha_flicker::user::value = 0; 
+                            flow continue
+                        }
+                        set timer_hurt_flicker::user::value = (global::Script Time::value + 0.04); 
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        // Manage collision with other actors 
+        check reference ( *global::Global Leader::user::actor is reference to self ) {
+            check value ( COLLISION_WITH_ACTORS::user::value == 1 ) {
+                // Handle collisions with other actors 
+                check value ( global::Clobbered Counter::user::value == 0 ) {
+                    for each ( global::message senders::set::actor ) {
+                        check message ( global::hit actor::message, sent by: [~each], where: value >= 0 ) {
+                            check value ( [~found].field[0x34] == global::ID_Vehicle::user::value ) {
+                                setBehavior(Clobbered::behavior); 
+                                teleportTo(self, facing self.field[0x06], direction: forward, over 0 seconds); 
+                                global::Smash::sound.play(); 
+                                set global::Clobbered Counter::user::value = 1; 
+                                global::health_alex::user::value --; 
+                                flow continue
+                            }
+                            // (below) ID 201 is a Health power-up 
+                            check value ( [~found].field[0x34] == 201 ) {
+                                find variable ( global::MAX_HEALTH::user::value in global::health_master::actor ) {
+                                    check value ( global::health_alex::user::value < [~found_variable] ) {
+                                        global::health_alex::user::value ++; 
+                                        [~found].remove(); 
+                                        flow continue
+                                    }
+                                    flow continue
+                                }
+                                flow continue
+                            }
+                            // (below) ID 201 is a speed power-up 
+                            check value ( [~found].field[0x34] == 209 ) {
+                                set self.field[0x0e] = (NORMAL_GROUND_TOP_SPEED::user::value + DASH_SPEED_BONUS::user::value); 
+                                set self.field[0x13] = (NORMAL_GROUND_TOP_SPEED::user::value + DASH_SPEED_BONUS::user::value); 
+                                set timer_dash::user::value = (global::Script Time::value + DASH_DURATION::user::value); 
+                                [~found].remove(); 
+                                set dashing?::user::value = 1; 
+                                flow continue
+                            }
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            check value ( CHEATS_ACTIVE::user::value == 1 ) {
+                // (Below) Teleport the player back to his origin with SELECT + X buttons. 
+                check value ( global::controller 1::controller.field[0x05] == 1 ) {
+                    check value ( global::controller 1::controller.field[0x03] == 1 ) {
+                        check reference ( *global::behavior::user::behavior is reference to Leader::behavior ) {
+                            print(self, "--------> CHEAT - Act like player died."); 
+                            setBehavior(wait in darkness::behavior); 
+                            set timer_darkness::user::value = global::Script Time::value; 
+                            set global::Clobbered Counter::user::value = Clobber Delay::user::value; 
+                            set state_dying::user::value = 0; 
+                            sendMessage(global::Time_ran_out::message, to: global::NPCs::set::actor, value: 0); 
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
+    runAsPlayer(global::controller 1::controller); 
+    flow continue
+}
+[ PRESCRIPT: END ]
+
+
+[ Behavior: Leader ] {
+    // Alex handles his interrupts differently, because his script is OLD and doesn't use behaviors for special moves. 
+    // DG - To stop alex from roaring when he is in midair, and, instead, doing a claw/pounce attack, the claw attack needs to be first in line... Should Alex just not be able to roar midair? 
+    // (below) Manage Alex's double-jump 
+    check value ( alex_prohibit_double_jump::user::value == 0 ) {
+        check value ( player_in_air::user::value == 1 ) {
+            check value ( player_jumped::user::value == 1 ) {
+                if ( double-jumping?::user::value == 0 ) {
+                    // Check to see if player has started a Double-Jump 
+                    check value ( debounce_x_button::user::value == 0 ) {
+                        check value ( global::controller 1::controller.field[0x03] == 1 ) {
+                            global::Double Jump::sound.play(); 
+                            set debounce_x_button::user::value = 1; 
+                            if ( self.field[0x07].sub[0x02] >= 0 ) {
+                                self.field[0x07].displace(relative, length: self.sub[0x01], heading: 90, pitch: (DOUBLE_JUMP_DISPLACE_AMOUNT::user::value - self.field[0x07].sub[0x04])); 
+                                flow continue
+                            } else {
+                                set temp::user::value = self.field[0x07].sub[0x03]; 
+                                self.field[0x07].displace(absolute, length: self.sub[0x01], heading: 90, pitch: DOUBLE_JUMP_DISPLACE_AMOUNT::user::value); 
+                                self.field[0x07].displace(relative, length: self.sub[0x01], heading: 0, pitch: temp::user::value); 
+                                flow continue
+                            }
+                            set double-jumping?::user::value = 1; 
+                            playAnimation(extra 10); 
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    flow continue
+                } else {
+                    // Player is double-jumping.  Monitor double-jump anim and remap when it has finished 
+                    check value ( used_double_jump_this_jump?::user::value == 0 ) {
+                        when playAnimation(extra 10) is done playing, do: {
+                            set used_double_jump_this_jump?::user::value = 1; 
+                            playAnimation(fall); 
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
+    // (below) Manage Alex's Roar 
+    check value ( alex_prohibit_roar::user::value == 0 ) {
+        print(roar effect switch::user::value, ""); 
+        if ( global::AlexRoar::user::value == 0 ) {
+            // I'll need to keep track of these particles for a little bit longer after the roar, and then remove them 
+            // 4 is a setting only used when the player got hurt! 
+            if ( roar effect switch::user::value == 4 ) {
+                if ( *roar shout effect::user::actor is reference to self ) {
+                    flow continue
+                } else {
+                    roar shout effect::user::actor.remove(); 
+                    set reference *roar shout effect::user::actor = self; 
+                    flow continue
+                }
+                if ( *roar_particle_1::user::particle is reference to roar_NULL_PARTICLE::user::particle ) {
+                    flow continue
+                } else {
+                    roar_particle_1::user::particle.remove(); 
+                    set reference *roar_particle_1::user::particle = roar_NULL_PARTICLE::user::particle; 
+                    flow continue
+                }
+                if ( *roar_particle_2::user::particle is reference to roar_NULL_PARTICLE::user::particle ) {
+                    flow continue
+                } else {
+                    roar_particle_2::user::particle.remove(); 
+                    set reference *roar_particle_2::user::particle = roar_NULL_PARTICLE::user::particle; 
+                    flow continue
+                }
+                // And I don't want anything below to be happening, so set the roar effect switch 
+                set roar effect switch::user::value = 10; 
+                flow continue
+            } else if ( roar effect switch::user::value == 5 ) {
+                // If one of the doohickeys has a high altitude, that means it must have gone off the ledge! i don't want the freakin dust particle to fly in the air 
+                check value ( global::Script Time::value >= roar effect timer::user::value ) {
+                    // Now I can get rid of the ground wave particle 
+                    print(self, "roar_particle_2 timed out"); 
+                    roar_particle_2::user::particle.remove(); 
+                    set reference *roar_particle_2::user::particle = roar_NULL_PARTICLE::user::particle; 
+                    set roar effect switch::user::value = 6; 
+                    set roar effect timer::user::value = (roar effect timer::user::value + 0.4); 
+                    flow continue
+                }
+                flow continue
+            } else {
+                check value ( roar effect switch::user::value == 6 ) {
+                    check value ( global::Script Time::value >= roar effect timer::user::value ) {
+                        // Now i can stop the stinky breath 
+                        print(self, "roar_particle_1 timed out"); 
+                        roar_particle_1::user::particle.remove(); 
+                        set reference *roar_particle_1::user::particle = roar_NULL_PARTICLE::user::particle; 
+                        set roar effect switch::user::value = 7; 
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            if ( debounce_square_button::user::value == 0 ) {
+                check value ( global::controller 1::controller.field[0x04] == 1 ) {
+                    // DG - I moved the debounce up here so it will work regardless of super or regular roar 
+                    set debounce_square_button::user::value = 1; 
+                    // (below) Manage Alex's SUPER Roar 
+                    if ( global::Power_AlexSuperRoar_Counter::user::value > 0 ) {
+                        set roar effect switch::user::value = 10; 
+                        // DG - The way this works, Alex will be prepping for his roar with an animation and effect 
+                        // DG - The roar message will be sent later on (in the behavior) 
+                        // DG - To get an NPC to respond to the super roar, just check the global variable Alex_SuperRoaring when he receives a roar message 
+                        // DG - Of course, the FOV/distance checks should be much greater, but I'm sure this will be standardized later 
+                        set super roar timer::user::value = (global::Script Time::value + 0.625); 
+                        setBehavior(Super Roar::behavior); 
+                        set global::Alex_SuperRoaring::user::value = 1; 
+                        set super roar phase::user::value = 1; 
+                        // DG - Remember the camera values since I am going to be altering them 
+                        set super roar remembered cam look from v-offset::user::value = global::camera::user::camera.field[0x03]; 
+                        set super roar remembered cam look at v-offset::user::value = global::camera::user::camera.field[0x08]; 
+                        set super roar remembered cam fov::user::value = global::camera::user::camera.field[0x0b]; 
+                        // DG - Let's set a reference to the current camera, in case the camera tries to switch in the middle of the super roar 
+                        set reference *super roar camera::user::camera = global::camera::user::camera; 
+                        // DG - IMPORTANT - Be sure to have a motion blur in your level or the effect won't fully work! 
+                        set global::MOTION BLUR::MOTION BLUR.field[0x01] = 0.2; 
+                        set global::MOTION BLUR::MOTION BLUR.field[0x06] = 1.05; 
+                        super roar camera::user::camera.field[0x0b].slide(to 50, over 0.4, ease in global::Design Build::value, ease out global::Design Build::value.sub[0x14]); 
+                        check value ( prohibit_camera_modification::user::value == 0 ) {
+                            set super roar camera::user::camera.field[0x03] = (super roar camera::user::camera.field[0x03] - 2); 
+                            set super roar camera::user::camera.field[0x08] = (super roar camera::user::camera.field[0x08] - 2); 
+                            flow continue
+                        }
+                        set super roar tick timer::user::value = 100; 
+                        print(global::MOTION BLUR::MOTION BLUR.field[0x01], ""); 
+                        print(global::MOTION BLUR::MOTION BLUR.field[0x06], ""); 
+                        flow continue
+                    } else {
+                        sendMessage(global::Alex has roared!::message, to: global::NPCs::set::actor, value: 0); 
+                        set temp::user::value = 2; 
+                        if ( temp::user::value == 0 ) {
+                            global::Alex_Roar_1::sound.play(); 
+                            flow continue
+                        } else if ( temp::user::value == 1 ) {
+                            global::Alex_Roar_2::sound.play(); 
+                            flow continue
+                        } else {
+                            global::Alex_Roar_3::sound.play(); 
+                            flow continue
+                        }
+                        // (Below) During the roar, remap alex's movement animations. 
+                        set global::animation mapping::animation mapping.field[0x01] = 9; 
+                        set global::animation mapping::animation mapping.field[0x02] = 8; 
+                        set global::animation mapping::animation mapping.field[0x03] = 8; 
+                        set global::animation mapping::animation mapping.field[0x04] = 8; 
+                        set global::animation mapping::animation mapping.field[0x3c] = 58; 
+                        set global::animation mapping::animation mapping.field[0x3f] = 61; 
+                        // (Below) Time the length of 1 roar before restoring animation mapping. 
+                        // Check in with Fred to find a way to do this that doesn't rely on explicit timing. 
+                        if ( self.field[0x07] == 0 ) {
+                            set global::AlexRoar::user::value = (global::Script Time::value + ROAR_DELAY::user::value); 
+                            flow continue
+                        } else {
+                            set global::AlexRoar::user::value = (global::Script Time::value + RUNNING_ROAR_DELAY::user::value); 
+                            flow continue
+                        }
+                        // DG - Roar EFFECT stuff 
+                        set roar effect timer::user::value = (global::Script Time::value + 0.25); 
+                        set roar effect switch::user::value = 0; 
+                        // Removals 
+                        check value ( self.field[0x01] == self.field[0x01] ) {
+                            if ( *roar_particle_1::user::particle is reference to roar_NULL_PARTICLE::user::particle ) {
+                                flow continue
+                            } else {
+                                roar_particle_1::user::particle.remove(); 
+                                print(self, "Had to remove old Roar_particle_1"); 
+                                flow continue
+                            }
+                            if ( *roar_particle_2::user::particle is reference to roar_NULL_PARTICLE::user::particle ) {
+                                flow continue
+                            } else {
+                                roar_particle_2::user::particle.remove(); 
+                                print(self, "Had to remove old Roar_particle_2"); 
+                                flow continue
+                            }
+                            if ( *roar shout effect::user::actor is reference to self ) {
+                                flow continue
+                            } else {
+                                roar shout effect::user::actor.remove(); 
+                                print(self, "Had to remove roar shout effect"); 
+                                flow continue
+                            }
+                            flow continue
+                        }
+                        // Stinky breath effect 
+                        spawn actor (global::Alex_Roar_Effect_0::particle, at: self, facing: self); {
+                            set reference *roar_particle_1::user::particle = self; 
+                            self.field[0x01].slide(to 0, over 0.6, ease in global::Design Build::value, ease out global::Design Build::value); 
+                            flow continue
+                        }
+                        // If I'm on the ground, spawn the ground effects 
+                        check value ( self.field[0x08] <= 1 ) {
+                            // Also make the timer a little bit longer to compensate 
+                            set roar effect timer::user::value = (global::Script Time::value + 0.35); 
+                            spawn actor (global::Alex_Roar_Effect_1::particle, at: self, facing: self); {
+                                set reference *roar_particle_2::user::particle = self; 
+                                flow continue
+                            }
+                            flow continue
+                        }
+                        // Spawn the shout effect 
+                        spawn actor (global::Alex_RoarEffect::actor, at: self, facing: self, unknown: 0); {
+                            set reference *roar shout effect::user::actor = self; 
+                            [~controlled].field[0x09].sub[0x01].filter((val) => { val == 3 }); {
+                                teleportTo([~subset]@1, facing [~controlled].sub[0x01], direction: forward, over 0 seconds); 
+                                flow continue
+                            }
+                            teleportTo(self, facing self.sub[0x01], direction: forward, over 0 seconds); 
+                            set self.field[0x37].sub[0x04] = 132; 
+                            self.field[0x37].sub[0x04].slide(to 0, over 0.225, ease in global::Design Build::value, ease out global::Design Build::value.sub[0x32]); 
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            } else {
+                check value ( global::controller 1::controller.field[0x04] == 0 ) {
+                    set debounce_square_button::user::value = 0; 
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        } else {
+            check value ( global::Script Time::value > global::AlexRoar::user::value ) {
+                set global::AlexRoar::user::value = 0; 
+                flow continue
+            }
+            when playAnimation(NO ANIMATION) is done playing, do: {
+                set global::AlexRoar::user::value = 0; 
+                flow continue
+            }
+            check value ( global::AlexRoar::user::value == 0 ) {
+                set global::animation mapping::animation mapping.field[0x03] = 2; 
+                set global::animation mapping::animation mapping.field[0x02] = 1; 
+                set global::animation mapping::animation mapping.field[0x04] = 3; 
+                set global::animation mapping::animation mapping.field[0x01] = 0; 
+                set global::animation mapping::animation mapping.field[0x3c] = 59; 
+                set global::animation mapping::animation mapping.field[0x3f] = 62; 
+                // Set a timer after Alex is done roaring so he can remove his effects 
+                set roar effect switch::user::value = 5; 
+                set roar effect timer::user::value = (global::Script Time::value + 0.1); 
+                flow continue
+            }
+            // DG - Persistant roar effect stuff 
+            check value ( self.field[0x01] == self.field[0x01] ) {
+                if ( roar effect switch::user::value == 0 ) {
+                    set roar effect switch::user::value = 1; 
+                    set roar_particle_2::user::particle.field[0x01] = 0; 
+                    flow continue
+                } else {
+                    check value ( roar effect switch::user::value == 1 ) {
+                        // Remove the shout effect first 
+                        check value ( global::Script Time::value >= roar effect timer::user::value ) {
+                            roar shout effect::user::actor.remove(); 
+                            set reference *roar shout effect::user::actor = self; 
+                            set roar effect switch::user::value = 2; 
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    flow continue
+                }
+                control ( roar_particle_1::user::particle, requirement: strict ) {
+                    [~controlled].field[0x09].sub[0x01].filter((val) => { val == 3 }); {
+                        teleportTo([~subset]@1, facing [~controlled].sub[0x01], direction: forward, over 0 seconds); 
+                        teleportTo(self, facing self.sub[0x01], direction: forward, over 0 seconds); 
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        // (below) Manage the super roar UI and timer (just timer for now - don't know what the UI will be) 
+        check value ( global::Power_AlexSuperRoar_Counter::user::value > 0 ) {
+            // DG - The Super Roar powerups set this counter to a number, and Alex will handle the timer running out if it ever gets set by the powerup 
+            // DG - Question. Do we want to standardize this, like the health powerup, and have Alex check for collision with it? 
+            global::Power_AlexSuperRoar_Counter::user::value --; 
+            check value ( global::Power_AlexSuperRoar_Counter::user::value <= 160 ) {
+                super roar tick timer::user::value ++; 
+                if ( global::Power_AlexSuperRoar_Counter::user::value <= 60 ) {
+                    check value ( super roar tick timer::user::value >= 10 ) {
+                        global::Alex_SuperRoar_Counter::sound.play(); 
+                        set super roar tick timer::user::value = 0; 
+                        flow continue
+                    }
+                    flow continue
+                } else {
+                    check value ( super roar tick timer::user::value >= 20 ) {
+                        global::Alex_SuperRoar_Counter::sound.play(); 
+                        set super roar tick timer::user::value = 0; 
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
+    check value ( alex_prohibit_claws::user::value == 0 ) {
+        // DG - WARNING - The arrays below still check the ID of the target Alex is attempting to attack... how should we resolve this for autoaiming? 
+        // DG -  Should he check if the target has the variable for claws? 
+        check value ( claw debouncer::user::value == 1 ) {
+            check value ( global::controller 1::controller.field[0x01] == 0 ) {
+                set claw debouncer::user::value = 0; 
+                flow continue
+            }
+            flow continue
+        }
+        // If the player is on the ground, it will be the jabbing sequence 
+        // If he is in the air, he will do a special lunge 
+        check value ( claw debouncer::user::value == 0 ) {
+            check value ( global::AlexRoar::user::value == 0 ) {
+                check value ( global::controller 1::controller.field[0x01] == 1 ) {
+                    set claw debouncer::user::value = 1; 
+                    check value ( clawing status?::user::value == 0 ) {
+                        if ( player_in_air::user::value == 0 ) {
+                            global::Alex_Claw1::sound.play(); 
+                            // Claw swipe model stuff 
+                            check value ( self.field[0x01] == self.field[0x01] ) {
+                                check membership ( global::Alex_Claws::actor.field[0x0d] in my claw swipe::user::actor ) {
+                                    my claw swipe::user::actor.remove(); 
+                                    flow continue
+                                }
+                                spawn actor (global::Alex_Claws::actor, at: self, facing: (self.sub[0x01] - 100), unknown: 0); {
+                                    self.displace(relative, length: 0, heading: 90, pitch: 4); 
+                                    self.displace(relative, length: [~controlled].sub[0x01], heading: 0, pitch: 2); 
+                                    set reference *my claw swipe::user::actor = self; 
+                                    self.field[0x37].sub[0x04].slide(to 175, over 0.075, ease in global::Design Build::value, ease out global::Design Build::value); 
+                                    flow continue
+                                }
+                                set claw swipe direction::user::value = 1; 
+                                set claw swipe phase::user::value = 1; 
+                                set claw swipe timer::user::value = (global::Script Time::value + 0.125); 
+                                set claw swipe delta::user::value = 24; 
+                                claw swipe delta::user::value.slide(to 0, over 0.275, ease in global::Design Build::value, ease out global::Design Build::value.sub[0x23]); 
+                                flow continue
+                            }
+                            set self.field[0x11] = clawing ground decel::user::value; 
+                            self.field[0x07].displace(absolute, length: self.sub[0x01], heading: 0, pitch: 50); 
+                            set clawing status?::user::value = 1; 
+                            set claw timer::user::value = (global::Script Time::value + 0.4); 
+                            set claw continuation timer::user::value = (global::Script Time::value + 0.15); 
+                            setBehavior(Claw attacks::behavior); 
+                            flow continue
+                        } else {
+                            // I'll do a diving claw if I'm in the air 
+                            check value ( double-jumping?::user::value == 0 ) {
+                                global::AlexRoar::sound.play(); 
+                                set downward angle math::user::angle = (self.field[0x07].sub[0x03] * 2.0); 
+                                set air claw speed math::user::value = (downward angle math::user::angle * 1.7); 
+                                set air claw speed math::user::value = (downward angle math::user::angle - 120.0); 
+                                // If I'm going more than 35 degrees from down, use the forward animation 
+                                if ( downward angle math::user::angle >= 35 ) {
+                                    set downward animation::user::value = 0; 
+                                    set air claw speed math::user::value = (air claw speed math::user::value + 30); 
+                                    flow continue
+                                } else {
+                                    set downward animation::user::value = 1; 
+                                    flow continue
+                                }
+                                // Add a little bit of auto-aim if the player is trying to target an NPC 
+                                set air claw auto-aim?::user::value = 0; 
+                                check fov ( global::NPCs::set::actor is within a 30° cone centered on heading self.sub[0x01], distance <= 20, ignore obstructions ) {
+                                    [~subset].sub[0x34].filter((val) => { val > 600 }); {
+                                        [~subset].sub[0x34].filter((val) => { val <= 620 }); {
+                                            set air claw auto-aim?::user::value = 1; 
+                                            set reference *last claw target::user::actor = [~subset]@1; 
+                                            set self.sub[0x01] = last claw target::user::actor.sub[0x04]; 
+                                            print(last claw target::user::actor.sub[0x05], "Auto-aimed an npc for dive"); 
+                                            self.field[0x07].displace(absolute, length: self.sub[0x01], heading: (last claw target::user::actor.sub[0x05] + 25), pitch: (air claw speed math::user::value + 60)); 
+                                            set reference *last claw target::user::actor = self; 
+                                            flow continue
+                                        }
+                                        flow continue
+                                    }
+                                    flow continue
+                                }
+                                check value ( air claw auto-aim?::user::value == 0 ) {
+                                    print(self, "no autoaim"); 
+                                    self.field[0x07].displace(absolute, length: self.sub[0x01], heading: (negative eighty::user::angle + (downward angle math::user::angle * 16715136)), pitch: 60); 
+                                    flow continue
+                                }
+                                set clawing status?::user::value = 1; 
+                                set air claw attack on::user::value = 1; 
+                                setBehavior(Claw attacks::behavior); 
+                                flow end
+                            }
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
+    // If you HAVE Mangos, you throw 'em, else you can pounce. 
+    check value ( global::MangoCounter::user::value > 0 ) {
+        // (below) Manage Alex Throwing A Mango. 
+        check value ( alex_prohibit_mangos::user::value == 0 ) {
+            if ( debounce_triangle_button::user::value == 0 ) {
+                check value ( global::MangoCounter::user::value > 0 ) {
+                    check value ( global::controller 1::controller.field[0x02] == 1 ) {
+                        setBehavior(Throw Mango::behavior); 
+                        set debounce_triangle_button::user::value = 1; 
+                        set state_mango::user::value = 0; 
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            } else {
+                check value ( global::controller 1::controller.field[0x02] == 0 ) {
+                    set debounce_triangle_button::user::value = 0; 
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Leader: END ]
+
+
+[ Behavior: Throw Mango ] {
+    // ADD INTERRUPTION CODE. 
+    runAsPlayer(global::no controller::controller); 
+    // Initialize the mango toss 
+    check value ( state_mango::user::value == 0 ) {
+        state_mango::user::value ++; 
+        playAnimation(extra 8); 
+        set timer_mango::user::value = (global::Script Time::value + MANGO_RELEASE_DELAY::user::value); 
+        // Pick a good Mango target... 
+        set reference *my_mango_target::user::actor = self; 
+        global::NPCs::set::actor.filter((val) => { val <= 200 }); {
+            for each ( [~subset] ) {
+                check fov ( [~each] is within a 90° cone centered on heading global::Alex Actor::actor.sub[0x01], distance >= 5, ignore obstructions ) {
+                    // added vertical distance check to make sure I'm not throwing straight up 
+                    check value ( [~each].sub[0x07] <= 30 ) {
+                        find variable ( global::MangoTarget::user::value in [~each] ) {
+                            check value ( [~found_variable] == 0 ) {
+                                print([~each], "targeted actor"); 
+                                set reference *my_mango_target::user::actor = [~each]; 
+                                flow break 4
+                            }
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        spawn actor (global::MangoThrown::actor, at: self, facing: self.sub[0x01], unknown: 0); {
+            set reference *my_mango::user::actor = self; 
+            teleportTo([~controlled].field[0x09]@1, facing 0, direction: forward, over 0 seconds); 
+            set self.field[0x0c] = 0; 
+            flow continue
+        }
+        flow continue
+    }
+    // Wind-up and then throw the Mango. 
+    check value ( state_mango::user::value == 1 ) {
+        // If I have a valid target, turn toward it. 
+        if ( *my_mango_target::user::actor is reference to self ) {
+            flow continue
+        } else {
+            turnTo(my_mango_target::user::actor, animation: NO ANIMATION); 
+            flow continue
+        }
+        // When my throw animation is done, leave Mango throw behavior. 
+        when playAnimation(extra 8) is done playing, do: {
+            setBehavior(Leader::behavior); 
+            playAnimation(ambient); 
+            flow continue
+        }
+        // Wait a hard-coded amount of time, then release the mango from my grasp. 
+        check value ( timer_mango::user::value > 0 ) {
+            // The above check makes sure that we only release the mango once. 
+            check value ( global::Script Time::value > timer_mango::user::value ) {
+                set timer_mango::user::value = 0; 
+                // Manage the mango UI 
+                global::MangoCounter::user::value --; 
+                global::MangoThrow::sound.play(); 
+                control ( my_mango::user::actor, requirement: lenient ) {
+                    // Detach from Alex's hand 
+                    teleportTo(self, facing 0, direction: forward, over 0 seconds); 
+                    if ( *my_mango_target::user::actor is reference to [~controlled] ) {
+                        // No valid target, so just throw mango straight. 
+                        print(self.sub[0x01], "firing at Alex's facing"); 
+                        self.field[0x07].displace(absolute, length: [~controlled].sub[0x01], heading: MANGO_PITCH::user::value, pitch: MANGO_VELOCITY::user::value); 
+                        flow continue
+                    } else {
+                        print(my_mango_target::user::actor, "mango target's distance from Alex"); 
+                        self.field[0x07].displace(absolute, length: my_mango_target::user::actor.sub[0x04], heading: (my_mango_target::user::actor.sub[0x05] + 5), pitch: MANGO_VELOCITY::user::value); 
+                        flow continue
+                    }
+                    flow continue
+                }
+                set reference *my_mango::user::actor = self; 
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Throw Mango: END ]
+
+
+[ Behavior: Claw attacks ] {
+    check value ( interrupted?::user::value == 1 ) {
+        // Stolen from Marty's script 
+        set interrupted?::user::value = 0; 
+        self.field[0x07].displace(absolute, length: 0, heading: 0, pitch: 0); 
+        self.displace(relative, length: self.sub[0x01], heading: 270, pitch: self.field[0x08]); 
+        set player_jumped::user::value = 0; 
+        set player_in_air::user::value = 0; 
+        set self.field[0x0e] = remembered ground speed::user::value; 
+        set self.field[0x18] = remembered jump vel::user::value; 
+        set self.field[0x11] = remembered ground decel::user::value; 
+        // Restore claw variables 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            set clawing status?::user::value = 0; 
+            set claw swipe phase::user::value = 0; 
+            set claw debouncer::user::value = 1; 
+            set claw swipe phase::user::value = 0; 
+            set air claw attack on::user::value = 0; 
+            if ( *my claw swipe::user::actor is reference to self ) {
+                flow continue
+            } else {
+                my claw swipe::user::actor.remove(); 
+                set reference *my claw swipe::user::actor = self; 
+                flow continue
+            }
+            set reference *last claw target::user::actor = self; 
+            flow continue
+        }
+        setBehavior(Leader::behavior); 
+        flow end
+    }
+    check value ( claw debouncer::user::value == 1 ) {
+        check value ( global::controller 1::controller.field[0x01] == 0 ) {
+            set claw debouncer::user::value = 0; 
+            flow continue
+        }
+        flow continue
+    }
+    // If he is in the air, he will do a special lunge 
+    check value ( air claw attack on::user::value == 1 ) {
+        // Run this when doing an air claw attack 
+        check value ( clawing status?::user::value == 1 ) {
+            // Continue on my path until I hit the ground or an actor 
+            runAsPlayer(global::no controller::controller); 
+            if ( downward animation::user::value == 1 ) {
+                playAnimation(extra 25); 
+                flow continue
+            } else {
+                playAnimation(extra 24); 
+                flow continue
+            }
+            if ( check message ( global::hit ground::message ) ) {
+                global::Alex_Claw3::sound.play(); 
+                self.field[0x07].displace(absolute, length: 0, heading: 0, pitch: 0); 
+                set clawing status?::user::value = 2; 
+                // Claw swipe model stuff 
+                check value ( self.field[0x01] == self.field[0x01] ) {
+                    check membership ( global::Alex_Claws::actor.field[0x0d] in my claw swipe::user::actor ) {
+                        my claw swipe::user::actor.remove(); 
+                        flow continue
+                    }
+                    spawn actor (global::Alex_Claws_Cross::actor, at: self, facing: self.sub[0x01], unknown: 0); {
+                        set reference *my claw swipe::user::actor = self; 
+                        self.field[0x37].sub[0x04].slide(to 175, over 0.075, ease in global::Design Build::value, ease out global::Design Build::value); 
+                        flow continue
+                    }
+                    set claw swipe phase::user::value = 1; 
+                    set claw swipe timer::user::value = (global::Script Time::value + 0.125); 
+                    set claw swipe direction::user::value = 0; 
+                    flow continue
+                }
+                print(global::Script Time::value, "hit ground!"); 
+                flow continue
+            } else {
+                check message ( global::hit actor::message, sent by: global::message senders::set::actor, where: value <= 10 ) {
+                    // I only want to stop if I hit someone who is supposed to be hurt by claws 
+                    find variable ( global::clawed?::user::value in [~found] ) {
+                        global::Alex_Claw3::sound.play(); 
+                        self.field[0x07].displace(absolute, length: 0, heading: 0, pitch: 0); 
+                        set clawing status?::user::value = 3; 
+                        set claw timer::user::value = (global::Script Time::value + 0.03); 
+                        // Claw swipe model stuff 
+                        check value ( self.field[0x01] == self.field[0x01] ) {
+                            check membership ( global::Alex_Claws::actor.field[0x0d] in my claw swipe::user::actor ) {
+                                my claw swipe::user::actor.remove(); 
+                                flow continue
+                            }
+                            spawn actor (global::Alex_Claws_Cross::actor, at: self, facing: self.sub[0x01], unknown: 0); {
+                                set reference *my claw swipe::user::actor = self; 
+                                self.field[0x37].sub[0x04].slide(to 175, over 0.075, ease in global::Design Build::value, ease out global::Design Build::value); 
+                                flow continue
+                            }
+                            set claw swipe phase::user::value = 1; 
+                            set claw swipe timer::user::value = (global::Script Time::value + 0.125); 
+                            set claw swipe direction::user::value = 0; 
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        check value ( clawing status?::user::value == 2 ) {
+            // Hold still for a moment to play my recovery 
+            runAsPlayer(global::no controller::controller); 
+            when playAnimation(extra 23) is done playing, do: {
+                playAnimation(ambient); 
+                print(self, "Claw attack over"); 
+                set clawing status?::user::value = 0; 
+                set air claw attack on::user::value = 0; 
+                setBehavior(Leader::behavior); 
+                flow continue
+            }
+            flow continue
+        }
+        check value ( clawing status?::user::value == 3 ) {
+            // I just smacked into an actor. I will claw then leap backwards. 
+            runAsPlayer(global::no controller::controller); 
+            self.field[0x07].displace(absolute, length: 0, heading: 0, pitch: 0); 
+            check value ( claw timer::user::value <= global::Script Time::value ) {
+                self.field[0x07].displace(absolute, length: (self.sub[0x01] + 180), heading: 45, pitch: 50); 
+                set clawing status?::user::value = 4; 
+                flow continue
+            }
+            flow continue
+        }
+        check value ( clawing status?::user::value == 4 ) {
+            playAnimation(extra 10); 
+            // Let the player bounce back 
+            runAsPlayer(global::no controller::controller); 
+            check message ( global::hit ground::message ) {
+                set air claw attack on::user::value = 0; 
+                set clawing status?::user::value = 0; 
+                print(self, "Claw attack over - landed"); 
+                setBehavior(Leader::behavior); 
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
+    // If the player is on the ground, it will be the jabbing sequence 
+    check value ( air claw attack on::user::value == 0 ) {
+        // Run this when doing a ground claw attack 
+        check value ( clawing status?::user::value >= 1 ) {
+            runAsPlayer(global::no controller::controller); 
+            // Animation Maintenance 
+            // (and claw 3 effect maintenance) 
+            check value ( self.field[0x01] == self.field[0x01] ) {
+                check value ( clawing status?::user::value == 1 ) {
+                    playAnimation(extra 20); 
+                    flow continue
+                }
+                check value ( clawing status?::user::value == 2 ) {
+                    playAnimation(extra 21); 
+                    flow continue
+                }
+                check value ( clawing status?::user::value == 3 ) {
+                    // For the third swipe, I want the effect to occur later 
+                    check value ( claw timer::user::value <= global::Script Time::value ) {
+                        global::Alex_Claw3::sound.play(); 
+                        check value ( self.field[0x01] == self.field[0x01] ) {
+                            set claw timer::user::value = (global::Script Time::value + 5.0); 
+                            check membership ( global::Alex_Claws::actor.field[0x0d] in my claw swipe::user::actor ) {
+                                my claw swipe::user::actor.remove(); 
+                                flow continue
+                            }
+                            spawn actor (global::Alex_Claws_Cross::actor, at: self, facing: self.sub[0x01], unknown: 0); {
+                                self.displace(relative, length: 0, heading: 90, pitch: 6); 
+                                self.displace(relative, length: [~controlled].sub[0x01], heading: 0, pitch: 4); 
+                                set reference *my claw swipe::user::actor = self; 
+                                self.field[0x37].sub[0x04].slide(to 175, over 0.075, ease in global::Design Build::value, ease out global::Design Build::value); 
+                                flow continue
+                            }
+                            set claw swipe phase::user::value = 1; 
+                            set claw swipe timer::user::value = (global::Script Time::value + 0.125); 
+                            set claw swipe direction::user::value = 0; 
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    when playAnimation(extra 22) is done playing, do: {
+                        set clawing status?::user::value = 4; 
+                        flow continue
+                    }
+                    flow continue
+                }
+                check value ( clawing status?::user::value == 4 ) {
+                    when playAnimation(extra 23) is done playing, do: {
+                        set claw timer::user::value = 0; 
+                        set clawing status?::user::value = 2; 
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            // When the claw timer is up, it's time to revert to normal 
+            if ( claw timer::user::value <= global::Script Time::value ) {
+                check value ( clawing status?::user::value < 3 ) {
+                    set self.field[0x0e] = remembered ground speed::user::value; 
+                    set self.field[0x18] = remembered jump vel::user::value; 
+                    set clawing status?::user::value = 0; 
+                    playAnimation(ambient); 
+                    setBehavior(Leader::behavior); 
+                    set self.field[0x11] = remembered ground decel::user::value; 
+                    flow continue
+                }
+                flow continue
+            } else {
+                // If I bump an actor, I'll stop myself 
+                check message ( global::hit actor::message, sent by: global::message senders::set::actor, where: value >= 0 ) {
+                    if ( *[~found] is reference to my claw swipe::user::actor ) {
+                        // Not if I'm hitting my claw effect, though. Duh. 
+                        flow continue
+                    } else {
+                        // Only stop for actors that are made to respond to claws (or solid actors) 
+                        if ( find variable ( global::clawed?::user::value in [~found] ) ) {
+                            check value ( clawing status?::user::value == 3 ) {
+                                // If i'm on claw 3, I want the swipe to happen if I bump an actor 
+                                check value ( claw timer::user::value <= (global::Script Time::value + 2.0) ) {
+                                    set claw timer::user::value = 0; 
+                                    flow continue
+                                }
+                                flow continue
+                            }
+                            self.field[0x07].displace(absolute, length: 0, heading: 0, pitch: 0); 
+                            flow continue
+                        } else {
+                            check value ( [~found].field[0x2c] == 1 ) {
+                                check value ( clawing status?::user::value == 3 ) {
+                                    // If i'm on claw 3, I want the swipe to happen if I bump an actor 
+                                    check value ( claw timer::user::value <= (global::Script Time::value + 2.0) ) {
+                                        set claw timer::user::value = 0; 
+                                        flow continue
+                                    }
+                                    flow continue
+                                }
+                                self.field[0x07].displace(absolute, length: 0, heading: 0, pitch: 0); 
+                                flow continue
+                            }
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    flow continue
+                }
+                check message ( global::hit wall::message ) {
+                    // If I bump a wall, I'll stop myself 
+                    self.field[0x07].displace(absolute, length: 0, heading: 0, pitch: 0); 
+                    flow continue
+                }
+                check value ( claw debouncer::user::value == 0 ) {
+                    // If enough time has passed, the player has a window of opportunity to continue the chain, up to three times 
+                    check value ( claw continuation timer::user::value <= global::Script Time::value ) {
+                        check value ( clawing status?::user::value < 3 ) {
+                            runAsPlayer(global::controller 1::controller); 
+                            set self.field[0x18] = 0; 
+                            set self.field[0x0e] = 0; 
+                            flow continue
+                        }
+                        check value ( global::controller 1::controller.field[0x01] == 1 ) {
+                            set claw debouncer::user::value = 1; 
+                            set self.field[0x0e] = remembered ground speed::user::value; 
+                            set self.field[0x18] = remembered jump vel::user::value; 
+                            check value ( clawing status?::user::value >= 3 ) 
+                            clawing status?::user::value ++; 
+                            // Alex will be able to auto-aim an enemy he is attacking to hit him with all the attacks! 
+                            if ( check fov ( last claw target::user::actor is within a 240° cone centered on heading self.sub[0x01], distance <= 10, ignore obstructions ) ) {
+                                teleportTo(self, facing last claw target::user::actor, direction: forward, over 0 seconds); 
+                                print(self, "Auto-aimed my last target"); 
+                                flow continue
+                            } else {
+                                // Let him follow through on a nearby NPC with his attacks 
+                                check fov ( global::NPCs::set::actor is within a 70° cone centered on heading self.sub[0x01], distance <= 10, ignore obstructions ) {
+                                    [~subset].sub[0x34].filter((val) => { val > 600 }); {
+                                        [~subset].sub[0x34].filter((val) => { val <= 620 }); {
+                                            teleportTo(self, facing [~subset]@1, direction: forward, over 0 seconds); 
+                                            print(self, "Auto-aimed an NPC"); 
+                                            flow continue
+                                        }
+                                        flow continue
+                                    }
+                                    flow continue
+                                }
+                                flow continue
+                            }
+                            // The second in the chain is another jab 
+                            check value ( clawing status?::user::value == 2 ) {
+                                global::Alex_Claw2::sound.play(); 
+                                set claw continuation timer::user::value = (global::Script Time::value + 0.15); 
+                                set claw timer::user::value = (global::Script Time::value + 0.6); 
+                                self.field[0x07].displace(absolute, length: self.sub[0x01], heading: 0, pitch: 70); 
+                                // Claw swipe model stuff 
+                                check value ( self.field[0x01] == self.field[0x01] ) {
+                                    check membership ( global::Alex_Claws::actor.field[0x0d] in my claw swipe::user::actor ) {
+                                        my claw swipe::user::actor.remove(); 
+                                        flow continue
+                                    }
+                                    spawn actor (global::Alex_Claws::actor, at: self, facing: (self.sub[0x01] + 100), unknown: 0); {
+                                        self.displace(relative, length: 0, heading: 90, pitch: 4); 
+                                        self.displace(relative, length: [~controlled].sub[0x01], heading: 0, pitch: 2); 
+                                        set reference *my claw swipe::user::actor = self; 
+                                        self.field[0x37].sub[0x04].slide(to 175, over 0.075, ease in global::Design Build::value, ease out global::Design Build::value); 
+                                        flow continue
+                                    }
+                                    set claw swipe phase::user::value = 1; 
+                                    set claw swipe timer::user::value = (global::Script Time::value + 0.125); 
+                                    set claw swipe direction::user::value = 2; 
+                                    set claw swipe delta::user::value = 24; 
+                                    claw swipe delta::user::value.slide(to 0, over 0.275, ease in global::Design Build::value, ease out global::Design Build::value.sub[0x23]); 
+                                    flow continue
+                                }
+                                flow continue
+                            }
+                            // The third is a full on pounce 
+                            check value ( clawing status?::user::value == 3 ) {
+                                set claw continuation timer::user::value = (global::Script Time::value + 0.15); 
+                                set claw timer::user::value = (global::Script Time::value + 0.25); 
+                                self.field[0x07].displace(absolute, length: self.sub[0x01], heading: 20, pitch: 80); 
+                                // Claw swipe model stuff 
+                                // This is going to happen later, up there ^^^ 
+                                flow continue
+                            }
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
+    // Handle the claw model AND the claw damage 
+    // DG - I am only allowing ID 601-620 to be hit by claws now... we could change this 
+    // DG - I am also not opposed to doing fov checks, either, but Fred seems to think this is ok 
+    check value ( claw swipe phase::user::value >= 1 ) {
+        check value ( claw swipe phase::user::value == 1 ) {
+            check value ( claw swipe timer::user::value <= global::Script Time::value ) {
+                set claw swipe phase::user::value = 2; 
+                flow continue
+            }
+            flow continue
+        }
+        check value ( claw swipe phase::user::value == 2 ) {
+            my claw swipe::user::actor.field[0x37].sub[0x04].slide(to 0, over 0.1, ease in global::Design Build::value, ease out global::Design Build::value); {
+                set claw swipe phase::user::value = 0; 
+                my claw swipe::user::actor.remove(); 
+                set reference *my claw swipe::user::actor = self; 
+                set reference *last claw target::user::actor = self; 
+                flow end
+            }
+            flow continue
+        }
+        control ( my claw swipe::user::actor, requirement: strict ) {
+            if ( claw swipe direction::user::value == 1 ) {
+                teleportTo([~controlled], facing (self.sub[0x01] + claw swipe delta::user::value), direction: forward, over 0 seconds); 
+                flow continue
+            } else if ( claw swipe direction::user::value == 2 ) {
+                teleportTo([~controlled], facing (self.sub[0x01] - claw swipe delta::user::value), direction: forward, over 0 seconds); 
+                flow continue
+            } else {
+                teleportTo([~controlled], facing self.sub[0x01], direction: forward, over 0 seconds); 
+                flow continue
+            }
+            if ( air claw attack on::user::value == 1 ) {
+                flow continue
+            } else if ( clawing status?::user::value == 3 ) {
+                self.displace(relative, length: 0, heading: 90, pitch: 4); 
+                flow continue
+            } else {
+                self.displace(relative, length: 0, heading: 90, pitch: 4); 
+                self.displace(relative, length: [~controlled].sub[0x01], heading: 0, pitch: 2); 
+                flow continue
+            }
+            global::message senders::set::actor.sub[0x34].filter((val) => { val > 600 }); {
+                [~subset].sub[0x34].filter((val) => { val <= 620 }); {
+                    check message ( global::hit actor::message, sent by: [~subset], where: value >= 0 ) {
+                        // ID 601-620 are fossa - CHANGE ME 
+                        find variable ( global::clawed?::user::value in [~found] ) {
+                            set reference *last claw target::user::actor = [~found]; 
+                            if ( air claw attack on::user::value == 1 ) {
+                                set [~found_variable] = 2; 
+                                flow continue
+                            } else {
+                                find variable ( global::alex clawed me::user::value in [~found] ) {
+                                    if ( clawing status?::user::value > 3 ) {
+                                        set [~found_variable] = 3; 
+                                        flow continue
+                                    } else {
+                                        set [~found_variable] = clawing status?::user::value; 
+                                        flow continue
+                                    }
+                                    flow continue
+                                }
+                                set [~found_variable] = 1; 
+                                flow continue
+                            }
+                            flow continue
+                        }
+                        flow continue
+                    }
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Claw attacks: END ]
+
+
+[ Behavior: Super Roar ] {
+    runAsPlayer(global::no controller::controller); 
+    //  
+    // [PR]    ADD INTERRUPTION CODE? 
+    //  
+    // DG - Play the FULL animation 
+    when playAnimation(extra 27) is done playing, do: {
+        playAnimation(ambient); 
+        set super roar phase::user::value = 3; 
+        flow continue
+    }
+    check value ( super roar phase::user::value == 1 ) {
+        check value ( super roar timer::user::value <= global::Script Time::value ) {
+            spawn actor (global::rumble::rumble, at: self, facing: 0); {
+                set self.field[0x01] = 70; 
+                self.field[0x01].slide(to 25, over 0.7, ease in global::Design Build::value, ease out global::Design Build::value); 
+                set self.field[0x04] = 100; 
+                set self.field[0x03] = 0.7; 
+                flow continue
+            }
+            print(global::MOTION BLUR::MOTION BLUR.field[0x01], ""); 
+            print(global::MOTION BLUR::MOTION BLUR.field[0x06], ""); 
+            global::Alex_SuperRoar_Thunder::sound.play(); 
+            set temp::user::value = 2; 
+            if ( temp::user::value == 0 ) {
+                global::Alex_Roar_1::sound.play(); 
+                flow continue
+            } else if ( temp::user::value == 1 ) {
+                global::Alex_Roar_2::sound.play(); 
+                flow continue
+            } else {
+                global::Alex_Roar_3::sound.play(); 
+                flow continue
+            }
+            set super roar camera random amount::user::value = 8; 
+            set super roar camera switch::user::value = 5; 
+            set super roar particle on::user::value = 8; 
+            set global::MOTION BLUR::MOTION BLUR.field[0x01] = 0.5; 
+            set super roar phase::user::value = 2; 
+            set super roar timer::user::value = (global::Script Time::value + 0.6); 
+            sendMessage(global::Alex has roared!::message, to: global::NPCs::set::actor, value: 0); 
+            super roar camera::user::camera.field[0x0b].slide(to (super roar remembered cam fov::user::value + 15), over 0.15, ease in global::Design Build::value.sub[0x19], ease out global::Design Build::value); 
+            set super roar camera::user::camera.field[0x03] = super roar remembered cam look from v-offset::user::value; 
+            set super roar camera::user::camera.field[0x08] = super roar remembered cam look at v-offset::user::value; 
+            flow continue
+        }
+        flow continue
+    }
+    // DG - Handle the effect for the duration... 
+    check value ( super roar phase::user::value == 2 ) {
+        if ( super roar particle on::user::value == 0 ) {
+            for each ( super roar particles::set::particle ) {
+                set [~each].field[0x01] = 0; 
+                flow continue
+            }
+            flow continue
+        } else {
+            super roar particle on::user::value --; 
+            check value ( super roar particle on::user::value == 2 ) {
+                spawn actor (global::Alex_SuperRoarBurst::particle, at: self, facing: 0); {
+                    self.displace(relative, length: 0, heading: 90, pitch: 10); 
+                    super roar particles::set::particle.include(self); 
+                    flow continue
+                }
+                spawn actor (global::Alex_SuperRoarCircle::particle, at: self, facing: 0); {
+                    self.displace(relative, length: 0, heading: 90, pitch: 5); 
+                    super roar particles::set::particle.include(self); 
+                    flow continue
+                }
+                flow continue
+            }
+            check value ( super roar particle on::user::value == 1 ) {
+                set super roar particle on::user::value = 0; 
+                flow continue
+            }
+            flow continue
+        }
+        // DG - Shake the camera 
+        check value ( prohibit_camera_modification::user::value == 0 ) {
+            if ( super roar camera switch::user::value == 0 ) {
+                if ( super roar camera random amount::user::value >= 4 ) {
+                    set super roar camera random amount::user::value = 1; 
+                    flow continue
+                } else {
+                    set super roar camera random amount::user::value = 0; 
+                    flow continue
+                }
+                if ( super roar camera random amount::user::value == 0 ) {
+                    set super roar camera random amount::user::value = 5; 
+                    set super roar camera random amount::user::value = (super roar camera random amount::user::value + 4); 
+                    flow continue
+                } else {
+                    set super roar camera random amount::user::value = 1; 
+                    set super roar camera random amount::user::value = (super roar camera random amount::user::value + 2); 
+                    flow continue
+                }
+                set super roar camera::user::camera.field[0x03] = (super roar camera random amount::user::value + 5); 
+                set super roar camera::user::camera.field[0x08] = (super roar camera random amount::user::value + 2); 
+                set super roar camera switch::user::value = 4; 
+                flow continue
+            }
+            flow continue
+        }
+        if ( super roar timer::user::value <= (global::Script Time::value - 0.25) ) {
+            print(self, "disabling motion blur"); 
+            global::MOTION BLUR::MOTION BLUR.field[0x01].slide(to 0, over 0.25, ease in global::Design Build::value, ease out global::Design Build::value); 
+            set super roar camera::user::camera.field[0x03] = super roar remembered cam look from v-offset::user::value; 
+            set super roar camera::user::camera.field[0x08] = super roar remembered cam look at v-offset::user::value; 
+            flow continue
+        } else {
+            check value ( prohibit_camera_modification::user::value == 0 ) {
+                if ( super roar camera switch::user::value == 0 ) {
+                    if ( super roar camera random amount::user::value >= 4 ) {
+                        set super roar camera random amount::user::value = 1; 
+                        flow continue
+                    } else {
+                        set super roar camera random amount::user::value = 0; 
+                        flow continue
+                    }
+                    if ( super roar camera random amount::user::value == 0 ) {
+                        set super roar camera random amount::user::value = 5; 
+                        set super roar camera random amount::user::value = (super roar camera random amount::user::value + 4); 
+                        flow continue
+                    } else {
+                        set super roar camera random amount::user::value = 1; 
+                        set super roar camera random amount::user::value = (super roar camera random amount::user::value + 2); 
+                        flow continue
+                    }
+                    set super roar camera::user::camera.field[0x03] = (super roar camera random amount::user::value + 5); 
+                    set super roar camera::user::camera.field[0x08] = (super roar camera random amount::user::value + 2); 
+                    set super roar camera switch::user::value = 4; 
+                    flow continue
+                } else {
+                    super roar camera switch::user::value --; 
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        check value ( super roar timer::user::value <= global::Script Time::value ) {
+            super roar camera::user::camera.field[0x0b].slide(to super roar remembered cam fov::user::value, over 0.4, ease in global::Design Build::value, ease out global::Design Build::value); 
+            flow continue
+        }
+        flow continue
+    }
+    // DG - Finish up the effect and restore normal parameters... 
+    check value ( super roar phase::user::value == 3 ) {
+        global::MOTION BLUR::MOTION BLUR.field[0x01].slide(to 0, over 0.25, ease in global::Design Build::value, ease out global::Design Build::value); 
+        // DG - These should slide back to place, but as a failsafe, i'll set them too 
+        set super roar camera::user::camera.field[0x03] = super roar remembered cam look from v-offset::user::value; 
+        set super roar camera::user::camera.field[0x08] = super roar remembered cam look at v-offset::user::value; 
+        set super roar camera::user::camera.field[0x0b] = super roar remembered cam fov::user::value; 
+        for each ( super roar particles::set::particle ) {
+            [~each].remove(); 
+            super roar particles::set::particle.remove([~each]); 
+            flow continue
+        }
+        setBehavior(Leader::behavior); 
+        set global::Alex_SuperRoaring::user::value = 0; 
+        set global::Power_AlexSuperRoar_Counter::user::value = 0; 
+        // DG - In case the cam switched... let go of my reference 
+        set reference *super roar camera::user::camera = global::camera::user::camera; 
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Super Roar: END ]
+
+
+[ Behavior: Clobbered ] {
+    // (Below) Why is there ANOTHER 'Run as Player' command here? 
+    //     Because, this one overwrites the same command in the PreScript,  
+    //     preventing the player from moving under joystick control. 
+    //     (The same command should appear in all other similar behaviors.) 
+    runAsPlayer(global::no controller::controller); 
+    check value ( global::AlexRoar::user::value != 0 ) {
+        print(self, "Restored Roar animation mapping after Interrupt."); 
+        set global::AlexRoar::user::value = 0; 
+        set global::animation mapping::animation mapping.field[0x03] = 2; 
+        set global::animation mapping::animation mapping.field[0x02] = 1; 
+        set global::animation mapping::animation mapping.field[0x04] = 3; 
+        set global::animation mapping::animation mapping.field[0x01] = 0; 
+        flow continue
+    }
+    when playAnimation(tumble) is done playing, do: {
+        if ( global::health_alex::user::value == 0 ) {
+            setBehavior(Fade In-Out to checkpoint::behavior); 
+            global::Restart Game::sound.play(); 
+            use camera::op-code, Opcode, payload: 000005000000000000010000003f 
+            playAnimation(youch); 
+            flow continue
+        } else {
+            setBehavior(Standing-up::behavior); 
+            playAnimation(youch); 
+            flow continue
+        }
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Clobbered: END ]
+
+
+[ Behavior: Standing-up ] {
+    runAsPlayer(global::no controller::controller); 
+    when playAnimation(youch) is done playing, do: {
+        setBehavior(Leader::behavior); 
+        set global::Clobbered Counter::user::value = 0; 
+        playAnimation(ambient); 
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Standing-up: END ]
+
+
+[ Behavior: Fade In-Out to checkpoint ] {
+    // The player falls down and the screen goes to black. 
+    runAsPlayer(global::no controller::controller); 
+    // Start the camera positioning and fade-out. 
+    check value ( state_dying::user::value == 0 ) {
+        state_dying::user::value ++; 
+        if ( global::ZoosterLives::user::value > 1 ) {
+            // The camera waits 4 seconds, then fades out. 
+            use camera::op-code, Opcode, payload: 0080110000000080400100000040 
+            flow continue
+        } else {
+            // This was the Zooster's last life, so don't fade out (to avoid being black for too long.) 
+            use camera::op-code, Opcode, payload: 00801100000000c04000 
+            flow continue
+        }
+        set global::Power_AlexSuperRoar_Counter::user::value = 0; 
+        find variable ( global::disable_camera_slide::user::value in global::Controller Monitor::actor ) {
+            set [~found_variable] = 1; 
+            flow continue
+        }
+        self.sub[0x01].slide(to (global::camera::user::camera.field[0x11] + 180), over 0.25, ease in global::Design Build::value, ease out global::Design Build::value); 
+        hurt_sounds::set::sound@3.play(); 
+        // Pause a sec before playing the death ditty. 
+        set timer_darkness::user::value = (global::Script Time::value + 0.5); 
+        flow continue
+    }
+    // Rotate the camera as zooster falls down. 
+    check value ( state_dying::user::value == 1 ) {
+        // After a short delay, play the death ditty - once. 
+        check value ( timer_darkness::user::value > 0 ) {
+            check value ( global::Script Time::value > timer_darkness::user::value ) {
+                global::death_ditty_00::sound.play(); 
+                set timer_darkness::user::value = 0; 
+                flow continue
+            }
+            flow continue
+        }
+        // Rotate the camera slowly. 
+        set global::camera::user::camera.field[0x11] = (global::camera::user::camera.field[0x11] + 0.5); 
+        // Play the falling-down anim.  When it is done, move on. 
+        // FOR SOME REASON THIS GETS RESET WHEN I PAUSE? 
+        when playAnimation(extra 30) is done playing, do: {
+            state_dying::user::value ++; 
+            playAnimation(extra 31); 
+            flow continue
+        }
+        flow continue
+    }
+    check value ( state_dying::user::value == 2 ) {
+        // Keep rotating the camera. 
+        set global::camera::user::camera.field[0x11] = (global::camera::user::camera.field[0x11] + 0.5); 
+        // Play the looping 'dead on the ground' anim. 
+        playAnimation(extra 31); 
+        // As soon as the camera is all down fading out, move on. 
+        check value ( global::camera::user::camera.field[0x0e] == 0 ) {
+            setBehavior(wait in darkness::behavior); 
+            // This affects how long we linger in the darkness. 
+            set timer_darkness::user::value = (global::Script Time::value + 0.5); 
+            set state_dying::user::value = 0; 
+            sendMessage(global::Time_ran_out::message, to: global::NPCs::set::actor, value: 0); 
+            flow continue
+        }
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Fade In-Out to checkpoint: END ]
+
+
+[ Behavior: wait in darkness ] {
+    runAsPlayer(global::no controller::controller); 
+    check value ( global::animation mapping::animation mapping == 41 ) {
+        // Play the looping 'dead on the ground' anim. 
+        playAnimation(extra 31); 
+        flow continue
+    }
+    check value ( global::Script Time::value > timer_darkness::user::value ) {
+        setBehavior(Restart Level::behavior); 
+        for each ( global::active::set::sprite ) {
+            check value ( [~each].field[0x07] == 1 ) {
+                set [~each].field[0x07] = 0; 
+                flow continue
+            }
+            flow continue
+        }
+        if ( global::health_alex::user::value == 0 ) {
+            set player just died flag::user::value = 1; 
+            global::ZoosterLives::user::value --; 
+            // Eventually, do something different if the player is out of lives... 
+            if ( global::ZoosterLives::user::value > 0 ) {
+                teleportTo(LastCheckpoint::user::actor@2, facing LastCheckpointFacing::user::value, direction: forward, over 0 seconds); 
+                set player_in_air::user::value = 0; 
+                set player_jumped::user::value = 0; 
+                flow end
+            } else {
+                // For now just return to the map. 
+                setBehavior(Waiting to die my final death::behavior); 
+                cutScene(start); 
+                control ( global::Error_Master::actor, requirement: lenient ) 
+                control ( global::SaveGame_Master::actor, requirement: lenient ) 
+                flow end
+            }
+            flow continue
+        } else {
+            check value ( Hurt_Index_Old::user::value >= 100 ) {
+                teleportTo(LastCheckpoint::user::actor@2, facing LastCheckpointFacing::user::value, direction: forward, over 0 seconds); 
+                set player_in_air::user::value = 0; 
+                set player_jumped::user::value = 0; 
+                flow continue
+            }
+            flow continue
+        }
+        set global::camera::user::camera.field[0x11] = LastCheckpoint::user::actor.sub[0x01]; 
+        set global::Global_Run_Direction::user::value = LastCheckpoint::user::actor.sub[0x01]; 
+        use camera::op-code, Opcode, payload: 00001300010000803f0100000000 
+        set timer_darkness::user::value = (global::Script Time::value + 0.5); 
+        // ----- 
+        set global::Clobbered Counter::user::value = 0; 
+        set Hurt_Index_New::user::value = 0; 
+        set Hurt_Index_Old::user::value = 0; 
+        // Tenth level wizard scripting.  Release any reference to a hurting actor by setting to myself. 
+        set reference *guy_who_hurt_me::user::actor = self; 
+        playAnimation(ambient); 
+        for each ( global::NPCs::set::actor ) {
+            check membership ( don't_reset_these_actors::set::actor not in [~each] ) {
+                [~each].reset(); 
+                flow continue
+            }
+            flow continue
+        }
+        for each ( global::inactive::set::actor ) {
+            check membership ( don't_reset_these_actors::set::actor not in [~each] ) {
+                [~each].reset(); 
+                flow continue
+            }
+            flow continue
+        }
+        for each ( global::dead::set::actor ) {
+            check membership ( don't_reset_these_actors::set::actor not in [~each] ) {
+                [~each].reset(); 
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
+    flow continue
+}
+[ Behavior wait in darkness: END ]
+
+
+[ Behavior: wait in darkness-special for Final Battle hurt type 103 ] {
+    runAsPlayer(global::no controller::controller); 
+    check value ( global::Script Time::value > timer_darkness::user::value ) {
+        setBehavior(Restart Level::behavior); 
+        set dying?::user::value = 0; 
+        if ( global::health_alex::user::value == 0 ) {
+            set player just died flag::user::value = 1; 
+            global::ZoosterLives::user::value --; 
+            //  
+            if ( global::ZoosterLives::user::value > 0 ) {
+                teleportTo(LastCheckpoint::user::actor@2, facing LastCheckpointFacing::user::value, direction: forward, over 0 seconds); 
+                set player_in_air::user::value = 0; 
+                set player_jumped::user::value = 0; 
+                flow end
+            } else {
+                // For now just return to the map. 
+                setBehavior(Waiting to die my final death::behavior); 
+                check value ( self != self.field[0x01] ) {
+                    set global::ZoosterLives::user::value = 5; 
+                    set global::Current_Checkpoint_Index::user::value = 0; 
+                    set global::Next Level Auto Load::value = 14; 
+                    print(self, " <------------------------- PLAYER LOST LAST LIFE -- RETURNING TO MAP"); 
+                    // ----- Below this line will have no effect if we are running off the CD. 
+                    self.reset(); 
+                    set reference *LastCheckpoint::user::actor = self; 
+                    // Bring back into level by running as player. 
+                    runAsPlayer(global::no controller::controller); 
+                    flow continue
+                }
+                flow end
+            }
+            flow continue
+        } else {
+            check value ( Hurt_Index_Old::user::value >= 100 ) {
+                teleportTo(LastCheckpoint::user::actor@2, facing LastCheckpointFacing::user::value, direction: forward, over 0 seconds); 
+                set player_in_air::user::value = 0; 
+                set player_jumped::user::value = 0; 
+                flow continue
+            }
+            flow continue
+        }
+        set global::camera::user::camera.field[0x11] = LastCheckpoint::user::actor.sub[0x01]; 
+        set global::Global_Run_Direction::user::value = LastCheckpoint::user::actor.sub[0x01]; 
+        use camera::op-code, Opcode, payload: 00000500010000803e0100000000 
+        set timer_darkness::user::value = (global::Script Time::value + 0.25); 
+        for each ( global::active::set::sprite ) {
+            set [~each].field[0x07] = 0; 
+            flow continue
+        }
+        // ----- 
+        set global::Clobbered Counter::user::value = 0; 
+        set Hurt_Index_New::user::value = 0; 
+        set Hurt_Index_Old::user::value = 0; 
+        // Tenth level wizard scripting.  Release any reference to a hurting actor by setting to myself. 
+        set reference *guy_who_hurt_me::user::actor = self; 
+        playAnimation(ambient); 
+        for each ( global::NPCs::set::actor ) {
+            [~each].reset(); 
+            flow continue
+        }
+        for each ( global::inactive::set::actor ) {
+            [~each].reset(); 
+            flow continue
+        }
+        for each ( global::dead::set::actor ) {
+            [~each].reset(); 
+            flow continue
+        }
+        flow continue
+    }
+    flow continue
+}
+[ Behavior wait in darkness-special for Final Battle hurt type 103: END ]
+
+
+[ Behavior: Restart Level ] {
+    runAsPlayer(global::no controller::controller); 
+    check value ( global::animation mapping::animation mapping == 41 ) {
+        // Play the looping 'dead on the ground' anim. 
+        playAnimation(extra 31); 
+        flow continue
+    }
+    check value ( player just died flag::user::value == 1 ) {
+        var player just died flag::user::value : value; 
+        set player just died flag::user::value = 0; 
+        find variable ( global::player just died?::user::value in global::health_master::actor ) {
+            set [~found_variable] = 1; 
+            flow continue
+        }
+        set dying?::user::value = 1; 
+        flow continue
+    }
+    //  
+    check value ( dying?::user::value != 0 ) {
+        set dying?::user::value = 0; 
+        // Now, put the items back on. 
+        if ( find variable ( global::alex_actor_to_be_clothed::user::actor in global::Zoovenirs_Master::actor ) ) {
+            set reference *[~found_variable] = self; 
+            flow continue
+        } else {
+            print(self, "Could NOT set reference in ZOOVENIR master."); 
+            flow continue
+        }
+        flow continue
+    }
+    //  
+    check value ( global::Script Time::value > timer_darkness::user::value ) {
+        setBehavior(Leader::behavior); 
+        set dying?::user::value = 0; 
+        check value ( global::health_alex::user::value == 0 ) {
+            set global::health_alex::user::value = global::ZoosterHealthContainers::user::value; 
+            flow continue
+        }
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Restart Level: END ]
+
+
+[ Behavior: Hurt Simple ] {
+    if ( global::health_alex::user::value == 0 ) {
+        setBehavior(Fade In-Out to checkpoint::behavior); 
+        set dying?::user::value = 1; 
+        set Hurt_Index_Old::user::value = 0; 
+        set timer_hurt_youch::user::value = 0; 
+        set self.field[0x31] = 0; 
+        set self.field[0x37] = Color(128, 128, 128, 255); 
+        set state_dying::user::value = 0; 
+        flow continue
+    } else if ( global::Script Time::value >= timer_hurt_youch::user::value ) {
+        // TS- now that the timer_hurt_youch has expired, release control back to the player 
+        // TS- If we don't release control, the player will be moving while playing the hurt anim, which may look strange 
+        playAnimation(ambient); 
+        setBehavior(Leader::behavior); 
+        flow continue
+    } else {
+        // TS- until the timer_hurt_youch has expired, play my hurt anim and prevent the player from controlling me 
+        runAsPlayer(global::no controller::controller); 
+        playAnimation(extra 29); 
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Hurt Simple: END ]
+
+
+[ Behavior: Waiting to go back to the map... ] {
+    // Reset to beginning of level state. 
+    // Bring back into level by running as player. 
+    set reference *LastCheckpoint::user::actor = self; 
+    flow continue
+}
+[ Behavior Waiting to go back to the map...: END ]
+
+
+[ Behavior: Waiting to die my final death ] {
+    runAsPlayer(global::no controller::controller); 
+    check value ( global::animation mapping::animation mapping == 41 ) {
+        // Play the looping 'dead on the ground' anim. 
+        playAnimation(extra 31); 
+        flow continue
+    }
+    // If the player loses all their live, they are going to return to the Map - BUT 
+    //     we have to wait until any saving activity is complete. 
+    find variable ( global::MEMCARD Auto Save Kickoff::user::value in global::SaveGame_Master::actor ) {
+        check value ( [~found_variable] == 0 ) {
+            print(self, " <------------------------- PLAYER LOST LAST LIFE -- RETURNING TO MAP"); 
+            // For now just return to the map. 
+            set global::ZoosterLives::user::value = 5; 
+            set global::Current_Checkpoint_Index::user::value = 0; 
+            set global::Next Level Auto Load::value = 14; 
+            flow continue
+        }
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Waiting to die my final death: END ]
+

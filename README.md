@@ -47,7 +47,7 @@ Another GIGANTIC ENORMOUS thanks to all the contributors to igRewrite8, and to [
 
 ## Opcode coverage
 
-**34 / 36 opcodes implemented** - 2 remaining.
+**35 / 36 opcodes implemented** - 1 remaining.
 
 - [x] comment
 - [x] print
@@ -77,7 +77,7 @@ Another GIGANTIC ENORMOUS thanks to all the contributors to igRewrite8, and to [
 - [x] check message
 - [x] send message
 - [x] set behavior
-- [ ] check fov
+- [x] check fov
 - [x] control
 - [x] run as player
 - [x] find subset
