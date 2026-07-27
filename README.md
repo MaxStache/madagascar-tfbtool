@@ -44,7 +44,6 @@ A HUGE thanks to the Skylanders reverse engineering Discord server and its membe
 
 Another GIGANTIC ENORMOUS thanks to all the contributors to igRewrite8, and to [this fork](https://github.com/bonesinmysoup/igRewrite8/tree/trapteam-but-real).
 
-
 ## Opcode coverage
 
 **35 / 36 opcodes implemented** - 1 remaining.
@@ -89,6 +88,10 @@ Another GIGANTIC ENORMOUS thanks to all the contributors to igRewrite8, and to [
 ### Needs attention / TODOs
 
 - `cut-scene::op-code` - confirm assumptions on value
+
+- `spawn actor::op-code` - find out purpose of remaining byte
+
+- `use camera::op-code` - implement
 
 ## Contributing
 

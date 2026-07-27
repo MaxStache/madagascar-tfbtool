@@ -177,4 +177,23 @@ class CheckFOVMode(IntEnum):
     def __str__(self) -> str:
         return ("ignore obstructions", "consider obstructions")[self.value]
 
+class CamTransitionInMode(IntEnum):
+    pan = 0
+    fade_in = 1
+    iris_in = 2
+
+    @override
+    def __str__(self) -> str:
+        return ("pan", "fade in", "iris in")[self.value]
+
+
+class CamTransitionOutMode(IntEnum):
+    no_transition = 0
+    fade_out = 1
+    iris_out = 2
+
+    @override
+    def __str__(self) -> str:
+        return ("no transition", "fade out", "iris out")[self.value]
+
 # fmt: on
