@@ -43,7 +43,7 @@ class OpCheckFOV(Opcode):
         range = reader.readRHS()
 
         checkfov_mode = CheckFOVMode(reader.read_u8())
-        
+
         return cls(
             angle_base=angle_base,
             arc_width=arc_width,

@@ -8,7 +8,10 @@ from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
 
 
-@opcode("for each", "Loops over a set in the order of set_direction, stores the current element in [^each]")
+@opcode(
+    "for each",
+    "Loops over a set in the order of set_direction, stores the current element in [^each]",
+)
 @dataclass
 class OpForEach(Opcode):
     set_ref: Reference = field(default_factory=Reference)

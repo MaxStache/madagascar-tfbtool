@@ -7,6 +7,7 @@ folder = Path("example_scripts")
 
 OP_CODE = "check fov"
 
+
 def check_occurance(file: Path):
     with open(file, "rb") as f:
         reader = BinaryReader(f.read())

@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
+from typing import override
 
 from tfbscript.ansi import keyword
 from tfbscript.opcodes.base import Opcode, opcode
-from typing import override
 from tfbscript.opcodes.enums import RelOp
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
@@ -43,7 +43,7 @@ class OpCheckMessage(Opcode):
                 value=value,
                 _is_extended=True,
             )
-        
+
         return cls(
             message_ref=message_ref,
             _is_extended=False,

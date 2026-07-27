@@ -582,7 +582,7 @@
                 // Hurt #101 is an instant death Hurt effect 
                 check value ( Hurt_Index_New::user::value == 101 ) {
                     setBehavior(Fade In-Out to checkpoint::behavior); 
-                    use camera::op-code, Opcode, payload: 000005000000000000010000003f 
+                    useCamera(global::camera::user::camera, trans_in: pan for 0.0sec, trans_out: fade out for 0.5sec); 
                     global::health_alex::user::value --; 
                     set dying?::user::value = 1; 
                     set Hurt_Index_Old::user::value = Hurt_Index_New::user::value; 
@@ -596,7 +596,7 @@
                 // Hurt #102 is an instant death Hurt effect, which presumes the screen is already black. 
                 check value ( Hurt_Index_New::user::value == 102 ) {
                     setBehavior(wait in darkness::behavior); 
-                    use camera::op-code, Opcode, payload: 000005000000000000010000003f 
+                    useCamera(global::camera::user::camera, trans_in: pan for 0.0sec, trans_out: fade out for 0.5sec); 
                     global::health_alex::user::value --; 
                     set dying?::user::value = 1; 
                     set Hurt_Index_Old::user::value = Hurt_Index_New::user::value; 
@@ -612,7 +612,7 @@
                 // this hurt type is only used for ALEX in the FINAL BATTLE 
                 check value ( Hurt_Index_New::user::value == 103 ) {
                     setBehavior(wait in darkness-special for Final Battle hurt type 103::behavior); 
-                    use camera::op-code, Opcode, payload: 000005000000000000010000003f 
+                    useCamera(global::camera::user::camera, trans_in: pan for 0.0sec, trans_out: fade out for 0.5sec); 
                     global::health_alex::user::value --; 
                     set dying?::user::value = 1; 
                     set Hurt_Index_Old::user::value = Hurt_Index_New::user::value; 
@@ -1879,7 +1879,7 @@
         if ( global::health_alex::user::value == 0 ) {
             setBehavior(Fade In-Out to checkpoint::behavior); 
             global::Restart Game::sound.play(); 
-            use camera::op-code, Opcode, payload: 000005000000000000010000003f 
+            useCamera(global::camera::user::camera, trans_in: pan for 0.0sec, trans_out: fade out for 0.5sec); 
             playAnimation(youch); 
             flow continue
         } else {
@@ -1915,11 +1915,11 @@
         state_dying::user::value ++; 
         if ( global::ZoosterLives::user::value > 1 ) {
             // The camera waits 4 seconds, then fades out. 
-            use camera::op-code, Opcode, payload: 0080110000000080400100000040 
+            useCamera(global::Death_Cam::camera, trans_in: pan for 4.0sec, trans_out: fade out for 2.0sec); 
             flow continue
         } else {
             // This was the Zooster's last life, so don't fade out (to avoid being black for too long.) 
-            use camera::op-code, Opcode, payload: 00801100000000c04000 
+            useCamera(global::Death_Cam::camera, trans_in: pan for 6.0sec, trans_out: no transition); 
             flow continue
         }
         set global::Power_AlexSuperRoar_Counter::user::value = 0; 
@@ -2021,7 +2021,7 @@
         }
         set global::camera::user::camera.field[0x11] = LastCheckpoint::user::actor.sub[0x01]; 
         set global::Global_Run_Direction::user::value = LastCheckpoint::user::actor.sub[0x01]; 
-        use camera::op-code, Opcode, payload: 00001300010000803f0100000000 
+        useCamera(global::DEFAULT::camera, trans_in: fade in for 1.0sec, trans_out: fade out for 0.0sec); 
         set timer_darkness::user::value = (global::Script Time::value + 0.5); 
         // ----- 
         set global::Clobbered Counter::user::value = 0; 
@@ -2101,7 +2101,7 @@
         }
         set global::camera::user::camera.field[0x11] = LastCheckpoint::user::actor.sub[0x01]; 
         set global::Global_Run_Direction::user::value = LastCheckpoint::user::actor.sub[0x01]; 
-        use camera::op-code, Opcode, payload: 00000500010000803e0100000000 
+        useCamera(global::camera::user::camera, trans_in: fade in for 0.25sec, trans_out: fade out for 0.0sec); 
         set timer_darkness::user::value = (global::Script Time::value + 0.25); 
         for each ( global::active::set::sprite ) {
             set [~each].field[0x07] = 0; 

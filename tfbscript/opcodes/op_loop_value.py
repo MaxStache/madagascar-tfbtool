@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
+from typing import override
 
 from tfbscript.ansi import keyword
 from tfbscript.opcodes.base import Opcode, opcode
-from typing import override
 from tfbscript.payload import PayloadReader
 from tfbscript.rhs import Rhs
 

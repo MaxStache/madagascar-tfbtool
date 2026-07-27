@@ -50,6 +50,7 @@ else:
         """No-op on non-Windows platforms."""
         return True
 
+
 def _detect_default() -> bool:
     if os.environ.get("NO_COLOR") is not None:
         return False

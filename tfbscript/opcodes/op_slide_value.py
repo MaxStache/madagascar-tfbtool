@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
+from typing import override
 
 from tfbscript.ansi import func_call
 from tfbscript.opcodes.base import Opcode, opcode
-from typing import override
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
 from tfbscript.rhs import Rhs
@@ -36,9 +36,9 @@ class OpSlideValue(Opcode):
             + "."
             + func_call(
                 "slide",
-                f"to {str(self.target_value)}",
-                f"over {str(self.interpolation_time)}",
-                f"ease in {str(self.ease_out)}",
-                f"ease out {str(self.ease_in)}",
+                f"to {self.target_value!s}",
+                f"over {self.interpolation_time!s}",
+                f"ease in {self.ease_out!s}",
+                f"ease out {self.ease_in!s}",
             )
         )

@@ -9,6 +9,7 @@ from tfbscript.rhs import Rhs
 
 # TODO: RESEARCH REMAINING BYTE PURPOSE
 
+
 @opcode("spawn actor")
 @dataclass
 class OpSpawnActor(Opcode):
@@ -22,10 +23,15 @@ class OpSpawnActor(Opcode):
     def parse_payload(cls, reader: PayloadReader) -> "OpSpawnActor":
         clone_ref = reader.readRef()
         at_ref = reader.readRef()
-        facing_rhs = reader.readRHS()   
+        facing_rhs = reader.readRHS()
 
         if reader.size_remaining() > 0:
-            return cls(clone_ref=clone_ref, at_ref=at_ref, facing_rhs=facing_rhs, remaining=reader.read_u8())
+            return cls(
+                clone_ref=clone_ref,
+                at_ref=at_ref,
+                facing_rhs=facing_rhs,
+                remaining=reader.read_u8(),
+            )
         return cls(clone_ref=clone_ref, at_ref=at_ref, facing_rhs=facing_rhs)
 
     @override

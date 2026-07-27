@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
+from typing import override
 
 from tfbscript.ansi import method, parentheses
 from tfbscript.opcodes.base import Opcode, opcode
-from typing import override
 from tfbscript.opcodes.enums import MembershipCombiner
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference

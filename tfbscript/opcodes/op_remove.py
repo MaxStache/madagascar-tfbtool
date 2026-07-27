@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
+from typing import override
 
 from tfbscript.ansi import method, parentheses
 from tfbscript.opcodes.base import Opcode, opcode
-from typing import override
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
 
@@ -16,7 +16,7 @@ class OpRemove(Opcode):
     @override
     def parse_payload(cls, reader: PayloadReader) -> "OpRemove":
         return cls(target=reader.readRef())
-    
+
     @override
     def source_line(self, inline: bool = False) -> str:
         return f"{self.target}.{method('remove')}{parentheses('()')};"

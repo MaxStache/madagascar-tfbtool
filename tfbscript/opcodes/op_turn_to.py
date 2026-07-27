@@ -8,10 +8,13 @@ from tfbscript.payload import PayloadReader
 from tfbscript.rhs import Rhs
 
 
-@opcode("turn to", "Turns to either an actor reference or an angle while playing an animation.")
+@opcode(
+    "turn to",
+    "Turns to either an actor reference or an angle while playing an animation.",
+)
 @dataclass
 class OpTurnTo(Opcode):
-    rhs: Rhs = field(default_factory=Rhs) # angle or actor reference
+    rhs: Rhs = field(default_factory=Rhs)  # angle or actor reference
     animation: AnimationMapping = field(default=AnimationMapping.ambient)
 
     @classmethod

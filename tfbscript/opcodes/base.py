@@ -191,7 +191,9 @@ class Opcode:
                     + f"-> {payload_reader.offset}/{len(payload_reader.data)} bytes read",
                     file=sys.stderr,
                 )
-                throwOnPayloadRemaining = debugOptions.get("throwOnPayloadRemaining", False)
+                throwOnPayloadRemaining = debugOptions.get(
+                    "throwOnPayloadRemaining", False
+                )
                 if throwOnPayloadRemaining:
                     raise ValueError(
                         f"Opcode {opcode_class.__name__} did not consume all payload bytes "

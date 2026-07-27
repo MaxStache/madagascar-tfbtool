@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
 
+
 def str_set() -> set[str]:
     return set()
+
 
 @dataclass
 class DebugStore:

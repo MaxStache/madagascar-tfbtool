@@ -13,7 +13,6 @@ class OpCheckReference(Opcode):
     ref1: Reference = field(default_factory=Reference)
     ref2: Reference = field(default_factory=Reference)
 
-
     @classmethod
     @override
     def parse_payload(cls, reader: PayloadReader) -> "OpCheckReference":

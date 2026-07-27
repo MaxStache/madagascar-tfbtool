@@ -1,7 +1,14 @@
 from dataclasses import dataclass, field
 from typing import override
 
-from tfbscript.ansi import Color, color_text, comparison, func_call, parentheses, variable
+from tfbscript.ansi import (
+    Color,
+    color_text,
+    comparison,
+    func_call,
+    parentheses,
+    variable,
+)
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import RelOp
 from tfbscript.payload import PayloadReader

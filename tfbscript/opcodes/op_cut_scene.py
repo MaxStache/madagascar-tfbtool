@@ -8,6 +8,7 @@ from tfbscript.payload import PayloadReader
 
 # TODO: Verify
 
+
 @opcode("cut-scene")
 @dataclass
 class OpCutScene(Opcode):

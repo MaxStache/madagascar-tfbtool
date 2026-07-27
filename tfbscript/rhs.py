@@ -21,7 +21,9 @@ _OPERATORS = {
 @dataclass
 class Rhs:
     tag: int = 0x00
-    kind: str = "null"  # 'int' | 'float' | 'color' | 'pair' | 'reference' | 'expression'
+    kind: str = (
+        "null"  # 'int' | 'float' | 'color' | 'pair' | 'reference' | 'expression'
+    )
     value: object = None
     operator: int | None = None
     rhs: "Rhs | None" = None

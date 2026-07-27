@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from tfbscript.binary import BinaryReader
 
 LOCAL_BASE = 0x3FC0D
-BUILTIN_BASE = 0x3FFFA 
+BUILTIN_BASE = 0x3FFFA
 NULL_REF = 0xFFFFFFFF
 
 BUILTINS = {

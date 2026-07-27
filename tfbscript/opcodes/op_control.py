@@ -27,11 +27,8 @@ class OpControl(Opcode):
             else:
                 readyness_requirement = ControlRequirement.Strict
 
-        return cls(
-            target=target,
-            readyness_requirement=readyness_requirement
-        )
-    
+        return cls(target=target, readyness_requirement=readyness_requirement)
+
     @override
     def source_line(self, inline: bool = False) -> str:
-        return f"{keyword("control (")} {self.target}, {method("requirement:")} {self.readyness_requirement} {keyword(")")}"
+        return f"{keyword('control (')} {self.target}, {method('requirement:')} {self.readyness_requirement} {keyword(')')}"

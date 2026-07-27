@@ -35,7 +35,9 @@ class OpIfElse(Opcode):
         for then_child in condition.children:
             then_child.print_tree(indent + 1)
 
-        print(f"{'    ' * (indent + 1)}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}")
+        print(
+            f"{'    ' * (indent + 1)}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}"
+        )
 
         else_children = self.children[1:]
 
@@ -45,13 +47,15 @@ class OpIfElse(Opcode):
         # ELSE IF
         elif len(else_children) == 1 and isinstance(else_children[0], OpIfElse):
             fist_child = else_children[0]
-            fist_child.print_tree(indent, chained=True) # type: ignore
+            fist_child.print_tree(indent, chained=True)  # type: ignore
         # ELSE
         else:
             print(pad + keyword("} else {"))
             for else_child in else_children:
                 else_child.print_tree(indent + 1)
 
-            print(f"{'    ' * (indent + 1)}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}")
+            print(
+                f"{'    ' * (indent + 1)}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}"
+            )
 
             print(pad + keyword("}"))

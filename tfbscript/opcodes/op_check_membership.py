@@ -25,7 +25,9 @@ class OpCheckMembership(Opcode):
 
     @override
     def source_line(self, inline: bool = False) -> str:
-        condition = f"{self.ref1} {comparison(self.membershipTest.symbol())} {self.ref2}"
+        condition = (
+            f"{self.ref1} {comparison(self.membershipTest.symbol())} {self.ref2}"
+        )
         if inline:
             return condition
 
