@@ -7,8 +7,8 @@ from tfbscript.payload import PayloadReader
 
 
 @opcode(
-    "comment"
-)  # TODO: the actual opcode name is "comment:" with a : at end, but the parser is splitting it wrongly to [comment, :op-code]
+    "comment:"
+)
 @dataclass
 class OpComment(Opcode):
     content: str = ""

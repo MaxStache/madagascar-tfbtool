@@ -1,6 +1,7 @@
 """The three string tables at the head of every TFB script file."""
 
 from dataclasses import dataclass
+import re
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -19,26 +20,34 @@ class StringTableEntry:
     string: str
     metadata: bytes  # 4 bytes, usually zero
 
+    _split: list[str]
+
     @classmethod
     def read(cls, reader: "BinaryReader") -> "StringTableEntry":
         length = reader.read_u8()
         string = reader.read_string(length)
         metadata = reader.read_bytes(4)
-        return cls(string, metadata)
+
+        # Magic!
+        parts = re.split(r'(?=::(?!:))', string)
+        parts = [parts[0]] + [p[2:] for p in parts[1:]]
+
+        return cls(string, metadata, parts)
 
     @property
     def name(self) -> str:
-        return self.string.split("::")[0]
-
-    @property
-    def type(self) -> str:
-        return self.string.split("::")[-1]
+        # ABC::user::value
+        return self._split[0]
 
     @property
     def category(self) -> str | None:
-        parts = self.string.split("::")
-        return parts[-2] if len(parts) > 2 else None
+        # abc::USER::value
+        return self._split[-2] if len(self._split) > 2 else None
 
+    @property
+    def type(self) -> str:
+        # abc::user::VALUE
+        return self._split[-1]
 
 @dataclass
 class StringTable:

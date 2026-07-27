@@ -1,0 +1,538 @@
+['comment:', 'op-code']
+['check value', 'op-code']
+['remove', 'op-code']
+['set value', 'op-code']
+['create variable', 'op-code']
+['slide value', 'op-code']
+['set reference', 'op-code']
+['displace', 'op-code']
+['reset', 'op-code']
+['dec value', 'op-code']
+['check message', 'op-code']
+['play sound', 'op-code']
+['spawn actor', 'op-code']
+['set behavior', 'op-code']
+['print', 'op-code']
+['if/else', 'op-code']
+['check reference', 'op-code']
+['inc value', 'op-code']
+['move to', 'op-code']
+['for each', 'op-code']
+['find subset', 'op-code']
+['change membership', 'op-code']
+['cut-scene', 'op-code']
+['use camera', 'op-code']
+['control', 'op-code']
+['play animation', 'op-code']
+['Balloon_Prohibit?', 'user', 'value']
+['Helium Cutscene Played', 'user', 'value']
+['players', 'set', 'actor']
+['TankGamePlaying', 'user', 'value']
+['Marty Actor', 'actor']
+['Cut-scene Active', 'value']
+['hit actor', 'message']
+['FishingLure', 'actor']
+['BalloonPop', 'sound']
+['Script Time', 'value']
+['Coin_Splode', 'particle']
+['Global Leader', 'user', 'actor']
+['Ballon Counter', 'sprite']
+['Ballon Counter Icon', 'sprite']
+['Dialogue_Active', 'user', 'value']
+['hit ground', 'message']
+['hit wall', 'message']
+['Helium_Marty_line', 'set', 'sound']
+['camera', 'user', 'camera']
+['active', 'set', 'sprite']
+['Closeup_Marty', 'camera']
+['Marty_Helium', 'sound']
+['DEFAULT', 'camera']
+['Marty_Helium_Collect_more', 'sound']
+['Marty_Helium_GotIt', 'sound']
+['Move', 'behavior']
+['Pop', 'behavior']
+['Pop_Penguin', 'behavior']
+['Special Helium Cutscene', 'behavior']
+['Collect More  Helium Cutscene', 'behavior']
+['Success', 'behavior']
+['Adjust all the Dialogue', 'behavior']
+['Death Timer', 'user', 'value']
+['My Splode', 'user', 'particle']
+['Remembered Position', 'user', 'actor']
+['Random', 'user', 'value']
+['Temp', 'user', 'value']
+['altitude adjustment timer', 'user', 'value']
+['Timer', 'user', 'value']
+['PlayerDistance', 'user', 'value']
+['Switch', 'user', 'value']
+['Slide TImer', 'user', 'value']
+['CameraOrientation', 'user', 'value']
+['Visable Sprites', 'set', 'sprite']
+['my', 'actor']
+
+[ PRESCRIPT ] {
+
+    [ STARTUP ] {
+        comment:::op-code, Opcode, payload: 10427574746572666c7920736372697074 
+        comment:::op-code, Opcode, payload: 04426c7565 
+        check value ( global::Balloon_Prohibit?::user::value == 1 ) {
+            self.remove(); 
+            flow end
+        }
+        check value ( global::Helium Cutscene Played::user::value >= 2 ) {
+            self.remove(); 
+            flow end
+        }
+        check value ( self.field[0x34] == 1 ) {
+            set self.field[0x37] = Color(49, 69, 255, 255); 
+            flow continue
+        }
+        comment:::op-code, Opcode, payload: 03726564 
+        check value ( self.field[0x34] == 2 ) {
+            set self.field[0x37] = Color(239, 44, 0, 255); 
+            flow continue
+        }
+        comment:::op-code, Opcode, payload: 05477265656e 
+        check value ( self.field[0x34] == 3 ) {
+            set self.field[0x37] = Color(90, 251, 99, 255); 
+            flow continue
+        }
+        comment:::op-code, Opcode, payload: 06507572706c65 
+        check value ( self.field[0x34] == 4 ) {
+            set self.field[0x37] = Color(132, 0, 231, 255); 
+            flow continue
+        }
+        comment:::op-code, Opcode, payload: 0659656c6c6f77 
+        check value ( self.field[0x34] == 5 ) {
+            set self.field[0x37] = Color(255, 247, 107, 255); 
+            flow continue
+        }
+        comment:::op-code, Opcode, payload: 00 
+        var Death Timer::user::value : value; 
+        var My Splode::user::particle : particle; 
+        set self.field[0x30] = 1; 
+        set self.field[0x0a] = 15; 
+        set self.field[0x33] = 1; 
+        var Remembered Position::user::actor : actor; 
+        set self.field[0x0c] = 130; 
+        set self.field[0x31] = 1; 
+        var Random::user::value : value; 
+        set self.field[0x37].sub[0x04] = 0; 
+        self.field[0x37].sub[0x04].slide(to 255, over 0.5, ease in global::Balloon_Prohibit?::user::value, ease out global::Balloon_Prohibit?::user::value); 
+        var Temp::user::value : value; 
+        set Temp::user::value = 0; 
+        set reference *Remembered Position::user::actor = global::players::set::actor@1; 
+        Remembered Position::user::actor@2.displace(relative, length: 360, heading: 2, pitch: 250); 
+        set self.field[0x12] = 2; 
+        set self.field[0x0e] = 1; 
+        set self.field[0x0e] = (self.field[0x0e] + 3); 
+        set self.field[0x13] = 1; 
+        set self.field[0x13] = (self.field[0x13] + 3); 
+        set self.field[0x1b] = 1.8; 
+        set self.field[0x1a] = 10; 
+        set self.field[0x1d] = 0; 
+        set self.field[0x1c] = 10; 
+        set self.field[0x10] = 750; 
+        set self.field[0x11] = 100; 
+        set self.field[0x15] = 500; 
+        set self.field[0x16] = 250; 
+        set self.field[0x0f] = 150; 
+        set self.field[0x14] = 150; 
+        set self.field[0x2d] = 1; 
+        set self.field[0x24] = 2; 
+        set self.field[0x25] = 2; 
+        set self.field[0x26] = 4; 
+        set self.field[0x23] = 3; 
+        var altitude adjustment timer::user::value : value; 
+        var Timer::user::value : value; 
+        var PlayerDistance::user::value : value; 
+        var Switch::user::value : value; 
+        var Slide TImer::user::value : value; 
+        var CameraOrientation::user::value : value; 
+        var Visable Sprites::set::sprite : sprite; 
+        flow continue
+    }
+    [ STARTUP: END ]
+
+
+    [ SHUTDOWN ] 
+    [ SHUTDOWN: END ]
+
+    check value ( global::TankGamePlaying::user::value > 0 ) {
+        check value ( global::Marty Actor::actor <= 8 ) {
+            self.reset(); 
+            flow end
+        }
+        flow end
+    }
+    altitude adjustment timer::user::value --; 
+    check value ( global::Cut-scene Active::value == 0 ) {
+        check message ( global::hit actor::message, sent by: global::FishingLure::actor, where: value >= 0 ) {
+            set self.field[0x0b] = 0; 
+            global::BalloonPop::sound.play(); 
+            set Death Timer::user::value = (global::Script Time::value + 0.3); 
+            set self.field[0x37].sub[0x04] = 0; 
+            spawn actor (global::Coin_Splode::particle, at: self, facing: 0); {
+                self.displace(relative, length: 0, heading: 90, pitch: 5); 
+                set self.field[0x03] = 0.4; 
+                set self.field[0x01] = 30; 
+                set reference *My Splode::user::particle = self; 
+                flow continue
+            }
+            set Death Timer::user::value = (global::Script Time::value + 0.3); 
+            set Slide TImer::user::value = (global::Script Time::value + 3); 
+            setBehavior(Pop_Penguin::behavior); 
+            flow end
+        }
+        comment:::op-code, Opcode, payload: 0a48697420506c61796572 
+        check value ( global::Balloon_Prohibit?::user::value == 0 ) {
+            check message ( global::hit actor::message, sent by: global::Global Leader::user::actor, where: value >= 0 ) {
+                print([~found], "BBBBAAAAALLLOOOON POPED"); 
+                if ( Death Timer::user::value > 0 ) {
+                    flow continue
+                } else {
+                    global::BalloonPop::sound.play(); 
+                    set self.field[0x37].sub[0x04] = 0; 
+                    spawn actor (global::Coin_Splode::particle, at: self, facing: 0); {
+                        self.displace(relative, length: 0, heading: 90, pitch: 5); 
+                        set self.field[0x03] = 0.4; 
+                        set self.field[0x01] = 30; 
+                        set reference *My Splode::user::particle = self; 
+                        flow continue
+                    }
+                    set Death Timer::user::value = (global::Script Time::value + 0.3); 
+                    set Slide TImer::user::value = (global::Script Time::value + 3); 
+                    check reference ( *[~found] is reference to global::Marty Actor::actor ) {
+                        global::Ballon Counter::sprite.field[0x01] ++; 
+                        comment:::op-code, Opcode, payload: 1848656c69756d207374756666207374617274732068657265 
+                        set global::Ballon Counter::sprite.field[0x07] = 1; 
+                        set global::Ballon Counter Icon::sprite.field[0x07] = 1; 
+                        global::Ballon Counter::sprite.field[0x02].sub[0x01].slide(to 580, over 0.5, ease in global::Balloon_Prohibit?::user::value, ease out global::Balloon_Prohibit?::user::value); 
+                        global::Ballon Counter Icon::sprite.field[0x02].sub[0x01].slide(to 580, over 0.5, ease in global::Balloon_Prohibit?::user::value, ease out global::Balloon_Prohibit?::user::value); 
+                        check value ( global::Dialogue_Active::user::value < 2 ) {
+                            check value ( global::Helium Cutscene Played::user::value == 0 ) {
+                                setBehavior(Special Helium Cutscene::behavior); 
+                                My Splode::user::particle.remove(); 
+                                flow end
+                            }
+                            check value ( global::Ballon Counter::sprite.field[0x01] > 4 ) {
+                                check value ( global::Helium Cutscene Played::user::value == 1 ) {
+                                    setBehavior(Collect More  Helium Cutscene::behavior); 
+                                    flow end
+                                }
+                                flow continue
+                            }
+                            check value ( global::Ballon Counter::sprite.field[0x01] == 6 ) {
+                                check value ( global::Helium Cutscene Played::user::value == 2 ) {
+                                    setBehavior(Success::behavior); 
+                                    flow end
+                                }
+                                flow continue
+                            }
+                            flow continue
+                        }
+                        comment:::op-code, Opcode, payload: 1148656c69756d20656e64732061626f7665 
+                        flow continue
+                    }
+                    setBehavior(Pop::behavior); 
+                    flow continue
+                }
+                flow continue
+            }
+            flow continue
+        }
+        flow continue
+    }
+    flow continue
+}
+[ PRESCRIPT: END ]
+
+
+[ Behavior: Move ] {
+    check value ( self.field[0x19] == 99 ) 
+    check value ( altitude adjustment timer::user::value <= 0 ) {
+        if ( self.field[0x08] >= 12 ) {
+            set Random::user::value = 0; 
+            flow continue
+        } else {
+            set Random::user::value = 4; 
+            flow continue
+        }
+        if ( Random::user::value >= 3 ) {
+            self.displace(relative, length: 0, heading: 15, pitch: 0); 
+            self.field[0x07].displace(relative, length: 5, heading: 90, pitch: 5); 
+            flow continue
+        } else {
+            set Random::user::value = 345; 
+            self.displace(relative, length: 0, heading: (Random::user::value + 15), pitch: 0); 
+            self.field[0x07].displace(relative, length: 5, heading: 270, pitch: 5); 
+            flow continue
+        }
+        check message ( global::hit ground::message ) {
+            self.field[0x07].displace(relative, length: 0, heading: 90, pitch: 1); 
+            self.field[0x07].displace(relative, length: 0, heading: 90, pitch: 3); 
+            flow continue
+        }
+        if ( check message ( global::hit wall::message ) ) {
+            Remembered Position::user::actor@2.displace(relative, length: (self.sub[0x01] + 180), heading: 0, pitch: 250); 
+            set altitude adjustment timer::user::value = 35; 
+            flow continue
+        } else {
+            Remembered Position::user::actor@2.displace(relative, length: 360, heading: 6, pitch: 250); 
+            set altitude adjustment timer::user::value = 3; 
+            set altitude adjustment timer::user::value = (altitude adjustment timer::user::value + 4); 
+            flow continue
+        }
+        flow continue
+    }
+    when moveTo(Remembered Position::user::actor@2, set_dir: forward, animation: slowest move, until_within: 6) is done, do: {
+        Remembered Position::user::actor@2.displace(relative, length: 360, heading: 6, pitch: 250); 
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Move: END ]
+
+
+[ Behavior: Pop ] {
+    check value ( Death Timer::user::value < global::Script Time::value ) {
+        My Splode::user::particle.remove(); 
+        self.remove(); 
+        flow continue
+    }
+    comment:::op-code, Opcode, payload: 1848656c69756d207374756666207374617274732068657265 
+    check value ( global::Ballon Counter::sprite.field[0x01] == 6 ) {
+        comment:::op-code, Opcode, payload: 4741646a75737420616c6c20746865204469616c6967756520746f2062652048656c69756d2c20536574206973206275696c7420696e204f70656e6e696e67204375747363656e65 
+        for each ( global::Helium_Marty_line::set::sound ) {
+            set [~each].field[0x02] = 140; 
+            flow continue
+        }
+        set global::Helium Cutscene Played::user::value = 2; 
+        flow continue
+    }
+    check value ( Slide TImer::user::value <= global::Script Time::value ) {
+        global::Ballon Counter::sprite.field[0x02].sub[0x01].slide(to 700, over 0.5, ease in global::Balloon_Prohibit?::user::value, ease out global::Balloon_Prohibit?::user::value); 
+        global::Ballon Counter Icon::sprite.field[0x02].sub[0x01].slide(to 700, over 0.5, ease in global::Balloon_Prohibit?::user::value, ease out global::Balloon_Prohibit?::user::value); {
+            self.remove(); 
+            flow continue
+        }
+        flow continue
+    }
+    comment:::op-code, Opcode, payload: 1148656c69756d20656e64732061626f7665 
+    flow continue
+}
+[ Behavior Pop: END ]
+
+
+[ Behavior: Pop_Penguin ] {
+    check value ( Death Timer::user::value < global::Script Time::value ) {
+        My Splode::user::particle.remove(); 
+        self.remove(); 
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Pop_Penguin: END ]
+
+
+[ Behavior: Special Helium Cutscene ] {
+    check value ( Switch::user::value == 0 ) {
+        set CameraOrientation::user::value = global::camera::user::camera.field[0x11]; 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            comment:::op-code, Opcode, payload: 5f23232323232323232323232323232323232323232323232323232323232323234869646520416c6c20746865205370726974657323232323232323232323232323232323232323232323232323232323232323232323232323232323232323 
+            global::active::set::sprite.sub[0x07].filter((val) => { val == 1 }); {
+                Visable Sprites::set::sprite.include([~subset]); 
+                for each ( [~subset] ) {
+                    set [~each].field[0x07] = 0; 
+                    flow continue
+                }
+                flow continue
+            }
+            comment:::op-code, Opcode, payload: 57232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323 
+            flow continue
+        }
+        cutScene(pause); 
+        set reference *global::Closeup_Marty::camera.field[0x01] = global::Marty Actor::actor; 
+        set reference *global::Closeup_Marty::camera.field[0x06] = global::Marty Actor::actor; 
+        useCamera(global::Closeup_Marty::camera, trans_in: pan for 0.0sec, trans_out: no transition); 
+        Switch::user::value ++; 
+        flow continue
+    }
+    check value ( Switch::user::value == 1 ) {
+        My Splode::user::particle.remove(); 
+        set global::Marty_Helium::sound.field[0x02] = 140; 
+        control ( global::Marty Actor::actor, requirement: strict ) {
+            global::Marty_Helium::sound.play(); 
+            playAnimation(extra 25); 
+            flow continue
+        }
+        Switch::user::value ++; 
+        flow continue
+    }
+    check value ( Switch::user::value == 2 ) {
+        control ( global::Marty Actor::actor, requirement: strict ) {
+            playAnimation(extra 25); 
+            flow continue
+        }
+        check value ( global::Marty_Helium::sound.field[0x04] <= 0 ) {
+            Switch::user::value ++; 
+            flow continue
+        }
+        flow continue
+    }
+    check value ( Switch::user::value == 3 ) {
+        useCamera(global::DEFAULT::camera, trans_in: pan for 0.0sec, trans_out: no transition); 
+        set global::camera::user::camera.field[0x11] = CameraOrientation::user::value; 
+        set global::Helium Cutscene Played::user::value = 1; 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            comment:::op-code, Opcode, payload: 5653484f5720544845205350524954455320232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323 
+            for each ( Visable Sprites::set::sprite ) {
+                set [~each].field[0x07] = 1; 
+                flow continue
+            }
+            Visable Sprites::set::sprite.remove(Visable Sprites::set::sprite); 
+            comment:::op-code, Opcode, payload: 57232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323 
+            flow continue
+        }
+        cutScene(resume); 
+        setBehavior(Pop::behavior); 
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Special Helium Cutscene: END ]
+
+
+[ Behavior: Collect More  Helium Cutscene ] {
+    check value ( Switch::user::value == 0 ) {
+        set CameraOrientation::user::value = global::camera::user::camera.field[0x11]; 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            comment:::op-code, Opcode, payload: 5f23232323232323232323232323232323232323232323232323232323232323234869646520416c6c20746865205370726974657323232323232323232323232323232323232323232323232323232323232323232323232323232323232323 
+            global::active::set::sprite.sub[0x07].filter((val) => { val == 1 }); {
+                Visable Sprites::set::sprite.include([~subset]); 
+                for each ( [~subset] ) {
+                    set [~each].field[0x07] = 0; 
+                    flow continue
+                }
+                flow continue
+            }
+            comment:::op-code, Opcode, payload: 57232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323 
+            flow continue
+        }
+        cutScene(pause); 
+        useCamera(global::Closeup_Marty::camera, trans_in: pan for 0.0sec, trans_out: no transition); 
+        Switch::user::value ++; 
+        flow continue
+    }
+    check value ( Switch::user::value == 1 ) {
+        set global::Marty_Helium_Collect_more::sound.field[0x02] = 120; 
+        control ( global::Marty Actor::actor, requirement: strict ) {
+            global::Marty_Helium_Collect_more::sound.play(); 
+            playAnimation(extra 25); 
+            flow continue
+        }
+        Switch::user::value ++; 
+        flow continue
+    }
+    check value ( Switch::user::value == 2 ) {
+        control ( global::Marty Actor::actor, requirement: strict ) {
+            playAnimation(extra 25); 
+            flow continue
+        }
+        check value ( global::Marty_Helium_Collect_more::sound.field[0x04] <= 0 ) {
+            Switch::user::value ++; 
+            flow continue
+        }
+        flow continue
+    }
+    check value ( Switch::user::value == 3 ) {
+        useCamera(global::DEFAULT::camera, trans_in: pan for 0.0sec, trans_out: no transition); 
+        set global::camera::user::camera.field[0x11] = CameraOrientation::user::value; 
+        set global::Helium Cutscene Played::user::value = 2; 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            comment:::op-code, Opcode, payload: 5653484f5720544845205350524954455320232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323 
+            for each ( Visable Sprites::set::sprite ) {
+                set [~each].field[0x07] = 1; 
+                flow continue
+            }
+            Visable Sprites::set::sprite.remove(Visable Sprites::set::sprite); 
+            comment:::op-code, Opcode, payload: 57232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323 
+            flow continue
+        }
+        cutScene(resume); 
+        setBehavior(Pop::behavior); 
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Collect More  Helium Cutscene: END ]
+
+
+[ Behavior: Success ] {
+    check value ( Switch::user::value == 0 ) {
+        set CameraOrientation::user::value = global::camera::user::camera.field[0x11]; 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            comment:::op-code, Opcode, payload: 5f23232323232323232323232323232323232323232323232323232323232323234869646520416c6c20746865205370726974657323232323232323232323232323232323232323232323232323232323232323232323232323232323232323 
+            global::active::set::sprite.sub[0x07].filter((val) => { val == 1 }); {
+                Visable Sprites::set::sprite.include([~subset]); 
+                for each ( [~subset] ) {
+                    set [~each].field[0x07] = 0; 
+                    flow continue
+                }
+                flow continue
+            }
+            comment:::op-code, Opcode, payload: 57232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323 
+            flow continue
+        }
+        cutScene(pause); 
+        useCamera(global::Closeup_Marty::camera, trans_in: pan for 0.0sec, trans_out: no transition); 
+        Switch::user::value ++; 
+        flow continue
+    }
+    check value ( Switch::user::value == 1 ) {
+        set global::Marty_Helium_GotIt::sound.field[0x02] = 140; 
+        control ( global::Marty Actor::actor, requirement: strict ) {
+            global::Marty_Helium_GotIt::sound.play(); 
+            playAnimation(extra 25); 
+            flow continue
+        }
+        Switch::user::value ++; 
+        flow continue
+    }
+    check value ( Switch::user::value == 2 ) {
+        control ( global::Marty Actor::actor, requirement: strict ) {
+            playAnimation(extra 25); 
+            flow continue
+        }
+        check value ( global::Marty_Helium_GotIt::sound.field[0x04] <= 0 ) {
+            Switch::user::value ++; 
+            flow continue
+        }
+        flow continue
+    }
+    check value ( Switch::user::value == 3 ) {
+        useCamera(global::DEFAULT::camera, trans_in: pan for 0.0sec, trans_out: no transition); 
+        set global::camera::user::camera.field[0x11] = CameraOrientation::user::value; 
+        set global::Helium Cutscene Played::user::value = 3; 
+        check value ( self.field[0x01] == self.field[0x01] ) {
+            comment:::op-code, Opcode, payload: 5653484f5720544845205350524954455320232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323 
+            for each ( Visable Sprites::set::sprite ) {
+                set [~each].field[0x07] = 1; 
+                flow continue
+            }
+            Visable Sprites::set::sprite.remove(Visable Sprites::set::sprite); 
+            comment:::op-code, Opcode, payload: 57232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323 
+            flow continue
+        }
+        cutScene(resume); 
+        setBehavior(Pop::behavior); 
+        flow continue
+    }
+    flow continue
+}
+[ Behavior Success: END ]
+
+
+[ Behavior: Adjust all the Dialogue ] 
+[ Behavior Adjust all the Dialogue: END ]
+
