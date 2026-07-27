@@ -91,8 +91,6 @@ Another GIGANTIC ENORMOUS thanks to all the contributors to igRewrite8, and to [
 
 - `spawn actor::op-code` - find out purpose of remaining byte
 
-- `use camera::op-code` - implement
-
 - enums.py, CutsceneCommand - Figure out what 0 is
 
 - `displace::op-code` - confirm fields
