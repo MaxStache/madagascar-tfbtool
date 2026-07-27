@@ -46,7 +46,7 @@ Another GIGANTIC ENORMOUS thanks to all the contributors to igRewrite8, and to [
 
 ## Opcode coverage
 
-**35 / 36 opcodes implemented** - 1 remaining.
+**36 / 36 opcodes implemented**.
 
 - [x] comment
 - [x] print
@@ -82,7 +82,7 @@ Another GIGANTIC ENORMOUS thanks to all the contributors to igRewrite8, and to [
 - [x] find subset
 - [x] check membership
 - [x] change membership
-- [ ] use camera
+- [x] use camera
 - [x] remove
 
 ### Needs attention / TODOs

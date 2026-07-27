@@ -15,6 +15,7 @@ from tfbscript.opcodes.block import BlockOpcode
 from tfbscript.opcodes.enums import RelOp
 from tfbscript.opcodes.op_behavior_implementation import OpBehaviorImplementation
 from tfbscript.opcodes.op_change_membership import OpChangeMembership
+from tfbscript.opcodes.op_check_fov import OpCheckFOV
 from tfbscript.opcodes.op_check_membership import OpCheckMembership
 from tfbscript.opcodes.op_check_message import OpCheckMessage
 from tfbscript.opcodes.op_check_reference import OpCheckReference
@@ -51,7 +52,7 @@ from tfbscript.opcodes.op_startup import OpStartup
 from tfbscript.opcodes.op_stop_sound import OpStopSound
 from tfbscript.opcodes.op_teleport_to import OpTeleportTo
 from tfbscript.opcodes.op_turn_to import OpTurnTo
-from tfbscript.opcodes.op_check_fov import OpCheckFOV
+from tfbscript.opcodes.op_use_camera import OpUseCamera
 
 __all__ = [
     "OPCODE_REGISTRY",
@@ -59,6 +60,7 @@ __all__ = [
     "InstructionFlags",
     "OpBehaviorImplementation",
     "OpChangeMembership",
+    "OpCheckFOV",
     "OpCheckMembership",
     "OpCheckMessage",
     "OpCheckReference",
@@ -95,8 +97,8 @@ __all__ = [
     "OpStopSound",
     "OpTeleportTo",
     "OpTurnTo",
+    "OpUseCamera",
     "Opcode",
     "ParserContext",
     "RelOp",
-    "OpCheckFOV",
 ]
