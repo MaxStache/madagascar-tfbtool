@@ -93,6 +93,12 @@ Another GIGANTIC ENORMOUS thanks to all the contributors to igRewrite8, and to [
 
 - `use camera::op-code` - implement
 
+- enums.py, CutsceneCommand - Figure out what 0 is
+
+- `comment:::op-code` - the ops name is actually comment: but we split it wrong to `comment`, `:op-code` instead the expected result should be `comment:`, `op-code`
+
+- `displace::op-code` - confirm fields
+
 ## Contributing
 
 Contributions as issues, pull requests, or any other form are welcome and wanted.
