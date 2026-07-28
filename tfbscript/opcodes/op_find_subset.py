@@ -2,11 +2,8 @@ from dataclasses import dataclass, field
 from typing import override
 
 from tfbscript.ansi import (
-    Color,
-    color_text,
     comparison,
     func_call,
-    parentheses,
     variable,
 )
 from tfbscript.opcodes.base import Opcode, opcode
@@ -35,11 +32,14 @@ class OpFindSubset(Opcode):
 
     @override
     def source_line(self, inline: bool = False) -> str:
-        # Rendered as: set.filter((val) => { val <op> rhs })
+        # Rendered as: set.filter(val <op> rhs )
         val = variable("val")
-        arrow = color_text("=>", Color.INLINE_FUNC_OP)
         lambda_src = (
-            f"{parentheses('(')}{val}{parentheses(')')} {arrow} "
-            f"{parentheses('{')} {val} {comparison(self.rel_op.symbol())} {self.rhs} {parentheses('}')}"
+            f"{val} {comparison(self.rel_op.symbol())} {self.rhs}"
         )
-        return f"{self.set_ref}.{func_call('filter', lambda_src)}"
+        set_ref_str = str(self.set_ref)
+
+        if self.context is not None:
+            self.context.last_find_subset = self
+
+        return f"{set_ref_str}.{func_call('filter', lambda_src)}"

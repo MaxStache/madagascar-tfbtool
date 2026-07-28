@@ -1,7 +1,7 @@
 """The three string tables at the head of every TFB script file."""
 
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -31,6 +31,12 @@ class StringTableEntry:
         # Magic!
         parts = re.split(r'(?=::(?!:))', string)
         parts = [parts[0]] + [p[2:] for p in parts[1:]]
+
+        if len(parts) < 2:
+            raise ValueError(f"String table entry '{string}' does not have a type part")
+
+        if len(parts) > 3:
+            raise ValueError(f"String table entry '{string}' has too many parts")
 
         return cls(string, metadata, parts)
 

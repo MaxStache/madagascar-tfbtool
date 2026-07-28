@@ -3,7 +3,7 @@
 import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Self, TypeVar
 
 from tfbscript.ansi import flow_control, keyword
 from tfbscript.debug import DebugStore
@@ -12,6 +12,7 @@ from tfbscript.string_table import StringTable
 
 if TYPE_CHECKING:
     from tfbscript.binary import BinaryReader
+    from tfbscript.opcodes.op_find_subset import OpFindSubset
 
 
 @dataclass
@@ -84,18 +85,26 @@ class ParserContext:
 
     control_block_counter: int = 0
 
+    # Whichever "find subset::op-code" call most recently ran, in the same
+    # depth-first order opcodes are rendered (source_line). Lets a later
+    # reference to the "[~subset]" builtin resolve its type from it.
+    last_find_subset: "OpFindSubset | None" = None
+
 
 # Opcode-table name (e.g. "set value") -> Opcode subclass. Populated by the
 # @opcode decorator; importing tfbscript.opcodes registers all implementations.
 OPCODE_REGISTRY: dict[str, type["Opcode"]] = {}
 
 
+_OpcodeT = TypeVar("_OpcodeT", bound="Opcode")
+
+
 def opcode(
     name: str, description: str = ""
-) -> Callable[[type["Opcode"]], type["Opcode"]]:
+) -> Callable[[type[_OpcodeT]], type[_OpcodeT]]:
     """Class decorator that registers an Opcode subclass under its table name."""
 
-    def register(cls: type["Opcode"]) -> type["Opcode"]:
+    def register(cls: type[_OpcodeT]) -> type[_OpcodeT]:
         OPCODE_REGISTRY[name] = cls
         return cls
 
@@ -177,6 +186,7 @@ class Opcode:
             context.global_refs,
             context.local_refs,
             little_endian=True,
+            context=context,
         )
 
         try:

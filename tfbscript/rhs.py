@@ -9,6 +9,7 @@ from tfbscript.string_table import StringTable
 
 if TYPE_CHECKING:
     from tfbscript.binary import BinaryReader
+    from tfbscript.opcodes.base import ParserContext
 
 _OPERATORS = {
     0: "+",
@@ -34,6 +35,7 @@ class Rhs:
         reader: "BinaryReader",
         global_refs: StringTable,
         local_refs: StringTable,
+        context: "ParserContext | None" = None,
     ) -> "Rhs":
         """Parse a 5-11 byte TFB-Script RHS.
 
@@ -41,6 +43,8 @@ class Rhs:
             reader: BinaryReader positioned at the RHS.
             global_refs: the script's 2nd string table (globals) for name resolution.
             local_refs: the script's 3rd string table (locals) for name resolution.
+            context: the script's parser context, threaded through to any
+                embedded References so they can resolve builtin types.
         Returns:
             An Rhs.
         """
@@ -70,13 +74,13 @@ class Rhs:
 
         # Reference, optionally extended to an expression by an operator tail.
         if tag == 0x02:
-            ref = Reference.read(reader, global_refs, local_refs)
+            ref = Reference.read(reader, global_refs, local_refs, context)
 
             if available < 11:
                 return cls(tag, "reference", ref)
 
             op = reader.read_u8()
-            rhs = Rhs.read(reader, global_refs, local_refs)
+            rhs = Rhs.read(reader, global_refs, local_refs, context)
             return cls(tag, "expression", ref, operator=op, rhs=rhs)
 
         # Integer
