@@ -39,7 +39,4 @@ class OpFindSubset(Opcode):
         )
         set_ref_str = str(self.set_ref)
 
-        if self.context is not None:
-            self.context.last_find_subset = self
-
         return f"{set_ref_str}.{func_call('filter', lambda_src)}"

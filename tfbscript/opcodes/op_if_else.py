@@ -32,30 +32,43 @@ class OpIfElse(Opcode):
             f"{pad}{keyword(keyword_str)} {condition.source_line(inline=True)} {keyword(') {')}"
         )
 
-        for then_child in condition.children:
-            then_child.print_tree(indent + 1)
-
-        print(
-            f"{'    ' * (indent + 1)}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}"
-        )
-
-        else_children = self.children[1:]
-
-        # None
-        if not else_children:
-            print(pad + keyword("}"))
-        # ELSE IF
-        elif len(else_children) == 1 and isinstance(else_children[0], OpIfElse):
-            fist_child = else_children[0]
-            fist_child.print_tree(indent, chained=True)  # type: ignore
-        # ELSE
-        else:
-            print(pad + keyword("} else {"))
-            for else_child in else_children:
-                else_child.print_tree(indent + 1)
+        context = self.context
+        if context is not None:
+            context.open_opcodes.append(self)
+        try:
+            if context is not None:
+                context.open_opcodes.append(condition)
+            try:
+                for then_child in condition.children:
+                    then_child.print_tree(indent + 1)
+            finally:
+                if context is not None:
+                    context.open_opcodes.pop()
 
             print(
                 f"{'    ' * (indent + 1)}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}"
             )
 
-            print(pad + keyword("}"))
+            else_children = self.children[1:]
+
+            # None
+            if not else_children:
+                print(pad + keyword("}"))
+            # ELSE IF
+            elif len(else_children) == 1 and isinstance(else_children[0], OpIfElse):
+                fist_child = else_children[0]
+                fist_child.print_tree(indent, chained=True)  # type: ignore
+            # ELSE
+            else:
+                print(pad + keyword("} else {"))
+                for else_child in else_children:
+                    else_child.print_tree(indent + 1)
+
+                print(
+                    f"{'    ' * (indent + 1)}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}"
+                )
+
+                print(pad + keyword("}"))
+        finally:
+            if context is not None:
+                context.open_opcodes.pop()

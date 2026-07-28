@@ -41,7 +41,7 @@ if sys.platform == "win32":
                     mode.value | ENABLE_VIRTUAL_TERMINAL_PROCESSING,
                 )
             )
-        except Exception:
+        except Exception:  # noqa: BLE001
             return False
 
 else:

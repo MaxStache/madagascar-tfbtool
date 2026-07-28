@@ -12,7 +12,6 @@ from tfbscript.string_table import StringTable
 
 if TYPE_CHECKING:
     from tfbscript.binary import BinaryReader
-    from tfbscript.opcodes.op_find_subset import OpFindSubset
 
 
 @dataclass
@@ -75,6 +74,9 @@ class InstructionFlags:
         )
 
 
+_OpcodeT = TypeVar("_OpcodeT", bound="Opcode")
+
+
 @dataclass
 class ParserContext:
     """Shared state while reading a script's instruction stream."""
@@ -85,18 +87,29 @@ class ParserContext:
 
     control_block_counter: int = 0
 
-    # Whichever "find subset::op-code" call most recently ran, in the same
-    # depth-first order opcodes are rendered (source_line). Lets a later
-    # reference to the "[~subset]" builtin resolve its type from it.
-    last_find_subset: "OpFindSubset | None" = None
+    # Stack of opcodes currently open in the print_tree traversal (outermost
+    # first), maintained by Opcode.print_tree as it recurses into children.
+    # Lets a descendant resolve state from its nearest enclosing opcode of a
+    # given type, e.g. the "[~subset]" builtin resolving its type from the
+    # nearest enclosing "find subset" op. Reference type resolution only
+    # happens while rendering source (see Reference.get_resolved_type), so
+    # this stack must reflect the print traversal, not the parse.
+    open_opcodes: list["Opcode"] = field(default_factory=list)
+
+    def nearest_ancestor(
+        self, opcode_types: type[_OpcodeT] | tuple[type[_OpcodeT], ...]
+    ) -> _OpcodeT | None:
+        """The innermost currently-open opcode that is an instance of `opcode_types`
+        (a single opcode class, or a tuple of classes to match any of)."""
+        for op in reversed(self.open_opcodes):
+            if isinstance(op, opcode_types):
+                return op
+        return None
 
 
 # Opcode-table name (e.g. "set value") -> Opcode subclass. Populated by the
 # @opcode decorator; importing tfbscript.opcodes registers all implementations.
 OPCODE_REGISTRY: dict[str, type["Opcode"]] = {}
-
-
-_OpcodeT = TypeVar("_OpcodeT", bound="Opcode")
 
 
 def opcode(
@@ -271,8 +284,14 @@ class Opcode:
         print(f"{'    ' * indent}{self.source_line()} {'{' if has_children else ''}")
 
         if has_children:
-            for child in self.children:
-                child.print_tree(children_indent)
+            if self.context is not None:
+                self.context.open_opcodes.append(self)
+            try:
+                for child in self.children:
+                    child.print_tree(children_indent)
+            finally:
+                if self.context is not None:
+                    self.context.open_opcodes.pop()
             print(
                 f"{'    ' * children_indent}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}"
             )

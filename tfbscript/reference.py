@@ -1,25 +1,28 @@
 import sys
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, TypeVar, override
 
 from tfbscript.ansi import builtin, variable, variable_global
 from tfbscript.string_table import StringTable, StringTableEntry
 
 if TYPE_CHECKING:
     from tfbscript.binary import BinaryReader
-    from tfbscript.opcodes.base import ParserContext
+    from tfbscript.opcodes.base import ParserContext, Opcode
+
+_OpcodeT = TypeVar("_OpcodeT", bound="Opcode")
 
 LOCAL_BASE = 0x3FC0D
 BUILTIN_BASE = 0x3FFFA
 NULL_REF = 0xFFFFFFFF
 
 BUILTINS = {
-    0x3FFFF: "self",
-    0x3FFFE: "[~controlled]",
-    0x3FFFD: "current in for each",
-    0x3FFFC: "[~subset]",
-    0x3FFFB: "[~found]",
-    0x3FFFA: "[~found_variable]",
+    # comment = type resolving implemented
+    0x3FFFF: "self", # yes
+    0x3FFFE: "[~controlled]", # yes
+    0x3FFFD: "[~current in for each]", # no (see comment)
+    0x3FFFC: "[~subset]", # yes
+    0x3FFFB: "[~message value]", # yes
+    0x3FFFA: "[~found variable]", # yes
 }
 
 BINDINGS = {
@@ -433,26 +436,23 @@ class Reference:
                         "WARN: cant resolve binding for",
                         my_type,
                         "member",
-                        self.member,
+                        hex(self.member),
                         "entry",
                         self.entry,
                         file=sys.stderr,
                     )
-                    raise ValueError(
-                        f"Reference {self} has no binding for member {self.member:#04x} of type '{my_type}'"
-                    )
 
             else:
                 print(
-                    "WARN: cant resolve bindings for",
+                    "WARN: cant resolve bindings for \"",
                     my_type,
-                    "entry",
+                    "\" entry",
                     self.entry,
                     file=sys.stderr,
                 )
-                raise ValueError(
-                    f"Reference {self} has no bindings for type '{my_type}'"
-                )
+                #raise ValueError(
+                #    f"Reference {self.name} has no bindings for type '{my_type}'"
+                #)
 
         return f".field[{self.member:#04x}]"
 
@@ -463,25 +463,65 @@ class Reference:
         if self.kind == "builtin":
             if self.name == "self":
                 return "actor"
-            if self.name == "[~subset]":
-                if self.context is None:
-                    raise ValueError(
-                        f"Reference {self} is a builtin '[~subset]' but has no context to resolve its type"
-                    )
-                if self.context.last_find_subset is None:
-                    raise ValueError(
-                        f"Reference {self} is a builtin '[~subset]' but the context has no last_find_subset to resolve its type"
-                    )
+            elif self.name == "[~subset]":
+                from tfbscript.opcodes.op_check_fov import OpCheckFOV
+                from tfbscript.opcodes.op_find_subset import OpFindSubset
 
-                last_subset = self.context.last_find_subset
-                return last_subset.set_ref.get_resolved_type()
-            else:
+                producer = self._builtin_find_producer((OpCheckFOV, OpFindSubset))
+
+                if isinstance(producer, OpFindSubset):
+                    return producer.set_ref.get_resolved_type()
+                else:
+                    return producer.target_ref.get_resolved_type()
+                
+            elif self.name == "[~message value]":
+                return "value" # TODO: maybe we can resolve here??? seems kinda hard to do, since the message value is set by the sender and we don't have that context here
+
+            elif self.name == "[~found variable]":
+                # Not tested on real scripts cus couldnt find one
+                from tfbscript.opcodes.op_find_variable import OpFindVariable
+
+                producer = self._builtin_find_producer(OpFindVariable)
+                return producer.var_ref.get_resolved_type()
+
+            elif self.name == "[~current in for each]":
+                from tfbscript.opcodes.op_for_each import OpForEach
+
+                producer = self._builtin_find_producer(OpForEach)
+                return producer.set_ref.get_resolved_type()
+
+            elif self.name == "[~controlled]":
+                from tfbscript.opcodes.op_control import OpControl
+                from tfbscript.opcodes.op_spawn_actor import OpSpawnActor
+
+                producer = self._builtin_find_producer((OpControl, OpSpawnActor))
+
+                if isinstance(producer, OpControl):
+                    return producer.target.get_resolved_type()
+                else:
+                    return producer.clone_ref.get_resolved_type()
+            
+            else: # 43 fail
+                raise ValueError(self.name)
                 return None  # TODO resolve other builtins to their types if possible
 
         if self.kind == "global" or self.kind == "local":  # variable
             if self.entry is not None:
                 return self.entry.type
             else:
-                raise ValueError(f"Reference {self} has no entry to resolve type")
+                raise ValueError(f"Reference {self.name} has no entry to resolve type")
 
         return None  # Should never reach here
+
+    def _builtin_find_producer(self, opcode_types: type[_OpcodeT] | tuple[type[_OpcodeT], ...]):
+        if self.context is None:
+            raise ValueError(
+                f"Reference {self.name} is a builtin (and a field on it is used) but has no context to resolve its type"
+            )
+        producer = self.context.nearest_ancestor(opcode_types)
+        if producer is None:
+            raise ValueError(
+                f"Reference {self.name} is a builtin (and a field on it is used) but has no enclosing op to resolve its type"
+            )
+
+        return producer
