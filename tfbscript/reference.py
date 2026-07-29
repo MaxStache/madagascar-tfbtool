@@ -1,5 +1,6 @@
 import sys
 from dataclasses import dataclass
+from enum import Enum
 from typing import TYPE_CHECKING, TypeVar, override
 
 from tfbscript.ansi import builtin, variable, variable_global
@@ -7,7 +8,7 @@ from tfbscript.string_table import StringTable, StringTableEntry
 
 if TYPE_CHECKING:
     from tfbscript.binary import BinaryReader
-    from tfbscript.opcodes.base import ParserContext, Opcode
+    from tfbscript.opcodes.base import Opcode, ParserContext
 
 _OpcodeT = TypeVar("_OpcodeT", bound="Opcode")
 
@@ -15,15 +16,31 @@ LOCAL_BASE = 0x3FC0D
 BUILTIN_BASE = 0x3FFFA
 NULL_REF = 0xFFFFFFFF
 
-BUILTINS = {
-    # comment = type resolving implemented
-    0x3FFFF: "self", # yes
-    0x3FFFE: "[~controlled]", # yes
-    0x3FFFD: "[~current in for each]", # no (see comment)
-    0x3FFFC: "[~subset]", # yes
-    0x3FFFB: "[~message value]", # yes
-    0x3FFFA: "[~found variable]", # yes
+
+# fmt: off
+class ReferenceType(Enum):
+    LOCAL   = 0
+    GLOBAL  = 1
+    BUILTIN = 2
+    NULL    = 3
+
+class BuiltinType(Enum):
+    SELF           = 0x3FFFF
+    CONTROLLED     = 0x3FFFE
+    EACH           = 0x3FFFD # current in for each
+    SUBSET         = 0x3FFFC # filtered list of any kind
+    MESSAGE_VALUE  = 0x3FFFB
+    FOUND_VARIABLE = 0x3FFFA
+
+BUILTIN_LABELS = {                                          # type resolving implemented
+    BuiltinType.SELF          : "self",                     # yes
+    BuiltinType.CONTROLLED    : "[~controlled]",            # yes
+    BuiltinType.EACH          : "[~current in for each]",   # no (see comment)
+    BuiltinType.SUBSET        : "[~subset]",                # yes
+    BuiltinType.MESSAGE_VALUE : "[~message value]",         # yes
+    BuiltinType.FOUND_VARIABLE: "[~found variable]",        # yes
 }
+# fmt: on
 
 BINDINGS = {
     "actor": {
@@ -311,13 +328,17 @@ class Reference:
     member: int = 0  # (R >> 8) & 0x3F  -- field within the target
     scope: int = 0  # (R >> 6) & 3
     sub: int = 0  # R & 0x3F
-    kind: str = "null"  # 'null' | 'builtin' | 'global' | 'local'
-    slot: int | None = None  # table index used for the lookup (None for null/builtin)
-    name: str = "<null>"  # resolved name (or descriptive placeholder)
-    entry: StringTableEntry | None = None  # resolved entry (None for null/builtin)
-    context: "ParserContext | None" = (
-        None  # script's parser context (for resolving builtin types)
+
+    kind: ReferenceType = ReferenceType.NULL
+
+    builtin_kind: BuiltinType | None = (
+        None  # resolved builtin kind (None for not builtin)
     )
+
+    slot: int | None = None  # table index used for the lookup (None for null/builtin)
+    entry: StringTableEntry | None = None  # resolved entry (None for null/builtin)
+
+    context: "ParserContext | None" = None  # script's parser context
 
     @classmethod
     def read(
@@ -354,59 +375,70 @@ class Reference:
         if raw == NULL_REF:
             return cls(
                 **fields,
-                kind="null",
+                builtin_kind=None,
+                kind=ReferenceType.NULL,
                 slot=None,
-                name="<null>",
                 entry=None,
                 context=context,
             )
 
         if index >= BUILTIN_BASE:
-            name = BUILTINS.get(index, f"builtin@{index:#x}")
             return cls(
                 **fields,
-                kind="builtin",
+                kind=ReferenceType.BUILTIN,
+                builtin_kind=BuiltinType(index),
                 slot=None,
-                name=name,
                 entry=None,
                 context=context,
             )
 
         if index < LOCAL_BASE:
             entry = global_refs.get(index)
-            name = entry.string if entry is not None else f"unk_global#{index}"
             return cls(
                 **fields,
-                kind="global",
+                kind=ReferenceType.GLOBAL,
+                builtin_kind=None,
                 slot=index,
-                name=name,
                 entry=entry,
                 context=context,
             )
 
         slot = index - LOCAL_BASE
         entry = local_refs.get(slot)
-        name = entry.string if entry is not None else f"local#{slot}"
         return cls(
-            **fields, kind="local", slot=slot, name=name, entry=entry, context=context
+            **fields,
+            kind=ReferenceType.LOCAL,
+            builtin_kind=None,
+            slot=slot,
+            entry=entry,
+            context=context,
         )
 
     @override
     def __str__(self) -> str:
-        if self.kind == "null":
+        if self.kind == ReferenceType.NULL:  # Never seen a use of that ¯\_(ツ)_/¯
             return "<null>"
 
-        if self.kind == "global":
-            s = variable_global(f"global::{self.name}")
-        elif self.kind == "local" and self.entry is not None:
-            s = variable(self.name)
-        elif self.kind == "builtin":
-            s = builtin(self.name)
+        if self.kind == ReferenceType.GLOBAL:
+            assert self.entry is not None
+            s = variable_global(f"global[ {self.entry.string} ]")
+
+        elif self.kind == ReferenceType.LOCAL and self.entry is not None:
+            assert self.entry is not None
+            s = variable(self.entry.string)
+
+        elif self.kind == ReferenceType.BUILTIN:
+            assert self.builtin_kind is not None # should never be None for BUILTIN kind
+            s = builtin(BUILTIN_LABELS[self.builtin_kind])
         else:
-            s = self.name
+            raise ValueError(f"Reference has unknown kind {self.kind}")
 
         if self.member:
-            s += self._get_member_string() or ""
+            if self.builtin_kind == BuiltinType.MESSAGE_VALUE:
+                # message value will always resolve to "value" wich is not in the bindings, so we suppress the warning here because its intended behavior
+                s += self._get_member_string(suppressWarnings=True) or ""
+            else:
+                s += self._get_member_string() or ""
 
         if self.sub:
             s += f".sub[{self.sub:#04x}]"
@@ -414,7 +446,7 @@ class Reference:
             s += f"@{self.scope}"  # set index for example
         return s
 
-    def _get_member_string(self) -> str | None:
+    def _get_member_string(self, suppressWarnings=False) -> str | None:
         my_type = self.get_resolved_type()
 
         if my_type is not None:
@@ -432,40 +464,40 @@ class Reference:
                     else:
                         return f".{label}"
                 else:
-                    print(
-                        "WARN: cant resolve binding for",
-                        my_type,
-                        "member",
-                        hex(self.member),
-                        "entry",
-                        self.entry,
-                        file=sys.stderr,
-                    )
+                    if not suppressWarnings:
+                        print(
+                            "WARN: cant resolve binding for",
+                            my_type,
+                            "member",
+                            hex(self.member),
+                            "entry",
+                            self.entry,
+                            file=sys.stderr,
+                        )
 
             else:
-                print(
-                    "WARN: cant resolve bindings for \"",
-                    my_type,
-                    "\" entry",
-                    self.entry,
-                    file=sys.stderr,
-                )
-                #raise ValueError(
-                #    f"Reference {self.name} has no bindings for type '{my_type}'"
-                #)
+                if not suppressWarnings:
+                    print(
+                        "WARN: cant resolve bindings for type",
+                        '"' + my_type + '"',
+                        "entry",
+                        self.entry,
+                        "field",
+                        hex(self.member),
+                        file=sys.stderr,
+                    )
 
         return f".field[{self.member:#04x}]"
 
     def get_resolved_type(self) -> str | None:
-        if self.kind == "null":
+        if self.kind == ReferenceType.NULL:
             return "null"
 
-        if self.kind == "builtin":
-            if self.name == "self":
+        if self.kind == ReferenceType.BUILTIN:
+            if self.builtin_kind == BuiltinType.SELF:
                 return "actor"
-            elif self.name == "[~subset]":
-                from tfbscript.opcodes.op_check_fov import OpCheckFOV
-                from tfbscript.opcodes.op_find_subset import OpFindSubset
+            elif self.builtin_kind == BuiltinType.SUBSET:
+                from tfbscript.opcodes import OpCheckFOV, OpFindSubset
 
                 producer = self._builtin_find_producer((OpCheckFOV, OpFindSubset))
 
@@ -473,26 +505,25 @@ class Reference:
                     return producer.set_ref.get_resolved_type()
                 else:
                     return producer.target_ref.get_resolved_type()
-                
-            elif self.name == "[~message value]":
-                return "value" # TODO: maybe we can resolve here??? seems kinda hard to do, since the message value is set by the sender and we don't have that context here
 
-            elif self.name == "[~found variable]":
+            elif self.builtin_kind == BuiltinType.MESSAGE_VALUE:
+                return "value"  # TODO: maybe we can resolve here??? seems kinda hard to do, since the message value is set by the sender and we don't have that context here
+
+            elif self.builtin_kind == BuiltinType.FOUND_VARIABLE:
                 # Not tested on real scripts cus couldnt find one
-                from tfbscript.opcodes.op_find_variable import OpFindVariable
+                from tfbscript.opcodes import OpFindVariable
 
                 producer = self._builtin_find_producer(OpFindVariable)
                 return producer.var_ref.get_resolved_type()
 
-            elif self.name == "[~current in for each]":
-                from tfbscript.opcodes.op_for_each import OpForEach
+            elif self.builtin_kind == BuiltinType.EACH:
+                from tfbscript.opcodes import OpForEach
 
                 producer = self._builtin_find_producer(OpForEach)
                 return producer.set_ref.get_resolved_type()
 
-            elif self.name == "[~controlled]":
-                from tfbscript.opcodes.op_control import OpControl
-                from tfbscript.opcodes.op_spawn_actor import OpSpawnActor
+            elif self.builtin_kind == BuiltinType.CONTROLLED:
+                from tfbscript.opcodes import OpControl, OpSpawnActor
 
                 producer = self._builtin_find_producer((OpControl, OpSpawnActor))
 
@@ -500,28 +531,31 @@ class Reference:
                     return producer.target.get_resolved_type()
                 else:
                     return producer.clone_ref.get_resolved_type()
-            
-            else: # 43 fail
-                raise ValueError(self.name)
-                return None  # TODO resolve other builtins to their types if possible
 
-        if self.kind == "global" or self.kind == "local":  # variable
+            else:
+                raise ValueError(
+                    f"Reference is a builtin of kind {self.builtin_kind} but has no type resolution implemented"
+                )
+
+        if self.kind in (ReferenceType.GLOBAL, ReferenceType.LOCAL):  # variable
             if self.entry is not None:
                 return self.entry.type
             else:
-                raise ValueError(f"Reference {self.name} has no entry to resolve type")
+                raise ValueError("Reference has no entry to resolve type")
 
         return None  # Should never reach here
 
-    def _builtin_find_producer(self, opcode_types: type[_OpcodeT] | tuple[type[_OpcodeT], ...]):
+    def _builtin_find_producer(
+        self, opcode_types: type[_OpcodeT] | tuple[type[_OpcodeT], ...]
+    ):
         if self.context is None:
             raise ValueError(
-                f"Reference {self.name} is a builtin (and a field on it is used) but has no context to resolve its type"
+                f"Reference {self.builtin_kind} is a builtin (and a field on it is used) but has no context to resolve its type"
             )
         producer = self.context.nearest_ancestor(opcode_types)
         if producer is None:
             raise ValueError(
-                f"Reference {self.name} is a builtin (and a field on it is used) but has no enclosing op to resolve its type"
+                f"Reference {self.builtin_kind} is a builtin (and a field on it is used) but has no enclosing op to resolve its type"
             )
 
         return producer
