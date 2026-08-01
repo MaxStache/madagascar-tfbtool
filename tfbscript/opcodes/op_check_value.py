@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import Any, BinaryIO, override
 
 from tfbscript.ansi import comparison, keyword
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import RelOp
 from tfbscript.payload import PayloadReader
@@ -31,3 +32,34 @@ class OpCheckValue(Opcode):
             return condition
 
         return f"{keyword('check value (')} {condition} {keyword(')')}"
+
+
+    @override
+    def editor_repr(self) -> dict[str, Any]:
+        return {
+            "fields": [
+                {
+                    "type": "op-label",
+                    "value": "check value",
+                },
+                {
+                    "type": "ref",
+                    "ref": self.lhs,
+                },
+                {
+                    "type": "enum",
+                    "name": "rel_op",
+                    "entry": self.rel_op,
+                },
+                {
+                    "type": "rhs",
+                    "rhs": self.rhs,
+                },
+            ]
+        }
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.lhs.write(f)
+        write_u8(f, self.rel_op.value)
+        self.rhs.write(f)

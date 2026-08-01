@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import Any, BinaryIO, override
 
 from tfbscript.ansi import func_call, quoted_string
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
@@ -23,3 +24,30 @@ class OpPrint(Opcode):
     @override
     def source_line(self, inline: bool = False) -> str:
         return func_call("print", str(self.target), quoted_string(self.content))
+
+    @override
+    def editor_repr(self) -> dict[str, Any]:
+        return {
+            "fields": [
+                {
+                    "type": "op-label",
+                    "value": "print",
+                },
+                {
+                    "type": "ref",
+                    "name": "target",
+                    "ref": self.target,
+                },
+                {
+                    "type": "string",
+                    "name": "content",
+                    "value": self.content,
+                },
+            ]
+        }
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.target.write(f)
+        write_u8(f, len(self.content))
+        f.write(self.content.encode("latin1"))

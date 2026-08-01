@@ -1,14 +1,12 @@
 from dataclasses import dataclass
-from typing import override
+from typing import Any, override
 
 from tfbscript.ansi import comment
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.payload import PayloadReader
 
 
-@opcode(
-    "comment:"
-)
+@opcode("comment:")
 @dataclass
 class OpComment(Opcode):
     content: str = ""
@@ -22,3 +20,18 @@ class OpComment(Opcode):
     @override
     def source_line(self, inline: bool = False) -> str:
         return comment(f"// {self.content}")
+
+    @override
+    def editor_repr(self) -> dict[str, Any]:
+        return {
+            "fields": [
+                {
+                    "type": "label",
+                    "content": "comment:",
+                },
+                {
+                    "type": "string",
+                    "value": self.content,
+                },
+            ]
+        }

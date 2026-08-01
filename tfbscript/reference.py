@@ -1,9 +1,10 @@
 import sys
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, TypeVar, override
+from typing import TYPE_CHECKING, BinaryIO, TypeVar, override
 
 from tfbscript.ansi import builtin, variable, variable_global
+from tfbscript.binary import write_u32
 from tfbscript.string_table import StringTable, StringTableEntry
 
 if TYPE_CHECKING:
@@ -33,7 +34,7 @@ class BuiltinType(Enum):
     FOUND_VARIABLE = 0x3FFFA
 
 BUILTIN_LABELS = {                                          # type resolving implemented
-    BuiltinType.SELF          : "self",                     # yes
+    BuiltinType.SELF          : "my",                     # yes
     BuiltinType.CONTROLLED    : "[~controlled]",            # yes
     BuiltinType.EACH          : "[~current in for each]",   # no (see comment)
     BuiltinType.SUBSET        : "[~subset]",                # yes
@@ -341,6 +342,35 @@ class Reference:
     context: "ParserContext | None" = None  # script's parser context
 
     @classmethod
+    def createSimple_local(
+        cls,
+        local_refs: StringTable,
+        slot: int,
+    ) -> "Reference":
+        index = slot + LOCAL_BASE
+        
+        entry = local_refs.get(slot)
+
+        member = 0
+        scope = 0 # @1 @2 @3 (fist, last, random)
+        sub = 0
+
+        raw = (index << 14) | (member << 8) | (scope << 6) | sub
+
+        return cls(
+            raw=raw,
+            index=index,
+            member=0,
+            scope=0,
+            sub=0,
+            # --
+            kind=ReferenceType.LOCAL,
+            builtin_kind=None,
+            slot=slot,
+            entry=entry,
+        )
+
+    @classmethod
     def read(
         cls,
         reader: "BinaryReader",
@@ -360,7 +390,7 @@ class Reference:
             A Reference with the decoded bit-fields and a resolved `name`.
         """
         if reader.size_remaining() < 4:
-            raise ValueError("a reference is 4 bytes")
+            raise ValueError("a reference is 4 bytes, not enough bytes remaining")
 
         raw = reader.read_u32()
         fields = {
@@ -414,6 +444,26 @@ class Reference:
             context=context,
         )
 
+    def write(self, f: BinaryIO) -> None:
+        if self.kind == ReferenceType.NULL:
+            write_u32(f, NULL_REF)
+            return
+
+        if self.kind == ReferenceType.BUILTIN:
+            assert self.builtin_kind is not None
+            index = self.builtin_kind.value
+        elif self.kind == ReferenceType.GLOBAL:
+            assert self.slot is not None
+            index = self.slot
+        elif self.kind == ReferenceType.LOCAL:
+            assert self.slot is not None
+            index = LOCAL_BASE + self.slot
+        else:
+            raise ValueError(f"Reference has unknown kind {self.kind}")
+
+        raw = (index << 14) | (self.member << 8) | (self.scope << 6) | self.sub
+        write_u32(f, raw)
+
     @override
     def __str__(self) -> str:
         if self.kind == ReferenceType.NULL:  # Never seen a use of that ¯\_(ツ)_/¯
@@ -423,12 +473,14 @@ class Reference:
             assert self.entry is not None
             s = variable_global(f"global[ {self.entry.string} ]")
 
-        elif self.kind == ReferenceType.LOCAL and self.entry is not None:
+        elif self.kind == ReferenceType.LOCAL:
             assert self.entry is not None
             s = variable(self.entry.string)
 
         elif self.kind == ReferenceType.BUILTIN:
-            assert self.builtin_kind is not None # should never be None for BUILTIN kind
+            assert (
+                self.builtin_kind is not None
+            )  # should never be None for BUILTIN kind
             s = builtin(BUILTIN_LABELS[self.builtin_kind])
         else:
             raise ValueError(f"Reference has unknown kind {self.kind}")
@@ -444,6 +496,15 @@ class Reference:
             s += f".sub[{self.sub:#04x}]"
         if self.scope:
             s += f"@{self.scope}"  # set index for example
+            # with open("debug.decomp", "a") as f:
+            #
+            #    if self.entry and self.entry.category != "set" and self.scope:
+            #        memberbinding = BINDINGS.get(self.entry.type).get(self.member)
+            #        if not memberbinding or memberbinding.get("type") != "set":
+            #            print(
+            #                f"WARN: Reference {self.entry} field {self.member} sub {self.sub} has a non-zero scope ({self.scope}) which is not yet supported in the string representation",
+            #                file=f,
+            #            )
         return s
 
     def _get_member_string(self, suppressWarnings=False) -> str | None:

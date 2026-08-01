@@ -70,6 +70,7 @@ cython_debug/
 .pytest_cache/
 
 example_scripts/*
+my_scripts/*
 nopush.txt
 
 _MYNOTES.md

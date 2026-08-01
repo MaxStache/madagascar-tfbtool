@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import override
+from typing import Any, BinaryIO, override
 
 from tfbscript.opcodes.block import BlockOpcode
 from tfbscript.string_table import StringTableEntry
@@ -13,10 +13,27 @@ class OpBehaviorImplementation(BlockOpcode):
 
     @override
     def block_name(self) -> str:
-        name = self.behavior_entry.name if self.behavior_entry else "Failed to resolve"
+        name = self.behavior_entry.name if self.behavior_entry else "ERR Failed to resolve"
         return f"Behavior {name}"
 
     @override
     def source_line(self, inline: bool = False) -> str:
-        name = self.behavior_entry.name if self.behavior_entry else "Failed to resolve"
+        name = self.behavior_entry.name if self.behavior_entry else "ERR Failed to resolve"
         return f"[ Behavior: {name} ]"
+
+    @override
+    def editor_repr(self) -> dict[str, Any]:
+        name = self.behavior_entry.name if self.behavior_entry else "ERR Failed to resolve"
+
+        return {
+            "fields": [
+                {
+                    "type": "behavior-label",
+                    "value": name,
+                }
+            ]
+        }
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        pass # Behavior implementation has no payload

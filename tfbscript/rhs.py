@@ -1,9 +1,11 @@
 """The 5-11 byte right-hand-side operand used by value opcodes."""
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, cast, override
+from enum import IntEnum
+from typing import TYPE_CHECKING, BinaryIO, cast, override
 
 from tfbscript.ansi import number, operator, rgb_square, type_
+from tfbscript.binary import write_f32, write_i16, write_rgba, write_s32, write_u8
 from tfbscript.reference import Reference
 from tfbscript.string_table import StringTable
 
@@ -18,7 +20,8 @@ _OPERATORS = {
     3: "/",
 }
 
-
+class RhsKind(IntEnum):
+    ADWAD = 234
 @dataclass
 class Rhs:
     tag: int = 0x00
@@ -91,6 +94,7 @@ class Rhs:
         # in shipped scripts), not part of the kind selector; only the high
         # nibble picks the kind, same as the int/color/pair checks below.
         if (tag & 0xF0) in (0x10, 0x80):
+            
             value = round(reader.read_f32(), 7)  # round for display
             return cls(tag, "float", value)
 
@@ -104,12 +108,46 @@ class Rhs:
 
         raise ValueError(f"Unknown RHS tag 0x{tag:02X}")
 
+    def write(self, f: BinaryIO) -> None:
+        write_u8(f, self.tag)
+
+        if self.kind in ("reference", "expression"):
+            cast(Reference, self.value).write(f)
+            if self.kind == "expression":
+                assert self.operator is not None
+                write_u8(f, self.operator)
+                assert self.rhs is not None
+                self.rhs.write(f)
+            return
+
+        if self.kind == "int":
+            write_s32(f, cast(int, self.value))
+            return
+
+        if self.kind == "float":
+            write_f32(f, cast(float, self.value))
+            return
+
+        if self.kind == "color":
+            write_rgba(f, cast(tuple[int, int, int, int], self.value))
+            return
+
+        if self.kind == "pair":
+            x, y = cast(tuple[int, int], self.value)
+            write_i16(f, x)
+            write_i16(f, y)
+            return
+
+        raise ValueError(f"Unknown RHS kind {self.kind}")
+
     def to_string(
         self,
         show_types: bool = False,
-        do_reconstructs: bool = True,
+        do_reconstructs: bool = False,
     ) -> str:
-        """Render this RHS as a readable, syntax-colored string."""
+        """Render this RHS as a readable, syntax-colored string.
+        do_reconstructs: If True, reconstructs the compiler's "x + 0" / "x - 0" expression to just "x"
+        """
 
         if self.kind == "int":
             prefix = type_("Int32: ") if show_types else ""
@@ -122,7 +160,7 @@ class Rhs:
         if self.kind == "color":
             r, g, b, a = cast(tuple[int, int, int, int], self.value)
             prefix = type_("Color32: ") if show_types else type_("Color")
-            return prefix + rgb_square(r, g, b) + number(f"({r}, {g}, {b}, {a})")
+            return rgb_square(r, g, b) + prefix + number(f"({r}, {g}, {b}, {a})")
 
         if self.kind == "pair":
             x, y = cast(tuple[int, int], self.value)

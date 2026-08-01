@@ -1,11 +1,13 @@
 """Instruction flags, parser context, opcode registry and the Opcode base class."""
 
+import io
 import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Self, TypeVar
+from typing import TYPE_CHECKING, Any, BinaryIO, Self, TypeVar
 
 from tfbscript.ansi import flow_control, keyword
+from tfbscript.binary import write_u32, write_u8
 from tfbscript.debug import DebugStore
 from tfbscript.payload import PayloadReader
 from tfbscript.string_table import StringTable
@@ -16,7 +18,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class InstructionFlags:
-    """The 32-bit flags word that follows every opcode index."""
+    """The 32-bit flags word that follow s every opcode index."""
 
     flow_control: int = (
         0  # bits 0-2 -- flow-control value returned by tfb_walk_children (FUN_00431130)
@@ -128,10 +130,10 @@ def opcode(
 class Opcode:
     """One instruction; also the generic fallback for unimplemented opcodes."""
 
-    opcode_index: int = 0
+    opcode_index: int = field(default=0)
     flags: InstructionFlags = field(default_factory=InstructionFlags)
     raw_payload: bytes = b""
-    context: ParserContext | None = None
+    context: ParserContext | None = field(default=None)
 
     # The next {flags.descendant_span} instructions in the stream, re-nested.
     children: list["Opcode"] = field(default_factory=list)
@@ -250,6 +252,22 @@ class Opcode:
 
         return instruction
 
+    def write(self, f: BinaryIO) -> None:
+        """Write the ScriptFile to a binary file."""
+        write_u8(f, self.opcode_index)
+
+        self.flags.descendant_span = sum(child.total_span() for child in self.children)
+        write_u32(f, self.flags.encode())
+
+        payload_buf = io.BytesIO()
+        self.write_payload(payload_buf)
+
+        write_u8(f, len(payload_buf.getvalue()))
+        f.write(payload_buf.getvalue())
+
+        for child in self.children:
+            child.write(f)
+
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> Self:
         """Parse this opcode's payload. Override in subclasses; the base
@@ -262,6 +280,14 @@ class Opcode:
                 file=sys.stderr,
             )
         return cls()
+
+    def write_payload(self, f: BinaryIO) -> None:
+        f.write(self.raw_payload)  # default implementation just writes the raw payload
+        if self.__class__ is not Opcode:
+            print(
+                f"Warning: write_payload not implemented for {self.__class__.__name__}. ",
+                file=sys.stderr,
+            )
 
     def source_line(self, inline: bool = False) -> str:
         """One line of decompiled pseudo-source for this instruction.
@@ -296,3 +322,19 @@ class Opcode:
                 f"{'    ' * children_indent}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}"
             )
             print(f"{'    ' * indent}{'}'}")
+
+    def editor_repr(self) -> dict[str, Any]:
+        """Return a JSON-serializable representation of this opcode for the editor.
+
+        Override in subclasses to provide a custom representation.
+        Base Implementation returns one filed with class name as op-name
+        """
+        return {
+            "fields": [
+                {
+                    "name": "op-name",
+                    "type": "op-label",
+                    "value": self.__class__.__name__,
+                }
+            ]
+        }

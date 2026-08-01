@@ -1,9 +1,10 @@
 """The top-level TFB script (.ai) file."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import BinaryIO
 
-from tfbscript.binary import BinaryReader
+from tfbscript.binary import BinaryReader, write_u32, write_u8
 from tfbscript.debug import DebugStore
 from tfbscript.opcodes import Opcode, ParserContext
 from tfbscript.string_table import StringTable
@@ -13,14 +14,14 @@ from tfbscript.string_table import StringTable
 class ScriptFile:
     """A parsed TFB script (.ai) file."""
 
-    magic_string: str
-    unk: bytes  # 4 unknown bytes after the magic string
+    magic_string: str = field(default="TFB Script")
+    unk: bytes = field(default=b"\x00\x00\x00\x00")  # 4 unknown bytes after the magic string
 
-    opcode_table: StringTable
-    global_refs: StringTable
-    local_refs: StringTable
+    opcode_table: StringTable = field(default_factory=StringTable)
+    global_refs: StringTable = field(default_factory=StringTable)
+    local_refs: StringTable = field(default_factory=StringTable)
 
-    instructions: list[Opcode]
+    instructions: list[Opcode] = field(default_factory=list)
 
     @classmethod
     def read(
@@ -31,6 +32,7 @@ class ScriptFile:
         debug_store: DebugStore = DebugStore()
 
         magic_string = reader.read_string(reader.read_u8())
+        print(magic_string)
         unk = reader.read_bytes(4)
 
         opcode_table = StringTable.read(reader)
@@ -61,6 +63,23 @@ class ScriptFile:
         return cls(
             magic_string, unk, opcode_table, global_refs, local_refs, instructions
         )
+
+    def write(self, f: BinaryIO) -> None:
+        """Write the ScriptFile to a binary file."""
+
+        write_u8(f, len(self.magic_string))
+        f.write(self.magic_string.encode("latin1"))
+        f.write(self.unk)
+
+        self.opcode_table.write(f)
+        self.global_refs.write(f)
+        self.local_refs.write(f)
+
+        instruction_count = sum(instruction.total_span() for instruction in self.instructions)
+
+        write_u32(f, instruction_count)
+        for instruction in self.instructions:
+            instruction.write(f)
 
     @classmethod
     def from_path(

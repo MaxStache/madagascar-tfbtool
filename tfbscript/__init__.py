@@ -6,6 +6,7 @@ from tfbscript.reference import Reference
 from tfbscript.rhs import Rhs
 from tfbscript.script import ScriptFile
 from tfbscript.string_table import StringTable, StringTableEntry
+from tfbscript.editor import open_editor
 
 __all__ = [
     "BinaryReader",
@@ -15,4 +16,5 @@ __all__ = [
     "ScriptFile",
     "StringTable",
     "StringTableEntry",
+    "open_editor",
 ]

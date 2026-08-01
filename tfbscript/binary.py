@@ -1,6 +1,7 @@
 """A small binary reader over an in-memory buffer."""
 
 import struct
+from typing import BinaryIO
 
 
 class BinaryReader:
@@ -56,3 +57,28 @@ class BinaryReader:
 
     def read_rgba(self) -> tuple[int, int, int, int]:
         return (self.read_u8(), self.read_u8(), self.read_u8(), self.read_u8())
+
+
+def write_u8(f: BinaryIO, v: int):
+    f.write(struct.pack("<B", v))
+
+def write_u16(f: BinaryIO, v: int):
+    f.write(struct.pack("<H", v))
+
+def write_i16(f: BinaryIO, v: int):
+    f.write(struct.pack("<h", v))
+
+def write_u32(f: BinaryIO, v: int):
+    f.write(struct.pack("<I", v))
+
+def write_s32(f: BinaryIO, v: int):
+    f.write(struct.pack("<i", v))
+
+def write_f32(f: BinaryIO, v: float):
+    f.write(struct.pack("<f", v))
+
+def write_rgba(f: BinaryIO, v: tuple[int, int, int, int]):
+    f.write(struct.pack("<BBBB", *v))
+
+def write_f16(f: BinaryIO, v: float):
+    f.write(struct.pack("<e", v))

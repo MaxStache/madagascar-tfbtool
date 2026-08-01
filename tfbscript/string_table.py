@@ -1,8 +1,10 @@
 """The three string tables at the head of every TFB script file."""
 
 import re
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, BinaryIO
+
+from tfbscript.binary import write_u32, write_u8
 
 if TYPE_CHECKING:
     from tfbscript.binary import BinaryReader
@@ -17,10 +19,27 @@ class StringTableEntry:
     type, and the middle part (if any) the category.
     """
 
-    string: str
-    metadata: bytes  # 4 bytes, usually zero
+    string: str = field(default="")
+    metadata: bytes = field(default=b"\x00\x00\x00\x00")  # 4 bytes, usually zero
 
-    _split: list[str]
+    _split: list[str] = field(default_factory=list)
+
+    def _split_myself(self) -> list[str]:
+        if not self._split:
+            self._split = re.split(r'(?=::(?!:))', self.string)
+            self._split = [self._split[0]] + [p[2:] for p in self._split[1:]]
+
+        
+        if len(self._split) < 2:
+            raise ValueError(f"String table entry '{self.string}' does not have a type part")
+
+        if len(self._split) > 3:
+            raise ValueError(f"String table entry '{self.string}' has too many parts")
+
+        return self._split
+
+    def __post_init__(self):
+        self._split_myself()
 
     @classmethod
     def read(cls, reader: "BinaryReader") -> "StringTableEntry":
@@ -28,17 +47,7 @@ class StringTableEntry:
         string = reader.read_string(length)
         metadata = reader.read_bytes(4)
 
-        # Magic!
-        parts = re.split(r'(?=::(?!:))', string)
-        parts = [parts[0]] + [p[2:] for p in parts[1:]]
-
-        if len(parts) < 2:
-            raise ValueError(f"String table entry '{string}' does not have a type part")
-
-        if len(parts) > 3:
-            raise ValueError(f"String table entry '{string}' has too many parts")
-
-        return cls(string, metadata, parts)
+        return cls(string, metadata)
 
     @property
     def name(self) -> str:
@@ -59,13 +68,22 @@ class StringTableEntry:
 class StringTable:
     """A u32 entry count followed by that many entries."""
 
-    entries: list[StringTableEntry]
+    entries: list[StringTableEntry] = field(default_factory=list)
 
     @classmethod
     def read(cls, reader: "BinaryReader") -> "StringTable":
         count = reader.read_u32()
         return cls([StringTableEntry.read(reader) for _ in range(count)])
 
+    def write(self, f: BinaryIO) -> None:
+        """Write the ScriptFile to a binary file."""
+
+        write_u32(f, len(self.entries))
+        for entry in self.entries:
+            write_u8(f, len(entry.string))
+            f.write(entry.string.encode("latin1"))
+            f.write(entry.metadata)
+        
     def __len__(self) -> int:
         return len(self.entries)
 
