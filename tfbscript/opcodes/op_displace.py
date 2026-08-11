@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import Any, override
 
 from tfbscript.ansi import func_call
 from tfbscript.opcodes.base import Opcode, opcode
@@ -48,3 +48,55 @@ class OpDisplace(Opcode):
             "heading: " + str(self.heading),
             "pitch: " + str(self.pitch),
         )
+
+    @override
+    def editor_repr(self) -> dict[str, Any]:
+        return {
+            "fields": [
+                {
+                    "type": "op-label",
+                    "value": "displace",
+                },
+                {
+                    "type": "ref",
+                    "name": "clone_ref",
+                    "ref": self.target,
+                },
+                {
+                    "type": "enum",
+                    "name": "combine_mode",
+                    "entry": self.combine_mode,
+                },
+                {
+                    "type": "label",
+                    "content": "LENGTH:",
+                },
+                {
+                    "type": "rhs",
+                    "name": "length",
+                    "rhs": self.length,
+                },
+                {
+                    "type": "label",
+                    "content": "feet HEADING:",
+                },
+                {
+                    "type": "rhs",
+                    "name": "length",
+                    "rhs": self.heading,
+                },
+                {
+                    "type": "label",
+                    "content": "degrees PITCH:",
+                },
+                {
+                    "type": "rhs",
+                    "name": "length",
+                    "rhs": self.pitch,
+                },
+                {
+                    "type": "label",
+                    "content": "degrees",
+                },
+            ]
+        }

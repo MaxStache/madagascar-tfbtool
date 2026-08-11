@@ -321,6 +321,9 @@ BINDINGS = {
     },
 }
 
+SHOW_NAME_ONLY = True
+TFBTOOL_MEMBER_FORMATTING = True
+
 
 @dataclass
 class Reference:
@@ -348,11 +351,11 @@ class Reference:
         slot: int,
     ) -> "Reference":
         index = slot + LOCAL_BASE
-        
+
         entry = local_refs.get(slot)
 
         member = 0
-        scope = 0 # @1 @2 @3 (fist, last, random)
+        scope = 0  # @1 @2 @3 (fist, last, random)
         sub = 0
 
         raw = (index << 14) | (member << 8) | (scope << 6) | sub
@@ -368,6 +371,61 @@ class Reference:
             builtin_kind=None,
             slot=slot,
             entry=entry,
+        )
+
+    @classmethod
+    def createSimple_global(
+        cls,
+        global_refs: StringTable,
+        slot: int,
+    ) -> "Reference":
+        index = slot
+
+        entry = global_refs.get(slot)
+
+        member = 0
+        scope = 0  # @1 @2 @3 (fist, last, random)
+        sub = 0
+
+        raw = (index << 14) | (member << 8) | (scope << 6) | sub
+
+        return cls(
+            raw=raw,
+            index=index,
+            member=0,
+            scope=0,
+            sub=0,
+            # --
+            kind=ReferenceType.GLOBAL,
+            builtin_kind=None,
+            slot=slot,
+            entry=entry,
+        )
+
+    @classmethod
+    def createSimple_builtin(
+        cls,
+        builtin_type: BuiltinType,
+    ) -> "Reference":
+        index = builtin_type.value
+
+        member = 0
+        scope = 0  # @1 @2 @3 (fist, last, random)
+        sub = 0
+
+        raw = (index << 14) | (member << 8) | (scope << 6) | sub
+
+        return cls(
+            raw=raw,
+            index=index,
+            member=0,
+            scope=0,
+            sub=0,
+            # --
+            kind=ReferenceType.BUILTIN,
+            builtin_kind=builtin_type,
+            slot=None,
+            entry=None,
         )
 
     @classmethod
@@ -395,10 +453,10 @@ class Reference:
         raw = reader.read_u32()
         fields = {
             "raw": raw,
-            "index": raw >> 14,
-            "member": (raw >> 8) & 0x3F,
-            "scope": (raw >> 6) & 3,
-            "sub": raw & 0x3F,
+            "index": raw >> 0xE,
+            "member": (raw >> 0x8) & 0x3F, # member index (applied first)
+            "scope": (raw >> 0x6) & 3, # mode
+            "sub": raw & 0x3F, # member index (applied last)
         }
         index = fields["index"]
 
@@ -471,17 +529,31 @@ class Reference:
 
         if self.kind == ReferenceType.GLOBAL:
             assert self.entry is not None
-            s = variable_global(f"global[ {self.entry.string} ]")
-
+            s = variable_global(
+                self.entry.name if SHOW_NAME_ONLY else self.entry.string
+            )
+            if self.entry.category == "set":
+                s = f" [{s}]"
+                
         elif self.kind == ReferenceType.LOCAL:
             assert self.entry is not None
-            s = variable(self.entry.string)
+            s = variable(self.entry.name if SHOW_NAME_ONLY else self.entry.string)
+            if self.entry.category == "set":
+                s = f" [{s}]"
 
         elif self.kind == ReferenceType.BUILTIN:
             assert (
                 self.builtin_kind is not None
             )  # should never be None for BUILTIN kind
-            s = builtin(BUILTIN_LABELS[self.builtin_kind])
+
+            if TFBTOOL_MEMBER_FORMATTING and self.builtin_kind == BuiltinType.SELF:
+                if self.member or self.sub:
+                    s = builtin("my")
+                else:
+                    s = builtin("myself")
+            else:
+                s = builtin(BUILTIN_LABELS[self.builtin_kind])
+
         else:
             raise ValueError(f"Reference has unknown kind {self.kind}")
 
@@ -510,6 +582,7 @@ class Reference:
     def _get_member_string(self, suppressWarnings=False) -> str | None:
         my_type = self.get_resolved_type()
 
+
         if my_type is not None:
             my_bindings = BINDINGS.get(my_type)
 
@@ -520,10 +593,26 @@ class Reference:
                     label = my_field.get("name")
                     type_ = my_field.get("type")
 
-                    if type_ == "set":
-                        return f".[{label}]"
+                    if TFBTOOL_MEMBER_FORMATTING:
+                        if (
+                            self.kind == ReferenceType.BUILTIN
+                            and self.builtin_kind == BuiltinType.SELF
+                        ):
+                            if type_ == "set":
+                                return f" [{label}]"
+                            else:
+                                return f" {label}"
+                        else:
+                            if type_ == "set":
+                                return f"'s [{label}]"
+                            else:
+                                return f"'s {label}"
+
                     else:
-                        return f".{label}"
+                        if type_ == "set":
+                            return f".[{label}]"
+                        else:
+                            return f".{label}"
                 else:
                     if not suppressWarnings:
                         print(

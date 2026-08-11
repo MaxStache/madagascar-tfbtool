@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import Any, override
 
 from tfbscript.ansi import method, parentheses
 from tfbscript.opcodes.base import Opcode, opcode
@@ -26,3 +26,30 @@ class OpChangeMembership(Opcode):
     @override
     def source_line(self, inline: bool = False) -> str:
         return f"{self.ref}.{method(self.membershipCombiner.symbol())}{parentheses('(')}{self.ref2}{parentheses(')')};"
+
+    @override
+    def editor_repr(self) -> dict[str, Any]:
+        return {
+            "fields": [
+                {
+                    "type": "op-label",
+                    "value": "set [set]",
+                },
+                {
+                    "type": "ref",
+                    "ref": self.ref,
+                },
+                {
+                    "type": "label",
+                    "content": "to",
+                },
+                {
+                    "type": "enum",
+                    "value": self.membershipCombiner,
+                },
+                {
+                    "type": "ref",
+                    "ref": self.ref2,
+                },
+            ]
+        }

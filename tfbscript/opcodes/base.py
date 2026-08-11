@@ -285,7 +285,7 @@ class Opcode:
         f.write(self.raw_payload)  # default implementation just writes the raw payload
         if self.__class__ is not Opcode:
             print(
-                f"Warning: write_payload not implemented for {self.__class__.__name__}. ",
+                f"Warning: write_payload not implemented for {self.__class__.__name__}. Changes might have been discarded.",
                 file=sys.stderr,
             )
 
@@ -335,6 +335,10 @@ class Opcode:
                     "name": "op-name",
                     "type": "op-label",
                     "value": self.__class__.__name__,
-                }
+                },
+                {
+                    "type": "label",
+                    "content": self.source_line(),
+                },
             ]
         }

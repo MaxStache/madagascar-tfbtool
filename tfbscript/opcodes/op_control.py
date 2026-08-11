@@ -12,7 +12,7 @@ from tfbscript.reference import Reference
 @dataclass
 class OpControl(Opcode):
     target: Reference = field(default_factory=Reference)
-    readyness_requirement: ControlRequirement = field(default=ControlRequirement.Strict)
+    script_control: ControlRequirement = field(default=ControlRequirement.Allow)
 
     @classmethod
     @override
@@ -20,15 +20,12 @@ class OpControl(Opcode):
         target = reader.readRef()
 
         # CLEANUP: this doesnt look too nice
-        readyness_requirement = ControlRequirement.Strict
+        script_control = ControlRequirement.Allow
         if reader.size_remaining() > 0:
-            if reader.read_u8() >= 1:
-                readyness_requirement = ControlRequirement.Lenient
-            else:
-                readyness_requirement = ControlRequirement.Strict
+            script_control = ControlRequirement(reader.read_u8())
 
-        return cls(target=target, readyness_requirement=readyness_requirement)
+        return cls(target=target, script_control=script_control)
 
     @override
     def source_line(self, inline: bool = False) -> str:
-        return f"{keyword('control (')} {self.target}, {method('requirement:')} {self.readyness_requirement} {keyword(')')}"
+        return f"{keyword('control (')} {self.target}, {self.script_control} {keyword(')')}"

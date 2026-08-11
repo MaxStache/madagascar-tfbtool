@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import Any, override
 
 from tfbscript.ansi import keyword
 from tfbscript.opcodes.base import Opcode, opcode
@@ -21,3 +21,26 @@ class OpSetReference(Opcode):
     @override
     def source_line(self, inline: bool = False) -> str:
         return f"{keyword('set reference')} *{self.dest_ref} = {self.src_ref};"
+
+    @override
+    def editor_repr(self) -> dict[str, Any]:
+        return {
+            "fields": [
+                {
+                    "type": "op-label",
+                    "value": "set *reference",
+                },
+                {
+                    "type": "ref",
+                    "ref": self.dest_ref,
+                },
+                {
+                    "type": "label",
+                    "content": "to",
+                },
+                {
+                    "type": "ref",
+                    "ref": self.src_ref,
+                },
+            ]
+        }

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import Any, override
 
 from tfbscript.ansi import keyword
 from tfbscript.opcodes.base import Opcode, opcode
@@ -40,3 +40,45 @@ class OpSpawnActor(Opcode):
             return f"{keyword(f'spawn actor ({self.clone_ref}, at: {self.at_ref}, facing: {self.facing_rhs}, unknown: {self.remaining})')};"
         else:
             return f"{keyword(f'spawn actor ({self.clone_ref}, at: {self.at_ref}, facing: {self.facing_rhs})')};"
+
+    @override
+    def editor_repr(self) -> dict[str, Any]:
+        return {
+            "fields": [
+                {
+                    "type": "op-label",
+                    "value": "clone",
+                },
+                {
+                    "type": "label",
+                    "content": "actor",
+                },
+                {
+                    "type": "ref",
+                    "name": "clone_ref",
+                    "ref": self.clone_ref,
+                },
+                {
+                    "type": "label",
+                    "content": "at",
+                },
+                {
+                    "type": "ref",
+                    "name": "at_ref",
+                    "ref": self.at_ref,
+                },
+                {
+                    "type": "label",
+                    "content": "facing",
+                },
+                {
+                    "type": "rhs",
+                    "name": "facing_rhs",
+                    "rhs": self.facing_rhs,
+                },
+                {
+                    "type": "label",
+                    "content": "degrees",
+                },
+            ]
+        }

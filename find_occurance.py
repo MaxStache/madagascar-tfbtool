@@ -3,9 +3,9 @@ from pathlib import Path
 from tfbscript.binary import BinaryReader
 from tfbscript.string_table import StringTable
 
-folder = Path("example_scripts")
+folder = Path("example_scripts/kony")
 
-OP_CODE = "check fov"
+OP_CODE = "cut-scene"
 
 
 def check_occurance(file: Path):
@@ -19,10 +19,10 @@ def check_occurance(file: Path):
         _global_refs = StringTable.read(reader)
         _local_refs = StringTable.read(reader)
 
-        for e in _global_refs.entries:
-            if "Melman Kick Lays" in e.string:
-                print(file)
-                print("DKWOAHDIUAWOHDIOWA")
+        #for e in _global_refs.entries:
+        #    if "Melman Kick Lays" in e.string:
+        #        print(file)
+        #        print("DKWOAHDIUAWOHDIOWA")
 
         instruction_count = reader.read_u32()
         occurance_count = 0

@@ -32,6 +32,16 @@ class Rhs:
     operator: int | None = None
     rhs: "Rhs | None" = None
 
+    @property
+    def is_random(self) -> bool:
+        """Whether this immediate is a random ceiling (low-nibble bit 0).
+
+        Only meaningful for int/float kinds: tags 0x01 / 0x11 mean the engine
+        produces a uniform random value in [0, value) at runtime instead of
+        using the literal verbatim.
+        """
+        return self.kind in ("int", "float") and bool(self.tag & 0x01)
+
     @classmethod
     def read(
         cls,
@@ -86,15 +96,26 @@ class Rhs:
             rhs = Rhs.read(reader, global_refs, local_refs, context)
             return cls(tag, "expression", ref, operator=op, rhs=rhs)
 
+        if tag & 0x01 not in (0x00, 0x01):
+            raise ValueError(f"Unknown RHS tag 0x{tag:02X} (low nibble {tag & 0x0F} <- CAUSE)")
+
+        # The high nibble selects the kind (int/float/color/pair); the low
+        # nibble is a "randomize" modifier -- bit 0 only. Confirmed from the
+        # runtime operand evaluators (Game.exe FUN_004400c0 / FUN_00440570),
+        # which switch on the exact tag byte:
+        #   0x00 int literal      0x01 int, random ceiling
+        #   0x10 float literal    0x11 float, random ceiling
+        # For a random tag the engine yields a uniform value in [0, value) at
+        # runtime (`rand() * value / 0x8000`). We keep the whole byte in `tag`,
+        # so the modifier round-trips; see the `is_random` property below.
+
         # Integer
         if (tag & 0xF0) == 0x00:
             return cls(tag, "int", reader.read_i32())
 
-        # Float -- the low nibble is a subtype variant (0x10, 0x11, ... all seen
-        # in shipped scripts), not part of the kind selector; only the high
-        # nibble picks the kind, same as the int/color/pair checks below.
+        # Float (0x80 is the engine's "indirect float", normalized to 0x10 by
+        # the reader; it takes the same 4-byte float payload).
         if (tag & 0xF0) in (0x10, 0x80):
-            
             value = round(reader.read_f32(), 7)  # round for display
             return cls(tag, "float", value)
 
@@ -150,16 +171,20 @@ class Rhs:
         """
 
         if self.kind == "int":
-            prefix = type_("Int32: ") if show_types else ""
-            return prefix + number(self.value)
+            prefix = type_("Int: ") if show_types else ""
+            body = number(self.value)
+            # 0x01: random ceiling -> runtime value is uniform in [0, value).
+            return prefix + (f"random(0, {body})" if self.is_random else body)
 
         if self.kind == "float":
             prefix = type_("Float: ") if show_types else ""
-            return prefix + number(self.value)
+            body = number(self.value)
+            # 0x11: random ceiling -> runtime value is uniform in [0, value).
+            return prefix + (f"random(0, {body})" if self.is_random else body)
 
         if self.kind == "color":
             r, g, b, a = cast(tuple[int, int, int, int], self.value)
-            prefix = type_("Color32: ") if show_types else type_("Color")
+            prefix = type_("RGBA: ") if show_types else type_("Color")
             return rgb_square(r, g, b) + prefix + number(f"({r}, {g}, {b}, {a})")
 
         if self.kind == "pair":

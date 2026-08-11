@@ -27,4 +27,4 @@ class OpForEach(Opcode):
 
     @override
     def source_line(self, inline: bool = False) -> str:
-        return f"{keyword('for each (')} {self.set_ref} {keyword(')')}"
+        return f"{keyword('for each [~each] in ')} {self.set_ref} {keyword('')}"

@@ -10,7 +10,7 @@ TEXT = QColor("#101010")
 
 def tfb_colored_box(element: QWidget, color: str):
     element.setStyleSheet(
-        f"background-color: {color}; color: #FFFFFF; padding: 2px 4px;"
+        f"background-color: {color}; color: #FFFFFF; padding: 0px 4px;"
     )
 
 
@@ -115,8 +115,9 @@ class Win98TreeStyle(QProxyStyle):
             if box_size % 2 == 0:
                 box_size -= 1
             half = box_size // 2
-            box_x = mid_x - half + self.CONTENT_OFFSET + 2
-            box_y = mid_y - half + 1
+
+            box_x = mid_x - half
+            box_y = mid_y - half
             box = QRect(box_x, box_y, box_size, box_size)
 
             painter.save()
@@ -127,7 +128,7 @@ class Win98TreeStyle(QProxyStyle):
             painter.setPen(QPen(QColor("#3F3F3F"))) # SIGN COLOR
 
             # + or - sign
-            sign_x = mid_x + self.CONTENT_OFFSET + 2
+            sign_x = mid_x + self.CONTENT_OFFSET
             painter.drawLine(box.left() + 2, box_y + half, box.right() - 2, box_y + half) # -
             if not is_open: # |  (| + - = +)
                 painter.drawLine(

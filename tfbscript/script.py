@@ -14,8 +14,12 @@ from tfbscript.string_table import StringTable
 class ScriptFile:
     """A parsed TFB script (.ai) file."""
 
+    _file_path: Path | None = field(default=None)
+
     magic_string: str = field(default="TFB Script")
-    unk: bytes = field(default=b"\x00\x00\x00\x00")  # 4 unknown bytes after the magic string
+    unk: bytes = field(
+        default=b"\x00\x00\x00\x00"
+    )  # 4 unknown bytes after the magic string
 
     opcode_table: StringTable = field(default_factory=StringTable)
     global_refs: StringTable = field(default_factory=StringTable)
@@ -58,10 +62,18 @@ class ScriptFile:
             ) from error
 
         if debugOptions.get("listUnresolvedOps"):
-            print(f"Unresolved ops: {debug_store.unresolved_ops}")
+            if len(debug_store.unresolved_ops) > 0:
+                print(f"Unresolved ops: {' '.join(debug_store.unresolved_ops)}")
+            else:
+                print("Unresolved ops: None \U0001f973")  # None :party_emoji:
 
         return cls(
-            magic_string, unk, opcode_table, global_refs, local_refs, instructions
+            magic_string=magic_string,
+            unk=unk,
+            opcode_table=opcode_table,
+            global_refs=global_refs,
+            local_refs=local_refs,
+            instructions=instructions,
         )
 
     def write(self, f: BinaryIO) -> None:
@@ -75,7 +87,9 @@ class ScriptFile:
         self.global_refs.write(f)
         self.local_refs.write(f)
 
-        instruction_count = sum(instruction.total_span() for instruction in self.instructions)
+        instruction_count = sum(
+            instruction.total_span() for instruction in self.instructions
+        )
 
         write_u32(f, instruction_count)
         for instruction in self.instructions:
@@ -87,9 +101,12 @@ class ScriptFile:
     ) -> "ScriptFile":
         """Read a ScriptFile from an .ai file on disk."""
         data = Path(path).read_bytes()
-        return cls.read(
+
+        script = cls.read(
             BinaryReader(data, little_endian=True), debugOptions=debugOptions
         )
+        script._file_path = Path(path)
+        return script
 
     def print_tree(self) -> None:
         """Print the whole script as indented pseudo-source."""

@@ -25,26 +25,26 @@ class RelOp(IntEnum):
 class ControlRequirement(IntEnum):
     """u8 in OpControl payload that specifies how the control block is executed."""
 
-    # the target must already satisfy the "controllable/active" check right now, or the block is skipped.
-    Strict  = 0 # default, this is behavior when the byte isnt present in payload!
+    Suspend  = 0
 
-    #that requirement is relaxed, so the block runs even if the target isn't in that fully-ready state yet.
-    Lenient = 1
+    Allow = 1
 
     @override
     def __str__(self) -> str:
-        return ("strict", "lenient")[self.value]
+        return ("suspend script", "allow script")[self.value]
     
 class CutsceneCommand(IntEnum):
-    # TODO: Verify and figure out 0
-    Unknown = 0
-    Pause  = 1
-    Resume = 2
-    Start  = 3
+    BeginAlt = 0 # start (allow skipping)    - in retail same effect as start because skipping is implmenented via tfbscript
+
+    Begin    = 1 # start
+
+    End      = 2 # end
+
+    Pause  = 3 # pause
 
     @override
     def __str__(self) -> str:
-        return ("pause", "resume", "start")[self.value-1]
+        return {0: "start (allow skipping)", 1: "start", 2: "end", 3: "pause"}[self.value]
     
 class SetDirection(IntEnum):
     """Direction for how to traverse a set"""
@@ -92,6 +92,10 @@ class MembershipCombiner(IntEnum):
 
     def symbol(self) -> str:
         # assumes format is "set_a.<membership_combiner>(element_a)" or "set_a.<membership_combiner>(set_b)"
+        return ("include", "remove", "intersectWith", "replaceWith", "add", "removeAll")[self.value]
+
+    @override
+    def __str__(self) -> str:
         return ("include", "remove", "intersectWith", "replaceWith", "add", "removeAll")[self.value]
 
 class AnimationMapping(IntEnum):

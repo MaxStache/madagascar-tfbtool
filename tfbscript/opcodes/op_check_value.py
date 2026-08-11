@@ -37,6 +37,7 @@ class OpCheckValue(Opcode):
     @override
     def editor_repr(self) -> dict[str, Any]:
         return {
+            "hasBody": True,
             "fields": [
                 {
                     "type": "op-label",
