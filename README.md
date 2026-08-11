@@ -87,12 +87,7 @@ Another GIGANTIC ENORMOUS thanks to all the contributors to igRewrite8, and to [
 
 ### Needs attention / TODOs
 
-- `cut-scene::op-code` - confirm assumptions on value
-
 - `spawn actor::op-code` - find out purpose of remaining byte
-
-- enums.py, CutsceneCommand - Figure out what 0 is
-
 - `displace::op-code` - confirm fields
 
 ## Contributing
