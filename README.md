@@ -15,7 +15,8 @@ Parser and decompiler for TFB script (`.ai`) files, as used by *Madagascar - The
 ## Requirements
 
 - Python >= 3.12 (uses `typing.override`, added in 3.12)
-- Dependencies from `requirements.txt`: `pip install -r requirements.txt`
+- UV package manager
+- Dependencies from `pyproject.toml`: `uv sync`
 
 ## Usage
 
