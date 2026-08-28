@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import override
+from typing import Any, BinaryIO, override
 
 from tfbscript.ansi import flow_control, keyword
 from tfbscript.opcodes.base import Opcode, opcode
@@ -72,3 +72,34 @@ class OpIfElse(Opcode):
         finally:
             if context is not None:
                 context.open_opcodes.pop()
+
+    @override
+    def editor_repr(self) -> dict[str, Any]:
+        # The row is the condition itself; its body is the "true" branch and
+        # the remaining children are the "else" branch.
+        if not self.children:
+            return {"fields": [{"type": "op-label", "value": "if/else"}]}
+
+        condition = self.children[0]
+        else_children = self.children[1:]
+
+        groups: list[dict[str, Any]] = [
+            {
+                "label": "true",
+                "children": condition.children,
+                "scope": [condition],
+            }
+        ]
+
+        if else_children:
+            groups.append({"label": "else", "children": else_children})
+
+        return {
+            "row": condition,
+            "groups": groups,
+        }
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        # If/Else has no payload
+        pass

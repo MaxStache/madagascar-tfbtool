@@ -8,17 +8,20 @@ from typing import cast
 from tfbscript.ansi import set_colors_enabled
 from tfbscript.script import ScriptFile
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QFont, QFontDatabase, QKeySequence
-from PySide6.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QStyleFactory,
-    QTreeWidget,
-    QVBoxLayout,
-    QWidget,
-    QMessageBox,
-)
+try:
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QAction, QFont, QFontDatabase, QKeySequence
+    from PySide6.QtWidgets import (
+        QApplication,
+        QMainWindow,
+        QStyleFactory,
+        QTreeWidget,
+        QVBoxLayout,
+        QWidget,
+        QMessageBox,
+    )
+except ModuleNotFoundError:
+    print("WARN: PySide6 not installed, editor wont work")
 
 from .fonts import register_bold_variant
 from .search import SearchBar, SearchEntry, TreeSearch
@@ -47,7 +50,7 @@ def open_editor(script: ScriptFile):
 
     window = QMainWindow()
     window.setWindowTitle("TFBScript Editor")
-    window.resize(700, 420)
+    window.resize(1200, 720)
 
     app.setStyle(Win98TreeStyle(QStyleFactory.create("Fusion")))
 

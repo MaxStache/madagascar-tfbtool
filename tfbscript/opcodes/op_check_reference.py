@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import Any, override
 
 from tfbscript.ansi import keyword
 from tfbscript.opcodes.base import Opcode, opcode
@@ -28,3 +28,29 @@ class OpCheckReference(Opcode):
             return condition
 
         return f"{keyword('check reference (')} {condition} {keyword(')')}"
+
+    @override
+    def editor_repr(self) -> dict[str, Any]:
+        return {
+            "hasBody": True,
+            "fields": [
+                {
+                    "type": "op-label",
+                    "value": "check reference",
+                },
+                {
+                    "type": "ref",
+                    "name": "ref1",
+                    "ref": self.ref1,
+                },
+                {
+                    "type": "op-label",
+                    "value": "is reference to",
+                },
+                {
+                    "type": "ref",
+                    "name": "ref2",
+                    "ref": self.ref2,
+                },
+            ],
+        }

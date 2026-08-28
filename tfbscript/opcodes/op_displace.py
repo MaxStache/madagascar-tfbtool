@@ -27,9 +27,13 @@ class OpDisplace(Opcode):
             reader.read_u8()
         )  # TODO : May actually be a SetDirection
 
+        print(reader.size_remaining())
         length = reader.readRHS()
+        print(reader.size_remaining())
         heading = reader.readRHS()
+        print(reader.size_remaining())
         pitch = reader.readRHS()
+        print(reader.size_remaining())
 
         return cls(
             target=target,

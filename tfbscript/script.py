@@ -36,7 +36,7 @@ class ScriptFile:
         debug_store: DebugStore = DebugStore()
 
         magic_string = reader.read_string(reader.read_u8())
-        print(magic_string)
+        #print(magic_string)
         unk = reader.read_bytes(4)
 
         opcode_table = StringTable.read(reader)

@@ -21,12 +21,30 @@ class OpSlideValue(Opcode):
     @classmethod
     @override
     def parse_payload(cls, reader: PayloadReader) -> Opcode:
+        lhs = reader.readRef()
+        target_value = reader.readRHS()
+        interpolation_time = reader.readRHS()
+
+        if reader.size_remaining() == 8:
+            ease_out = reader.readRef()
+            ease_in = reader.readRef()
+        else:
+            # TODO: Why tf does that happen
+            reader.skip(
+                reader.size_remaining() # always 2
+            )
+            return cls(
+                lhs=lhs,
+                target_value=target_value,
+                interpolation_time=interpolation_time,
+            )
+
         return cls(
-            lhs=reader.readRef(),
-            target_value=reader.readRHS(),
-            interpolation_time=reader.readRHS(),
-            ease_out=reader.readRef(),
-            ease_in=reader.readRef(),
+            lhs=lhs,
+            target_value=target_value,
+            interpolation_time=interpolation_time,
+            ease_out=ease_out,
+            ease_in=ease_in,
         )
 
     @override

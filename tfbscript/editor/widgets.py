@@ -6,14 +6,18 @@ from typing import override
 
 from tfbscript.opcodes.base import InstructionFlags, Opcode
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
     QHBoxLayout,
     QLabel,
     QMenu,
     QPushButton,
+    QRadioButton,
     QTreeWidget,
     QTreeWidgetItem,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -34,6 +38,71 @@ def text_to_tb(label: QWidget):
     fm = label.fontMetrics()
     label.setFixedHeight(fm.height())
 
+class RHSDialog(QDialog):
+    def __init__(self, rhs=None, parent=None):
+        super().__init__(parent)
+
+        self.rhs = rhs
+
+        self.setWindowTitle("RHS Builder")
+
+        layout = QVBoxLayout(self)
+
+        self.option1 = QRadioButton("Integer")
+        self.option2 = QRadioButton("Float")
+        self.option3 = QRadioButton("Color")
+        self.option4 = QRadioButton("(X,Y) Position")
+        self.option5 = QRadioButton("Reference")
+        self.option6 = QRadioButton("Expression (Combination)")
+
+        layout.addWidget(self.option1)
+        layout.addWidget(self.option2)
+        layout.addWidget(self.option3)
+        layout.addWidget(self.option4)
+        layout.addWidget(self.option5)
+        layout.addWidget(self.option6)
+
+        # Select the existing RHS kind
+        if rhs is not None:
+            options = {
+                "int": self.option1,
+                "float": self.option2,
+                "color": self.option3,
+                "pair": self.option4,
+                "reference": self.option5,
+                "expression": self.option6,
+            }
+
+            if button := options.get(rhs.kind):
+                button.setChecked(True)
+
+        buttons = QDialogButtonBox(
+            standardButtons=(
+                QDialogButtonBox.StandardButton.Ok
+                | QDialogButtonBox.StandardButton.Cancel
+            )
+        )
+
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+
+        layout.addWidget(buttons)
+
+class RHSButton(QPushButton):
+    doubleClicked = Signal()
+
+    def __init__(self, rhs, parent=None):
+        super().__init__(parent)
+        self.rhs = rhs
+
+    def mouseDoubleClickEvent(self, event):
+        dialog = RHSDialog(self.rhs, self.window())
+
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.rhs = dialog.rhs
+
+        super().mouseDoubleClickEvent(event)
+
 def opcode_row(opcode: Opcode, layout: QHBoxLayout, on_change: Callable[[], None]):
     fields = opcode.editor_repr().get("fields", [])
 
@@ -42,10 +111,7 @@ def opcode_row(opcode: Opcode, layout: QHBoxLayout, on_change: Callable[[], None
 
         if f_type == "op-label":
             label = QLabel(_field.get("value", ""))
-            if _field.get("value", "") == "OpCutScene":
-                tfb_colored_box(label, "#A00000")
-            else:
-                tfb_colored_box(label, "#0000AA")
+            tfb_colored_box(label, "#0000AA")
             text_to_tb(label)
             layout.addWidget(label)
 
@@ -74,11 +140,18 @@ def opcode_row(opcode: Opcode, layout: QHBoxLayout, on_change: Callable[[], None
             layout.addWidget(label)
 
         elif f_type == "rhs":
-            content = str(_field.get("rhs", None))
-            label = QLabel(content)
-            tfb_colored_box(label, "#616161")
-            text_to_tb(label)
-            layout.addWidget(label)
+            selected = _field.get("rhs")
+            attr_name = _field.get("name")
+
+            button = RHSButton(selected, str(selected))
+            text_to_tb(button)
+            button.setFlat(True)
+            button.setStyleSheet(
+                "QPushButton { padding: 2px 4px; margin: 0px; border: none; background-color: #616161; color: #FFFFFF; }"
+                " QPushButton::menu-indicator { image: none; width: 0px; height: 0px; }"
+            )
+            layout.addWidget(button)
+
 
         elif f_type == "ref":
             content = str(_field.get("ref", None))
@@ -144,6 +217,24 @@ class FlowControlOpcode(Opcode):
         }
 
 
+@dataclass
+class GroupOpcode(Opcode):
+    """Pseudo-opcode heading a labelled branch of another opcode's body, e.g.
+    the "true" / "else" halves of an if/else. `scope` holds the opcodes that
+    must stay open while its body renders (see ParserContext.open_opcodes)."""
+
+    label: str = field(default="")
+    scope: list[Opcode] = field(default_factory=list)
+
+    @override
+    def editor_repr(self) -> dict:
+        return {
+            "fields": [{"type": "label", "content": self.label}],
+            "hasBody": True,
+            "scope": self.scope,
+        }
+
+
 def populate_tree(
     parent: QTreeWidget | QTreeWidgetItem,
     opcode: Opcode,
@@ -153,6 +244,11 @@ def populate_tree(
     item.setExpanded(False)
 
     tree = item.treeWidget()
+
+    editor_repr = opcode.editor_repr()
+    # An opcode may render its row from another opcode ("row"), e.g. if/else
+    # shows its condition, so edits land on the opcode the fields came from.
+    row_opcode = editor_repr.get("row", opcode)
 
     container = QWidget()
     outer_layout = QHBoxLayout(container)
@@ -181,18 +277,36 @@ def populate_tree(
 
     def rerender_row() -> None:
         clear_layout(layout)
-        opcode_row(opcode, layout, rerender_row)
+        opcode_row(row_opcode, layout, rerender_row)
         entry.set_text(row_text(layout))
 
     rerender_row()
 
     tree.setItemWidget(item, 0, container)
     context = opcode.context
+    scope = [opcode, *editor_repr.get("scope", [])]
     if context is not None:
-        context.open_opcodes.append(opcode)
+        context.open_opcodes.extend(scope)
 
     try:
-        if opcode.children or opcode.editor_repr().get("hasBody", False):
+        groups = editor_repr.get("groups")
+        if groups is not None:
+            # Each group becomes a labelled node owning part of the body; the
+            # flow-control row is emitted per group, not for the opcode itself.
+            for group in groups:
+                populate_tree(
+                    item,
+                    GroupOpcode(
+                        opcode_index=opcode.opcode_index,
+                        flags=opcode.flags,
+                        context=context,
+                        children=list(group.get("children", [])),
+                        label=group.get("label", ""),
+                        scope=list(group.get("scope", [])),
+                    ),
+                    search_index,
+                )
+        elif opcode.children or editor_repr.get("hasBody", False):
             for child in opcode.children:
                 populate_tree(item, child, search_index)
             populate_tree(
@@ -204,4 +318,4 @@ def populate_tree(
             )
     finally:
         if context is not None:
-            context.open_opcodes.pop()
+            del context.open_opcodes[-len(scope) :]

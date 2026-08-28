@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, BinaryIO, TypeVar, override
 
-from tfbscript.ansi import builtin, variable, variable_global
+from tfbscript.ansi import builtin, keyword, variable, variable_global
 from tfbscript.binary import write_u32
 from tfbscript.string_table import StringTable, StringTableEntry
 
@@ -324,6 +324,14 @@ BINDINGS = {
 SHOW_NAME_ONLY = True
 TFBTOOL_MEMBER_FORMATTING = True
 
+# Reference.scope -- which element a reference picks out of a set
+# (0 = the set itself, no element picked).
+SCOPE_LABELS = {
+    1: "first",
+    2: "last",
+    3: "random",
+}
+
 
 @dataclass
 class Reference:
@@ -564,20 +572,35 @@ class Reference:
             else:
                 s += self._get_member_string() or ""
 
+        if self.scope:
+            # On a set, the scope picks one element out of it, e.g.
+            # "first in [players]". `member` above still selects the set
+            # itself, while `sub` below applies to the picked element. What it
+            # means on anything else is unknown, so leave those as a raw "@N".
+            if self._selects_from_set():
+                label = SCOPE_LABELS.get(self.scope, str(self.scope))
+                s = f"{keyword(f'{label} in')} {s.lstrip(' ')}"
+            else:
+                s += f"@{self.scope}"
+
         if self.sub:
             s += f".sub[{self.sub:#04x}]"
-        if self.scope:
-            s += f"@{self.scope}"  # set index for example
-            # with open("debug.decomp", "a") as f:
-            #
-            #    if self.entry and self.entry.category != "set" and self.scope:
-            #        memberbinding = BINDINGS.get(self.entry.type).get(self.member)
-            #        if not memberbinding or memberbinding.get("type") != "set":
-            #            print(
-            #                f"WARN: Reference {self.entry} field {self.member} sub {self.sub} has a non-zero scope ({self.scope}) which is not yet supported in the string representation",
-            #                file=f,
-            #            )
+
         return s
+
+    def _selects_from_set(self) -> bool:
+        """Whether what `scope` picks from is a set: the member it selects, or,
+        with no member, the reference's own target."""
+        if self.member:
+            my_type = self.get_resolved_type()
+            my_bindings = BINDINGS.get(my_type) if my_type is not None else None
+            my_field = my_bindings.get(self.member) if my_bindings is not None else None
+            return my_field is not None and my_field.get("type") == "set"
+
+        if self.kind == ReferenceType.BUILTIN:
+            return self.builtin_kind == BuiltinType.SUBSET
+
+        return self.entry is not None and self.entry.category == "set"
 
     def _get_member_string(self, suppressWarnings=False) -> str | None:
         my_type = self.get_resolved_type()

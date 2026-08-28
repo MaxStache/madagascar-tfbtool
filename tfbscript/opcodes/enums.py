@@ -166,6 +166,11 @@ class AnimationMapping(IntEnum):
     lean_right_medium = 0x3E
     lean_right_fast = 0x3F
 
+    UNKNOWN1 = 0x40
+    UNKNOWN2 = 0x41
+    UNKNOWN3 = 0x42
+    UNKNOWN4 = 0x45
+
     @override
     def __str__(self) -> str:
         return self.name.replace("_", " ")

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import Any, override
 
 from tfbscript.ansi import func_call
 from tfbscript.opcodes.base import Opcode, opcode
@@ -20,3 +20,20 @@ class OpCutScene(Opcode):
     @override
     def source_line(self, inline: bool = False) -> str:
         return func_call("cutScene", str(self.cutscene_command))
+
+    @override
+    def editor_repr(self) -> dict[str, Any]:
+        return {
+            "hasBody": False,
+            "fields": [
+                {
+                    "type": "op-label",
+                    "value": "cut-scene",
+                },
+                {
+                    "type": "enum",
+                    "name": "cutscene_command",
+                    "entry": self.cutscene_command,
+                },
+            ]
+        }

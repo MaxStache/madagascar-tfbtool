@@ -16,7 +16,7 @@ from tfbscript import editor_from_filepath
 #
 # open_editor(script)
 
-PATH = r"C:\Users\maxst\Projects\madagascar-tfbscript\example_scripts\battle\LevelRestartMaster_Battle_{bc0a3637-b2ea-4d04-97c8-3cf6c76a3667}.ai"
+PATH = r"C:\Users\maxst\Projects\madagascar-tfbscript\example_scripts\lemurs\670_SL_LemurConvoy.ai"
 
 editor_from_filepath(PATH)
 
