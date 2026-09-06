@@ -89,12 +89,18 @@ i_behv_idle_check_controller_1 = OpCheckValue(0x00)
 i_behv_idle_check_controller_1.lhs = Reference.createSimple_local(
     script.local_refs, slot=5
 )
+<<<<<<< HEAD
 i_behv_idle_check_controller_1.flags.flow_control = 1  # Flow CONTINUE
 
 i_behv_idle_check_controller_1.rhs = Rhs()
 i_behv_idle_check_controller_1.rhs.kind = "int"
 i_behv_idle_check_controller_1.rhs.value = 0x01
 
+=======
+i_behv_idle_check_controller_1.rhs = Rhs.createSimple(
+    
+)
+>>>>>>> 05cd749 (wip)
 i_behv_idle_check_controller_1.lhs.member = 0x01
 i_behv_idle.children.append(i_behv_idle_check_controller_1)
 # -----
