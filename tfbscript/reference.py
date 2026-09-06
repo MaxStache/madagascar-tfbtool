@@ -17,6 +17,10 @@ LOCAL_BASE = 0x3FC0D
 BUILTIN_BASE = 0x3FFFA
 NULL_REF = 0xFFFFFFFF
 
+# References whose type resolution is in progress, to break cyclic
+# builtin producer chains (see get_resolved_type).
+_RESOLVING: set[int] = set()
+
 
 # fmt: off
 class ReferenceType(Enum):
@@ -46,18 +50,18 @@ BUILTIN_LABELS = {                                          # type resolving imp
 BINDINGS = {
     "actor": {
         0x01: {"name": "health", "type": "value"},
-        0x02: {"name": "waypoints", "type": "set"},  # set::actor
+        0x02: {"name": "waypoints", "type": "set", "of": "waypoint"},
         0x03: {"name": "origin", "type": "value"},
         0x04: {"name": "destination (point)", "type": "value"},
         0x05: {"name": "heading (OBSOLETE)", "type": "value"},
         0x06: {"name": "facing (OBSOLETE)", "type": "value"},
         0x07: {"name": "current speed", "type": "value"},
         0x08: {"name": "altitude", "type": "value"},
-        0x09: {"name": "attach points", "type": "set"},  # set::actor
+        0x09: {"name": "attach points", "type": "set", "of": "attachment"},
         0x0A: {"name": "activation range fade percent", "type": "value"},
         0x0B: {"name": "activation range", "type": "value"},
         0x0C: {"name": "deactivation range", "type": "value"},
-        0x0D: {"name": "clones", "type": "set"},  # set::actor
+        0x0D: {"name": "clones", "type": "set", "of": "actor"},
         0x0E: {"name": "ground top speed", "type": "value"},
         0x0F: {"name": "ground turn rate", "type": "value"},
         0x10: {"name": "ground acceleration", "type": "value"},
@@ -100,7 +104,7 @@ BINDINGS = {
         0x35: {"name": "mesh collider", "type": "value"},
         0x36: {"name": "triangles collide", "type": "value"},
         0x37: {"name": "tint color", "type": "value"},
-        0x38: {"name": "turrets", "type": "set"},
+        0x38: {"name": "turrets", "type": "set", "of": "turret"},
     },
     "camera": {
         0x01: {"name": "look from", "type": "value"},
@@ -132,7 +136,7 @@ BINDINGS = {
         0x05: {"name": "tint color", "type": "value"},
         0x06: {"name": "justification", "type": "value"},
         0x07: {"name": "visible", "type": "value"},
-        0x08: {"name": "clones", "type": "set"},  # set::sprite
+        0x08: {"name": "clones", "type": "set", "of": "sprite"},
         0x09: {"name": "priority", "type": "value"},  # z-order!?
         0x0A: {
             "name": "pixel extends",
@@ -144,6 +148,16 @@ BINDINGS = {
         0x02: {"name": "pitch", "type": "value"},
         0x03: {"name": "elapsed time", "type": "value"},
         0x04: {"name": "remaining time", "type": "value"},
+    },
+    "2D": {
+        0x01: {"name": "x", "type": "value"},
+        0x02: {"name": "y", "type": "value"},
+    },
+    "color": {
+        0x01: {"name": "r", "type": "value"},
+        0x02: {"name": "g", "type": "value"},
+        0x03: {"name": "b", "type": "value"},
+        0x04: {"name": "a", "type": "value"},
     },
     "controller": {
         0x01: {"name": "circle button", "type": "value"},
@@ -253,7 +267,7 @@ BINDINGS = {
         0x02: {"name": "output rate spread", "type": "value"},
         0x03: {"name": "lifetime", "type": "value"},
         0x04: {"name": "lifetime spread", "type": "value"},
-        0x05: {"name": "clones (list)", "type": "set"},
+        0x05: {"name": "clones (list)", "type": "set", "of": "particle"},
         0x06: {"name": "activation range", "type": "value"},
         0x07: {"name": "deactivation range", "type": "value"},
         0x08: {"name": "primary start velocity", "type": "value"},
@@ -331,6 +345,46 @@ SCOPE_LABELS = {
     2: "last",
     3: "random",
 }
+
+# Types that have no members of their own. A `sub` on one of these picks a
+# component out of it (e.g. the x of a sprite's location pair), which is
+# itself a plain value.
+SCALAR_TYPES = {"value", "angle", "color", "position"}
+
+
+def member_field(type_name: str | None, index: int) -> dict[str, str] | None:
+    """The BINDINGS entry for field `index` of `type_name`, if it is known."""
+    bindings = BINDINGS.get(type_name) if type_name is not None else None
+    return bindings.get(index) if bindings is not None else None
+
+
+@dataclass(frozen=True)
+class ResolvedType:
+    """What a reference ultimately names: a type, and whether it is a whole
+    set of them or a single one."""
+
+    type: str | None  # None when it could not be resolved
+    is_set: bool = False
+
+    @override
+    def __str__(self) -> str:
+        if self.type is None:
+            return "<unknown>"
+        return f"set::{self.type}" if self.is_set else self.type
+
+    def member_type(self, index: int) -> "ResolvedType":
+        """This type's field `index` -- the type `.member`/`.sub` selects."""
+        field = member_field(self.type, index)
+
+        if field is None:
+            if self.type in SCALAR_TYPES:
+                return ResolvedType("value")
+            return ResolvedType(None)
+
+        if field.get("type") == "set":
+            return ResolvedType(field.get("of"), is_set=True)
+
+        return ResolvedType(field.get("type"))  # "value"
 
 
 @dataclass
@@ -462,9 +516,9 @@ class Reference:
         fields = {
             "raw": raw,
             "index": raw >> 0xE,
-            "member": (raw >> 0x8) & 0x3F, # member index (applied first)
-            "scope": (raw >> 0x6) & 3, # mode
-            "sub": raw & 0x3F, # member index (applied last)
+            "member": (raw >> 0x8) & 0x3F,  # member index (applied first)
+            "scope": (raw >> 0x6) & 3,  # mode
+            "sub": raw & 0x3F,  # member index (applied last)
         }
         index = fields["index"]
 
@@ -542,7 +596,7 @@ class Reference:
             )
             if self.entry.category == "set":
                 s = f" [{s}]"
-                
+
         elif self.kind == ReferenceType.LOCAL:
             assert self.entry is not None
             s = variable(self.entry.name if SHOW_NAME_ONLY else self.entry.string)
@@ -592,11 +646,13 @@ class Reference:
         """Whether what `scope` picks from is a set: the member it selects, or,
         with no member, the reference's own target."""
         if self.member:
-            my_type = self.get_resolved_type()
-            my_bindings = BINDINGS.get(my_type) if my_type is not None else None
-            my_field = my_bindings.get(self.member) if my_bindings is not None else None
+            my_field = member_field(self.get_resolved_type(), self.member)
             return my_field is not None and my_field.get("type") == "set"
 
+        return self._target_is_set()
+
+    def _target_is_set(self) -> bool:
+        """Whether the reference's own target (before `member`) is a set."""
         if self.kind == ReferenceType.BUILTIN:
             return self.builtin_kind == BuiltinType.SUBSET
 
@@ -605,12 +661,11 @@ class Reference:
     def _get_member_string(self, suppressWarnings=False) -> str | None:
         my_type = self.get_resolved_type()
 
-
         if my_type is not None:
             my_bindings = BINDINGS.get(my_type)
 
             if my_bindings is not None:
-                my_field = my_bindings.get(self.member)
+                my_field = member_field(my_type, self.member)
 
                 if my_field is not None:
                     label = my_field.get("name")
@@ -662,7 +717,63 @@ class Reference:
 
         return f".field[{self.member:#04x}]"
 
+    def resolve_type(self, apply_sub: bool = True) -> ResolvedType:
+        """The type this reference *ultimately* names, following the whole
+        chain: target -> `member` -> `scope` -> `sub`.
+
+        e.g. "first in return point's [waypoints]" starts at the actor
+        variable "return point", takes its `waypoints` member (a set of
+        waypoints), then `scope` picks one out of it -> a single "waypoint".
+
+        `get_resolved_type` only gives the type of the target the chain starts
+        at ("actor" in that example), which is what a `member` index is looked
+        up against.
+
+        `apply_sub=False` stops before `sub`, for the ops where `sub` is not a
+        member selection: on a "find subset" set it names the field to filter
+        on, so "my [waypoints].sub[0x01]" is still a set of waypoints there.
+        """
+        resolved = ResolvedType(self.get_resolved_type(), self._target_is_set())
+
+        if self.member:
+            # NOTE: a member on a set variable applies to its elements, so the
+            # member's own kind is what we report -- same as `_selects_from_set`.
+            resolved = resolved.member_type(self.member)
+
+        if self.scope and resolved.is_set:
+            # The scope picks one element out of the set (first/last/random).
+            # On anything else its meaning is unknown, so leave the type alone.
+            resolved = ResolvedType(resolved.type)
+
+        if self.sub and apply_sub:
+            resolved = resolved.member_type(self.sub)
+
+        return resolved
+
+    def get_final_type(self, apply_sub: bool = True) -> str | None:
+        """The name of the type `resolve_type` lands on, e.g. "waypoint"."""
+        return self.resolve_type(apply_sub).type
+
     def get_resolved_type(self) -> str | None:
+        """The type of the target this reference starts at, *before* `member`,
+        `scope` and `sub` are applied. Use `resolve_type` for the end of the
+        chain."""
+        # A builtin resolves through the op that produced it, and that op's own
+        # operand can be the same builtin again -- `control [~controlled]`
+        # nested inside `control [~controlled]` resolves via
+        # nearest_ancestor(OpControl), which hands back the same producer every
+        # time, so the chain never advances. Guard re-entry and report the type
+        # as unknown rather than recursing forever.
+        if id(self) in _RESOLVING:
+            return None
+
+        _RESOLVING.add(id(self))
+        try:
+            return self._get_resolved_type()
+        finally:
+            _RESOLVING.discard(id(self))
+
+    def _get_resolved_type(self) -> str | None:
         if self.kind == ReferenceType.NULL:
             return "null"
 
@@ -675,9 +786,9 @@ class Reference:
                 producer = self._builtin_find_producer((OpCheckFOV, OpFindSubset))
 
                 if isinstance(producer, OpFindSubset):
-                    return producer.set_ref.get_resolved_type()
+                    return producer.set_ref.get_final_type(apply_sub=False)
                 else:
-                    return producer.target_ref.get_resolved_type()
+                    return producer.target_ref.get_final_type()
 
             elif self.builtin_kind == BuiltinType.MESSAGE_VALUE:
                 return "value"  # TODO: maybe we can resolve here??? seems kinda hard to do, since the message value is set by the sender and we don't have that context here
@@ -687,13 +798,13 @@ class Reference:
                 from tfbscript.opcodes import OpFindVariable
 
                 producer = self._builtin_find_producer(OpFindVariable)
-                return producer.var_ref.get_resolved_type()
+                return producer.var_ref.get_final_type()
 
             elif self.builtin_kind == BuiltinType.EACH:
                 from tfbscript.opcodes import OpForEach
 
                 producer = self._builtin_find_producer(OpForEach)
-                return producer.set_ref.get_resolved_type()
+                return producer.set_ref.get_final_type()
 
             elif self.builtin_kind == BuiltinType.CONTROLLED:
                 from tfbscript.opcodes import OpControl, OpSpawnActor
@@ -701,9 +812,9 @@ class Reference:
                 producer = self._builtin_find_producer((OpControl, OpSpawnActor))
 
                 if isinstance(producer, OpControl):
-                    return producer.target.get_resolved_type()
+                    return producer.target.get_final_type()
                 else:
-                    return producer.clone_ref.get_resolved_type()
+                    return producer.clone_ref.get_final_type()
 
             else:
                 raise ValueError(

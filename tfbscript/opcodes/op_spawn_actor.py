@@ -34,6 +34,7 @@ class OpSpawnActor(Opcode):
             )
         return cls(clone_ref=clone_ref, at_ref=at_ref, facing_rhs=facing_rhs)
 
+
     @override
     def source_line(self, inline: bool = False) -> str:
         if self.remaining is not None:

@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Any, override
+from typing import Any, BinaryIO, override
 
 from tfbscript.ansi import comment
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.payload import PayloadReader
 
@@ -35,3 +36,8 @@ class OpComment(Opcode):
                 },
             ]
         }
+    
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        write_u8(f, len(self.content))
+        f.write(self.content.encode("latin1"))

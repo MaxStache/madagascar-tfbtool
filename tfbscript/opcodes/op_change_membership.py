@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Any, override
+from typing import Any, BinaryIO, override
 
 from tfbscript.ansi import method, parentheses
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import MembershipCombiner
 from tfbscript.payload import PayloadReader
@@ -26,6 +27,12 @@ class OpChangeMembership(Opcode):
     @override
     def source_line(self, inline: bool = False) -> str:
         return f"{self.ref}.{method(self.membershipCombiner.symbol())}{parentheses('(')}{self.ref2}{parentheses(')')};"
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.ref.write(f)
+        write_u8(f, self.membershipCombiner)
+        self.ref2.write(f)
 
     @override
     def editor_repr(self) -> dict[str, Any]:

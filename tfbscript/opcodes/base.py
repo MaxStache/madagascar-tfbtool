@@ -89,13 +89,14 @@ class ParserContext:
 
     control_block_counter: int = 0
 
-    # Stack of opcodes currently open in the print_tree traversal (outermost
-    # first), maintained by Opcode.print_tree as it recurses into children.
-    # Lets a descendant resolve state from its nearest enclosing opcode of a
-    # given type, e.g. the "[~subset]" builtin resolving its type from the
-    # nearest enclosing "find subset" op. Reference type resolution only
-    # happens while rendering source (see Reference.get_resolved_type), so
-    # this stack must reflect the print traversal, not the parse.
+    # Stack of opcodes whose body is currently being walked (outermost first),
+    # maintained by every traversal that descends into children: Opcode.read,
+    # Opcode.write, Opcode.print_tree and the editor's populate_tree. Lets a
+    # descendant resolve state from its nearest enclosing opcode of a given
+    # type, e.g. the "[~subset]" builtin resolving its type from the nearest
+    # enclosing "find subset" op. Some opcodes need this while parsing or
+    # writing their own payload (see OpControl), not only while rendering
+    # source, so the stack has to be kept during those traversals too.
     open_opcodes: list["Opcode"] = field(default_factory=list)
 
     def nearest_ancestor(
@@ -244,11 +245,17 @@ class Opcode:
         if isinstance(instruction, OpBehaviorImplementation):
             instruction.behavior_entry = behavior_entry
 
-        descendants_read = 0
-        while descendants_read < flags.descendant_span:
-            child = Opcode.read(reader, context, debug_store=debug_store)
-            instruction.children.append(child)
-            descendants_read += child.total_span()
+        # Stay "open" while the body is parsed so a descendant resolving a
+        # builtin reference (e.g. "[~controlled]") can find this op.
+        context.open_opcodes.append(instruction)
+        try:
+            descendants_read = 0
+            while descendants_read < flags.descendant_span:
+                child = Opcode.read(reader, context, debug_store=debug_store)
+                instruction.children.append(child)
+                descendants_read += child.total_span()
+        finally:
+            context.open_opcodes.pop()
 
         return instruction
 
@@ -265,8 +272,14 @@ class Opcode:
         write_u8(f, len(payload_buf.getvalue()))
         f.write(payload_buf.getvalue())
 
-        for child in self.children:
-            child.write(f)
+        if self.context is not None:
+            self.context.open_opcodes.append(self)
+        try:
+            for child in self.children:
+                child.write(f)
+        finally:
+            if self.context is not None:
+                self.context.open_opcodes.pop()
 
     @classmethod
     def parse_payload(cls, reader: PayloadReader) -> Self:

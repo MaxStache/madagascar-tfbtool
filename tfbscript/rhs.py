@@ -14,10 +14,10 @@ if TYPE_CHECKING:
     from tfbscript.opcodes.base import ParserContext
 
 _OPERATORS = {
-    0: "+",
-    1: "-",
-    2: "*",
-    3: "/",
+    0x00: "+",
+    0x01: "-",
+    0x02: "*",
+    0x03: "/",
 }
 
 class RhsKind(IntEnum):
@@ -66,21 +66,47 @@ class Rhs:
         # the 6-byte "op + value2" tail (11 bytes total), decided here from how
         # many bytes are left in the payload.
         #
-        # This is a proxy, not what the engine does. Game.exe's real RHS reader
-        # (FUN_0043fd20, shared by check value's and set value's constructors,
-        # FUN_0042fc00 / FUN_0042fb50) has no length check at all -- it decides
-        # whether to read the operator+second-operand tail by looking up the
-        # already-resolved reference's type category live against the object
-        # graph (scripts bind to actors that already exist, so that graph is
-        # available at parse time). A static decoder can't replicate that lookup.
+        # This is a proxy, not what the engine does. The real reader is
+        # TFBScript::readRHS @ 0043fd20 (4 stack args, RET 0x10; arg1 = the
+        # record, arg2 = a "gate" object, arg3 = a flag, arg4 unused). Its only
+        # tail branch is:
         #
-        # It doesn't need to: the authoring tool made the same type-compatible-or-
-        # not decision at compile time and sized payload_size to match, only
-        # emitting the extra 6 bytes when it had already decided the tail
-        # belongs. So checking remaining bytes against that already-shaped
-        # boundary is a lossless proxy for the real decision, not a guess --
-        # verified byte-exact (zero mismatches) against all 42,391 check
-        # value::op-code / set value::op-code RHS reads in the shipped corpus.
+        #   0043fd59  CMP byte [EDI],2      ; tag A, from the stream
+        #   0043fd63  JNZ 0043fe3e          ; constant -> no tail
+        #   0043fd69  TEST EBP,EBP          ; EBP = arg2, the gate
+        #   0043fd6b  JZ  0043fd82          ; gate NULL -> tail
+        #   0043fd6d  CALL 0042fdb0         ; the `value` exemplar
+        #   0043fd75  CALL 0043bab0         ; is-a(gate, value); `set` counts as value
+        #   0043fd7c  JZ  0043fe3e          ; not is-a value -> NO tail (5 bytes)
+        #   0043fd82  ...                   ; tail: op + tag B + term B (11 bytes)
+        #
+        # Call sites pass as the gate either DAT_0061f870 -- the descriptor
+        # FUN_004346f0 left from the last reference read in the same parse
+        # (set value 0042fb82, check value, check message 0043aecf, send
+        # message 0043af7f) -- or a fixed exemplar (`angle` at 00431457 /
+        # 00435a3f / 00435a56, `value` at 00435a99) or NULL (00430284).
+        #
+        # NOT YET REPRODUCIBLE STATICALLY. The outcome *is* static: keyed by
+        # (script, LHS operand word) there are 0 conflicts in 5165 pairs. But
+        # it is not a function of the gate's type as modelled here -- restricted
+        # to set value, whose gate is provably the LHS, the same actor field
+        # descriptor yields both sizes across files (waypoints 555/75,
+        # heading (OBSOLETE) 9/61, origin 11/5, tint color 6/5). Field-class
+        # identity does not separate them either: the 56 ::actor field
+        # descriptors (array 0x0061fdc0, builder FUN_00436f80) fall into just 6
+        # getClass groups -- 42fdb0 `value` (42 fields), 43d2d0 `set`
+        # (waypoints/attach points/clones/turrets), 4302c0 `angle`
+        # (heading/facing/cone angle/cone sweep offset), 42fdf0 colour
+        # (blip/cone/tint color), 430300 point (origin/destination), 42fe70
+        # (current speed) -- and every one of those groups shows both sizes.
+        # So DAT_0061f870 at the call must not always be the last-read
+        # reference; that is the open thread.
+        #
+        # Meanwhile the length proxy holds: the authoring tool sized
+        # payload_size to whatever it emitted, so the remaining-bytes boundary
+        # reproduces the decision. Verified across the corpus (0 parse errors,
+        # and every round-trip mismatch attributable to opcodes with no
+        # write_payload).
 
         available = reader.size_remaining()
         tag = reader.read_u8()
@@ -89,12 +115,85 @@ class Rhs:
         if tag == 0x02:
             ref = Reference.read(reader, global_refs, local_refs, context)
 
-            if available < 11:
+            if available < 11 or not cls._tail_follows(reader):
                 return cls(tag, "reference", ref)
 
             op = reader.read_u8()
-            rhs = Rhs.read(reader, global_refs, local_refs, context)
+            # The tail's second operand is a plain TERM, never another
+            # expression: Game.exe's readRHS reads it with a single
+            # FUN_004346f0 (reference, 0043fe27) or one constant reader, and
+            # there is no operator after it. Recursing into Rhs.read here would
+            # eat the following field whenever term B is itself a reference --
+            # e.g. slide value `.. 02 refA 00 02 refB | 10 cd cc cc 3e ..`,
+            # where the 0x10 float tag gets misread as an operator and 0xCD (the
+            # mantissa of 0.4f) as a tag.
+            rhs = cls._read_term(reader, global_refs, local_refs, context)
             return cls(tag, "expression", ref, operator=op, rhs=rhs)
+
+        return cls._read_term_body(reader, tag, global_refs, local_refs, context)
+
+    @staticmethod
+    def _tail_follows(reader: "BinaryReader") -> bool:
+        """Whether an operator + second term really follows the reference just read.
+
+        The remaining-bytes test alone is not enough: an opcode that has more
+        fields after its RHS leaves plenty of room even when there is no tail,
+        and the reader then eats the next field. Game.exe decides this by type
+        (readRHS @ 0043fd20 takes the tail only when its gate argument is-a
+        `value`), which a static decoder cannot reproduce -- but the bytes a
+        real tail must have are tightly constrained, and that is checkable:
+
+        * the operator at rec+0xb is a 2-bit selector, 0 `+` / 1 `-` / 2 `*` /
+          3 `/`. The evaluator (FUN_004400C0 @ 0044022C and 004402FE) does
+          `CMP EAX,3; JA` and falls through doing nothing above 3, so a byte
+          > 3 is not an operator;
+        * the second term's tag is one the reader dispatches on -- exactly
+          0x02, or a high nibble of 0x00/0x10/0x20/0x30/0x80.
+
+        Measured over the corpus: 40,543 tails, operator 0-3 in every genuine
+        one; the only 7 exceptions had 0x10 there -- a float tag from the
+        *following* field, i.e. precisely the over-read this rejects.
+        """
+        if reader.size_remaining() < 6:
+            return False
+
+        op = reader.data[reader.offset]
+        tag_b = reader.data[reader.offset + 1]
+
+        if op > 0x03:
+            return False
+        if tag_b == 0x02:
+            return True
+        return (tag_b & 0xF0) in (0x00, 0x10, 0x20, 0x30, 0x80)
+
+    @classmethod
+    def _read_term(
+        cls,
+        reader: "BinaryReader",
+        global_refs: StringTable,
+        local_refs: StringTable,
+        context: "ParserContext | None" = None,
+    ) -> "Rhs":
+        """Read one operand of an expression: a tag plus its value, with no
+        operator tail. Used for the second operand only."""
+        tag = reader.read_u8()
+
+        if tag == 0x02:
+            ref = Reference.read(reader, global_refs, local_refs, context)
+            return cls(tag, "reference", ref)
+
+        return cls._read_term_body(reader, tag, global_refs, local_refs, context)
+
+    @classmethod
+    def _read_term_body(
+        cls,
+        reader: "BinaryReader",
+        tag: int,
+        global_refs: StringTable,
+        local_refs: StringTable,
+        context: "ParserContext | None" = None,
+    ) -> "Rhs":
+        """Read the value bytes of a non-reference term, given its tag."""
 
         if tag & 0x01 not in (0x00, 0x01):
             raise ValueError(f"Unknown RHS tag 0x{tag:02X} (low nibble {tag & 0x0F} <- CAUSE)")
@@ -199,6 +298,9 @@ class Rhs:
             if self.operator is not None:
                 op = _OPERATORS.get(self.operator, f"unknown_operator_{self.operator}")
                 op = operator(op)
+                if "unknown_operator_" in op: # TODO: bad way of doing it
+                    print("WARN: UNKNOWN OPERATOR - " + hex(self.operator))
+                    raise ValueError("WARN: UNKNOWN OPERATOR - " + hex(self.operator))
             else:
                 op = "unknown_operator_None"
 

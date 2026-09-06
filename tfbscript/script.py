@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import BinaryIO
 
 from tfbscript.binary import BinaryReader, write_u32, write_u8
+from tfbscript.arena import arena_dwords
 from tfbscript.debug import DebugStore
 from tfbscript.opcodes import Opcode, ParserContext
 from tfbscript.string_table import StringTable
@@ -81,7 +82,17 @@ class ScriptFile:
 
         write_u8(f, len(self.magic_string))
         f.write(self.magic_string.encode("latin1"))
-        f.write(self.unk)
+
+        # The 4 bytes after the magic are the opcode-arena size in dwords; see
+        # tfbscript/arena.py. Recompute it so edits that add instructions stay
+        # loadable, but never write a value smaller than the one the file came
+        # with: the field is an allocation size, so over-reserving is harmless
+        # while under-reserving would corrupt the loader's bump allocator.
+        computed = arena_dwords(self)
+        if computed is None:
+            f.write(self.unk)
+        else:
+            write_u32(f, max(computed, int.from_bytes(self.unk, "little")))
 
         self.opcode_table.write(f)
         self.global_refs.write(f)

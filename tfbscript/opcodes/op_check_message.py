@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import BinaryIO, override
 
 from tfbscript.ansi import keyword
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import RelOp
 from tfbscript.payload import PayloadReader
@@ -27,6 +28,17 @@ class OpCheckMessage(Opcode):
     def parse_payload(cls, reader: PayloadReader) -> "OpCheckMessage":
         message_ref = reader.readRef()
 
+        # Three shapes only, 4 / 14 / 20 bytes, so this threshold cannot be
+        # straddled. The engine's own test is not reproducible from the .ai:
+        # parse (FUN_0043AE30) asks the message's descriptor
+        # DAT_0061f870->vt[0x18]() and stops right after the message ref when
+        # that is <= 0 -- an operand count that comes from the message's
+        # per-level declaration in the level hub, not from this file. The two
+        # `message` vtables differ only there: 005CDC08 returns 0, 005CE590
+        # returns 2. Verified as a per-declaration property: of 88 message
+        # symbols, 79 are always extended and 8 always plain; the one that is
+        # both (`ledge nearby`) is plain in 8 levels and extended in `battle`.
+        #
         # Ref: 4b
         # RelOp: 1b
         # Rhs: min. 5b
@@ -48,6 +60,15 @@ class OpCheckMessage(Opcode):
             message_ref=message_ref,
             _is_extended=False,
         )
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.message_ref.write(f)
+        if not self._is_extended:
+            return
+        self.sender_ref.write(f)
+        write_u8(f, self.rel_op)
+        self.value.write(f)
 
     @override
     def source_line(self, inline: bool = False) -> str:

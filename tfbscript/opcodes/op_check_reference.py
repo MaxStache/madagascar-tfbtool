@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, override
+from typing import Any, BinaryIO, override
 
 from tfbscript.ansi import keyword
 from tfbscript.opcodes.base import Opcode, opcode
@@ -20,6 +20,11 @@ class OpCheckReference(Opcode):
         ref2 = reader.readRef()
 
         return cls(ref1=ref1, ref2=ref2)
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.ref1.write(f)
+        self.ref2.write(f)
 
     @override
     def source_line(self, inline: bool = False) -> str:

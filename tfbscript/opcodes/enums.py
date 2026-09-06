@@ -165,11 +165,22 @@ class AnimationMapping(IntEnum):
     lean_right_slow = 0x3D
     lean_right_medium = 0x3E
     lean_right_fast = 0x3F
-
-    UNKNOWN1 = 0x40
-    UNKNOWN2 = 0x41
-    UNKNOWN3 = 0x42
-    UNKNOWN4 = 0x45
+    
+    idle_cycle_1_A = 0x40
+    idle_cycle_1_B = 0x41
+    idle_cycle_1_C = 0x42
+    idle_trans_1_to_2 = 0x43
+    idle_trans_1_to_3 = 0x44
+    idle_cycle_2_A = 0x45
+    idle_cycle_2_B = 0x46
+    idle_cycle_2_C = 0x47
+    idle_trans_2_to_3 = 0x48
+    idle_trans_2_to_1 = 0x49
+    idle_cycle_3_A = 0x4A
+    idle_cycle_3_B = 0x4B
+    idle_cycle_3_C = 0x4C
+    idle_trans_3_to_1 = 0x4D
+    idle_trans_3_to_2 = 0x4E
 
     @override
     def __str__(self) -> str:

@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import BinaryIO, override
 
 from tfbscript.ansi import func_call
+from tfbscript.binary import write_f32, write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import CamTransitionInMode, CamTransitionOutMode
 from tfbscript.payload import PayloadReader
@@ -44,6 +45,17 @@ class OpUseCamera(Opcode):
         )
 
     @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.camera_ref.write(f)
+        write_u8(f, self.trans_in_mode)
+        write_f32(f, self.trans_in_duration)
+
+        write_u8(f, self.trans_out_mode)
+        if self.trans_out_mode != CamTransitionOutMode.no_transition:
+            assert self.trans_out_duration is not None # Should never assert
+            write_f32(f, self.trans_out_duration)
+
+    @override
     def source_line(self, inline: bool = False) -> str:
         return func_call(
             "useCamera",
@@ -53,3 +65,4 @@ class OpUseCamera(Opcode):
             if self.trans_out_mode != CamTransitionOutMode.no_transition
             else f"trans_out: {self.trans_out_mode}",
         )
+

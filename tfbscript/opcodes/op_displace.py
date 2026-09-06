@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Any, override
+from typing import Any, BinaryIO, override
 
 from tfbscript.ansi import func_call
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import CombineMode
 from tfbscript.payload import PayloadReader
@@ -27,13 +28,9 @@ class OpDisplace(Opcode):
             reader.read_u8()
         )  # TODO : May actually be a SetDirection
 
-        print(reader.size_remaining())
         length = reader.readRHS()
-        print(reader.size_remaining())
         heading = reader.readRHS()
-        print(reader.size_remaining())
         pitch = reader.readRHS()
-        print(reader.size_remaining())
 
         return cls(
             target=target,
@@ -42,6 +39,14 @@ class OpDisplace(Opcode):
             heading=heading,
             pitch=pitch,
         )
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.target.write(f)
+        write_u8(f, self.combine_mode)
+        self.length.write(f)
+        self.heading.write(f)
+        self.pitch.write(f)
 
     @override
     def source_line(self, inline: bool = False) -> str:

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, override
+from typing import Any, BinaryIO, override
 
 from tfbscript.ansi import keyword
 from tfbscript.opcodes.base import Opcode, opcode
@@ -17,6 +17,12 @@ class OpSetReference(Opcode):
     @override
     def parse_payload(cls, reader: PayloadReader) -> "OpSetReference":
         return cls(dest_ref=reader.readRef(), src_ref=reader.readRef())
+
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.dest_ref.write(f)
+        self.src_ref.write(f)
 
     @override
     def source_line(self, inline: bool = False) -> str:

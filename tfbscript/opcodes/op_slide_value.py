@@ -1,7 +1,10 @@
 from dataclasses import dataclass, field
 from typing import override
 
+from typing import BinaryIO
+
 from tfbscript.ansi import func_call
+from tfbscript.binary import write_u32
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
@@ -15,8 +18,18 @@ class OpSlideValue(Opcode):
     target_value: Rhs = field(default_factory=Rhs)
     interpolation_time: Rhs = field(default_factory=Rhs)
 
-    ease_out: Reference = field(default_factory=Reference)
-    ease_in: Reference = field(default_factory=Reference)
+    # Plain u32s, not references: slide value's parse (FUN_00430210) reads
+    # them with FUN_00432990 -- a thunk to FUN_00432920, a raw 4-byte LE read --
+    # not with FUN_004346f0, which is what every actual reference operand goes
+    # through. Disk order is ease_out (obj+0x28) then ease_in (obj+0x24).
+    ease_out: int = 0
+    ease_in: int = 0
+    # Whatever is left when the trailer is not the expected 8 bytes. That only
+    # happens when the RHS reader took an operator tail that was not really
+    # there (see Rhs._tail_follows -- the byte test is sound but not complete),
+    # so the fields above are unreliable for those; keeping the raw bytes lets
+    # the file round-trip exactly regardless.
+    _trailing: bytes = b""
 
     @classmethod
     @override
@@ -25,27 +38,33 @@ class OpSlideValue(Opcode):
         target_value = reader.readRHS()
         interpolation_time = reader.readRHS()
 
-        if reader.size_remaining() == 8:
-            ease_out = reader.readRef()
-            ease_in = reader.readRef()
-        else:
-            # TODO: Why tf does that happen
-            reader.skip(
-                reader.size_remaining() # always 2
-            )
+        # Normally exactly 8 bytes remain.
+        if reader.size_remaining() >= 8:
             return cls(
                 lhs=lhs,
                 target_value=target_value,
                 interpolation_time=interpolation_time,
+                ease_out=reader.read_u32(),
+                ease_in=reader.read_u32(),
             )
 
         return cls(
             lhs=lhs,
             target_value=target_value,
             interpolation_time=interpolation_time,
-            ease_out=ease_out,
-            ease_in=ease_in,
+            _trailing=reader.read_bytes(reader.size_remaining()),
         )
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.lhs.write(f)
+        self.target_value.write(f)
+        self.interpolation_time.write(f)
+        if self._trailing:
+            f.write(self._trailing)
+        else:
+            write_u32(f, self.ease_out)
+            write_u32(f, self.ease_in)
 
     @override
     def source_line(self, inline: bool = False) -> str:

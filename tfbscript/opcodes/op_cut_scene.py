@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Any, override
+from typing import Any, BinaryIO, override
 
 from tfbscript.ansi import func_call
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import CutsceneCommand
 from tfbscript.payload import PayloadReader
@@ -37,3 +38,7 @@ class OpCutScene(Opcode):
                 },
             ]
         }
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        write_u8(f, self.cutscene_command)

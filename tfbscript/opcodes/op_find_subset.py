@@ -1,11 +1,12 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import BinaryIO, override
 
 from tfbscript.ansi import (
     comparison,
     func_call,
     variable,
 )
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import RelOp
 from tfbscript.payload import PayloadReader
@@ -29,6 +30,12 @@ class OpFindSubset(Opcode):
         rel_op = RelOp(reader.read_u8())
         rhs = reader.readRHS()
         return cls(set_ref=set_ref, rel_op=rel_op, rhs=rhs)
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.set_ref.write(f)
+        write_u8(f, self.rel_op)
+        self.rhs.write(f)
 
     @override
     def source_line(self, inline: bool = False) -> str:
