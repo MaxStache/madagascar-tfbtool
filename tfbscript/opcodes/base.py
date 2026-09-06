@@ -184,7 +184,7 @@ class Opcode:
             if entry is None:
                 raise ValueError(f"Invalid opcode index: {opcode_index}")
 
-            opcode_name = entry.name  # "my op::op-code" -> "my op"
+            opcode_name = entry.name  # for example "print::op-code" -> "print"
             opcode_class = OPCODE_REGISTRY.get(opcode_name)
             if opcode_class is None:
                 print(
