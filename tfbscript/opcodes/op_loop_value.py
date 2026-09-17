@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import BinaryIO, override
 
 from tfbscript.ansi import keyword
 from tfbscript.opcodes.base import Opcode, opcode
@@ -22,3 +22,7 @@ class OpLoopValue(Opcode):
     @override
     def source_line(self, inline: bool = False) -> str:
         return f"{keyword('loop value (')} {self.loop_amount} {keyword(')')}"
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.loop_amount.write(f)

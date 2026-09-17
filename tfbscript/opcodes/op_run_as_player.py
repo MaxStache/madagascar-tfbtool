@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import BinaryIO, override
 
 from tfbscript.ansi import func_call
 from tfbscript.opcodes.base import Opcode, opcode
@@ -20,3 +20,7 @@ class OpRunAsPlayer(Opcode):
     @override
     def source_line(self, inline: bool = False) -> str:
         return func_call("runAsPlayer", str(self.actor_ref))
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.actor_ref.write(f)

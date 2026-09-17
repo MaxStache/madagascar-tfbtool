@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import BinaryIO, override
 
 from tfbscript.ansi import comparison, keyword, number
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import CheckFOVMode, RelOp
 from tfbscript.payload import PayloadReader
@@ -61,3 +62,12 @@ class OpCheckFOV(Opcode):
         # but its nice to know that this is a FOV check
 
         return f"{keyword('check fov (')} {condition} {keyword(')')}"
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.angle_base.write(f)
+        self.arc_width.write(f)
+        self.target_ref.write(f)
+        write_u8(f, self.range_relop)
+        self.range.write(f)
+        write_u8(f, self.mode)

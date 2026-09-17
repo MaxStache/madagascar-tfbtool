@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import BinaryIO, override
 
 from tfbscript.ansi import comparison, keyword
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import MembershipTest
 from tfbscript.payload import PayloadReader
@@ -32,3 +33,9 @@ class OpCheckMembership(Opcode):
             return condition
 
         return f"{keyword('check membership (')} {condition} {keyword(')')}"
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.ref1.write(f)
+        write_u8(f, self.membershipTest)
+        self.ref2.write(f)

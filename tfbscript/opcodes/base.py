@@ -334,9 +334,11 @@ class Opcode:
             finally:
                 if self.context is not None:
                     self.context.open_opcodes.pop()
-            print(
-                f"{'    ' * children_indent}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}"
-            )
+
+            if self.flags.flow_control != 1: # is not continue
+                print(
+                    f"{'    ' * children_indent}{keyword('flow ')}{flow_control(self.flags.flow_control_str())}"
+                )
             print(f"{'    ' * indent}{'}'}")
 
     def editor_repr(self) -> dict[str, Any]:

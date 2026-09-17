@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import BinaryIO, override
 
 from tfbscript.ansi import func_call
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import SetDirection
 from tfbscript.payload import PayloadReader
@@ -37,3 +38,10 @@ class OpTeleportTo(Opcode):
             f"direction: {self.set_direction}",
             f"over {self.duration} seconds",
         )
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.target_ref.write(f)
+        write_u8(f, self.set_direction)
+        self.facing.write(f)
+        self.duration.write(f)

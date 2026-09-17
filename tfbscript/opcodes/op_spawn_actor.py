@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Any, override
+from typing import Any, BinaryIO, override
 
 from tfbscript.ansi import keyword
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.payload import PayloadReader
 from tfbscript.reference import Reference
@@ -83,3 +84,13 @@ class OpSpawnActor(Opcode):
                 },
             ]
         }
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.clone_ref.write(f)
+        self.at_ref.write(f)
+        self.facing_rhs.write(f)
+        # The trailing byte is only there in some files; parse records its
+        # absence as None so writing can leave it out again.
+        if self.remaining is not None:
+            write_u8(f, self.remaining)

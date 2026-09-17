@@ -95,8 +95,8 @@ BINDINGS = {
         0x27: {"name": "cone angle", "type": "value"},
         0x28: {"name": "cone length", "type": "value"},
         0x29: {"name": "cone sweep offset", "type": "value"},
-        0x2A: {"name": "blip color", "type": "value"},
-        0x2B: {"name": "cone color", "type": "value"},
+        0x2A: {"name": "blip color", "type": "value", "of": "color"},
+        0x2B: {"name": "cone color", "type": "value", "of": "color"},
         0x2C: {"name": "solid collision", "type": "value"},
         0x2D: {"name": "wall collision", "type": "value"},
         0x2E: {"name": "visible on radar", "type": "value"},
@@ -108,7 +108,7 @@ BINDINGS = {
         0x34: {"name": "ID", "type": "value"},
         0x35: {"name": "mesh collider", "type": "value"},
         0x36: {"name": "triangles collide", "type": "value"},
-        0x37: {"name": "tint color", "type": "value"},
+        0x37: {"name": "tint color", "type": "value", "of": "color"},
         0x38: {"name": "turrets", "type": "set", "of": "turret"},
     },
     "camera": {
@@ -135,18 +135,15 @@ BINDINGS = {
     },
     "sprite": {  # TODO: confirm labels
         0x01: {"name": "content", "type": "value"},
-        0x02: {"name": "location", "type": "value"},  # Pair16, sub 1 = x, sub 2 = y
-        0x03: {"name": "scale", "type": "value"},
+        0x02: {"name": "location", "type": "value", "of": "2D"},
+        0x03: {"name": "scale", "type": "value", "of": "2D"},
         0x04: {"name": "rotation", "type": "value"},
-        0x05: {"name": "tint color", "type": "value"},
+        0x05: {"name": "tint color", "type": "value", "of": "color"},
         0x06: {"name": "justification", "type": "value"},
         0x07: {"name": "visible", "type": "value"},
         0x08: {"name": "clones", "type": "set", "of": "sprite"},
         0x09: {"name": "priority", "type": "value"},  # z-order!?
-        0x0A: {
-            "name": "pixel extends",
-            "type": "value",
-        },  # Pair16, sub 1 = x, sub 2 = y
+        0x0A: {"name": "pixel extends", "type": "value", "of": "2D"},
     },
     "sound": {
         0x01: {"name": "volume", "type": "value"},
@@ -279,16 +276,16 @@ BINDINGS = {
         0x09: {"name": "primary start velocity spread", "type": "value"},
         0x0A: {"name": "primary start gravity", "type": "value"},
         0x0B: {"name": "primary start drag", "type": "value"},
-        0x0C: {"name": "primary start color", "type": "value"},
-        0x0D: {"name": "primary start color spread", "type": "value"},
+        0x0C: {"name": "primary start color", "type": "value", "of": "color"},
+        0x0D: {"name": "primary start color spread", "type": "value", "of": "color"},
         0x0E: {"name": "primary start size", "type": "value"},
         0x0F: {"name": "primary start size spread", "type": "value"},
         0x10: {"name": "primary end velocity", "type": "value"},
         0x11: {"name": "primary end velocity spread", "type": "value"},
         0x12: {"name": "primary end gravity", "type": "value"},
         0x13: {"name": "primary end drag", "type": "value"},
-        0x14: {"name": "primary end color", "type": "value"},
-        0x15: {"name": "primary end color spread", "type": "value"},
+        0x14: {"name": "primary end color", "type": "value", "of": "color"},
+        0x15: {"name": "primary end color spread", "type": "value", "of": "color"},
         0x16: {"name": "primary end size", "type": "value"},
         0x17: {"name": "primary end size spread", "type": "value"},
         0x18: {"name": "emitter spread x", "type": "value"},
@@ -320,12 +317,12 @@ BINDINGS = {
     },
     "FOG": {
         0x01: {"name": "vertex fog distance", "type": "value"},
-        0x02: {"name": "vertex fog color", "type": "value"},
+        0x02: {"name": "vertex fog color", "type": "value", "of": "color"},
         0x03: {"name": "pixel fog/DOF distance", "type": "value"},
         0x04: {"name": "pixel fog/DOF cutoff intensity", "type": "value"},
         0x05: {"name": "pixel fog toggle", "type": "value"},
         0x06: {"name": "DOF bluriness factor", "type": "value"},
-        0x07: {"name": "pixel fog/DOF color", "type": "value"},
+        0x07: {"name": "pixel fog/DOF color", "type": "value", "of": "color"},
         0x08: {"name": "bloom toggle", "type": "value"},
         0x09: {"name": "bloom add factor", "type": "value"},
         0x0A: {"name": "bloom halo size", "type": "value"},
@@ -389,7 +386,11 @@ class ResolvedType:
         if field.get("type") == "set":
             return ResolvedType(field.get("of"), is_set=True)
 
-        return ResolvedType(field.get("type"))  # "value"
+        # A plain value is the end of the line, but some of them are really a
+        # colour or an x/y pair and `sub` picks one component out: "of" says
+        # which table names those components, so `tint color`'s sub 0x04
+        # resolves to the `a` of BINDINGS["color"].
+        return ResolvedType(field.get("of", field.get("type")))  # "value"
 
 
 @dataclass
@@ -702,9 +703,25 @@ class Reference:
                 s += f"@{self.scope}"
 
         if self.sub:
-            s += f".sub[{self.sub:#04x}]"
+            s += self._get_sub_string()
 
         return s
+
+    def _get_sub_string(self) -> str:
+        """The component `sub` picks out, named when whatever it applies to has
+        a name for it -- the `a` of a tint colour, the `x` of a sprite's
+        location -- and the raw index when it does not."""
+        try:
+            applies_to = self.resolve_type(apply_sub=False).type
+        except ValueError:
+            applies_to = None  # a builtin with no producer in reach
+
+        field = member_field(applies_to, self.sub)
+
+        if field is None or field.get("name") is None:
+            return f".sub[{self.sub:#04x}]"
+
+        return f".{field['name']}"
 
     def _selects_from_set(self) -> bool:
         """Whether what `scope` picks from is a set: the member it selects, or,

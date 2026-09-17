@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import BinaryIO, override
 
 from tfbscript.ansi import func_call
+from tfbscript.binary import write_u8
 from tfbscript.opcodes.base import Opcode, opcode
 from tfbscript.opcodes.enums import AnimationMapping
 from tfbscript.payload import PayloadReader
@@ -25,3 +26,8 @@ class OpTurnTo(Opcode):
     @override
     def source_line(self, inline: bool = False) -> str:
         return func_call("turnTo", str(self.rhs), f"animation: {self.animation}")
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.rhs.write(f)
+        write_u8(f, self.animation)

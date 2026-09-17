@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import BinaryIO, override
 
 from tfbscript.ansi import keyword
 from tfbscript.opcodes.base import Opcode, opcode
@@ -21,3 +21,8 @@ class OpFindVariable(Opcode):
     @override
     def source_line(self, inline: bool = False) -> str:
         return f"{keyword('find variable (')} {self.var_ref} in {self.owner_ref} {keyword(')')}"
+
+    @override
+    def write_payload(self, f: BinaryIO) -> None:
+        self.var_ref.write(f)
+        self.owner_ref.write(f)
