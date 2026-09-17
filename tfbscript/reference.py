@@ -21,6 +21,11 @@ NULL_REF = 0xFFFFFFFF
 # builtin producer chains (see get_resolved_type).
 _RESOLVING: set[int] = set()
 
+# Fields `raw` is composed from: assigning any of them re-runs update_raw.
+_RAW_INPUTS = frozenset(
+    {"index", "member", "scope", "sub", "kind", "builtin_kind", "slot"}
+)
+
 
 # fmt: off
 class ReferenceType(Enum):
@@ -389,7 +394,7 @@ class ResolvedType:
 
 @dataclass
 class Reference:
-    raw: int = 0x00  # the 32-bit little-endian value R
+    raw: int = 0x00  # the 32-bit little-endian value R, kept in sync by update_raw
     index: int = 0  # R >> 14
     member: int = 0  # (R >> 8) & 0x3F  -- field within the target
     scope: int = 0  # (R >> 6) & 3
@@ -434,6 +439,74 @@ class Reference:
             slot=slot,
             entry=entry,
         )
+
+    def __post_init__(self) -> None:
+        # Enable the __setattr__ hook only once every field exists, then compose
+        # `raw` from the values the caller passed.
+        object.__setattr__(self, "_raw_sync", True)
+        self.update_raw()
+
+    @override
+    def __setattr__(self, name: str, value: object) -> None:
+        # dataclass __init__ assigns fields one at a time, so the _raw_sync guard
+        # keeps us from composing a raw out of half-initialised state;
+        # __post_init__ does that once at the end.
+        syncing = name in _RAW_INPUTS and getattr(self, "_raw_sync", False)
+        previous = getattr(self, name) if syncing else None
+
+        super().__setattr__(name, value)
+
+        if syncing:
+            try:
+                self.update_raw()
+            except ValueError:
+                object.__setattr__(self, name, previous)  # keep the object valid
+                raise
+
+    def update_raw(self) -> int:
+        """Recompose `raw` (and `index`) from the current field values.
+
+        `index` is derived from `kind` plus `slot`/`builtin_kind` whenever those
+        say what it should be, so moving a reference to another table slot is
+        enough to keep both `index` and `raw` right. Returns the new `raw`.
+        """
+        index = self.index
+
+        if self.kind == ReferenceType.NULL:
+            # A null reference is all-ones; that is what the bit-fields decode to.
+            index, member, scope, sub = 0x3FFFF, 0x3F, 3, 0x3F
+        else:
+            member, scope, sub = self.member, self.scope, self.sub
+
+            if self.kind == ReferenceType.BUILTIN and self.builtin_kind is not None:
+                index = self.builtin_kind.value
+            elif self.kind == ReferenceType.LOCAL and self.slot is not None:
+                index = LOCAL_BASE + self.slot
+            elif self.kind == ReferenceType.GLOBAL and self.slot is not None:
+                index = self.slot
+
+        for name, value, limit in (
+            ("index", index, 0x3FFFF),
+            ("member", member, 0x3F),
+            ("scope", scope, 0x3),
+            ("sub", sub, 0x3F),
+        ):
+            if not 0 <= value <= limit:
+                raise ValueError(
+                    f"reference {name} {value:#x} does not fit its bit-field "
+                    + f"(0..{limit:#x})"
+                )
+
+        raw = (index << 14) | (member << 8) | (scope << 6) | sub
+
+        # object.__setattr__, so writing these back does not re-enter update_raw.
+        object.__setattr__(self, "index", index)
+        object.__setattr__(self, "member", member)
+        object.__setattr__(self, "scope", scope)
+        object.__setattr__(self, "sub", sub)
+        object.__setattr__(self, "raw", raw)
+
+        return raw
 
     @classmethod
     def createSimple_global(
@@ -565,24 +638,15 @@ class Reference:
         )
 
     def write(self, f: BinaryIO) -> None:
-        if self.kind == ReferenceType.NULL:
-            write_u32(f, NULL_REF)
-            return
-
-        if self.kind == ReferenceType.BUILTIN:
-            assert self.builtin_kind is not None
-            index = self.builtin_kind.value
-        elif self.kind == ReferenceType.GLOBAL:
-            assert self.slot is not None
-            index = self.slot
-        elif self.kind == ReferenceType.LOCAL:
-            assert self.slot is not None
-            index = LOCAL_BASE + self.slot
-        else:
+        if self.kind == ReferenceType.BUILTIN and self.builtin_kind is None:
+            raise ValueError("builtin reference has no builtin_kind")
+        if self.kind in (ReferenceType.GLOBAL, ReferenceType.LOCAL):
+            if self.slot is None:
+                raise ValueError(f"{self.kind.name.lower()} reference has no slot")
+        elif self.kind not in (ReferenceType.NULL, ReferenceType.BUILTIN):
             raise ValueError(f"Reference has unknown kind {self.kind}")
 
-        raw = (index << 14) | (self.member << 8) | (self.scope << 6) | self.sub
-        write_u32(f, raw)
+        write_u32(f, self.update_raw())
 
     @override
     def __str__(self) -> str:

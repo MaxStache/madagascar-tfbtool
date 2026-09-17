@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import BinaryIO
 
+from tfbscript import ansi
 from tfbscript.binary import BinaryReader, write_u32, write_u8
 from tfbscript.arena import arena_dwords
 from tfbscript.debug import DebugStore
@@ -30,9 +31,12 @@ class ScriptFile:
 
     @classmethod
     def read(
-        cls, reader: BinaryReader, debugOptions: dict[str, bool | int] = {}
+        cls, reader: BinaryReader, debugOptions: dict[str, bool | int] | None = None
     ) -> "ScriptFile":
         """Read a ScriptFile from a binary reader."""
+
+        if debugOptions is None:
+            debugOptions = {}
 
         debug_store: DebugStore = DebugStore()
 
@@ -108,9 +112,13 @@ class ScriptFile:
 
     @classmethod
     def from_path(
-        cls, path: str | Path, debugOptions: dict[str, bool | int] = {}
+        cls, path: str | Path, debugOptions: dict[str, bool | int] | None = None
     ) -> "ScriptFile":
         """Read a ScriptFile from an .ai file on disk."""
+
+        if debugOptions is None:
+            debugOptions = {}
+
         data = Path(path).read_bytes()
 
         script = cls.read(
@@ -119,7 +127,34 @@ class ScriptFile:
         script._file_path = Path(path)
         return script
 
+    @staticmethod
+    def _print_ref_table(title: str, table: StringTable) -> None:
+        """Print one reference table as `index: name::category::type  [metadata]`."""
+        print(ansi.comment(f"----- {title} ({len(table)} entries) -----"))
+
+        for index, entry in enumerate(table.entries):
+            parts = [ansi.variable(entry.name)]
+            if entry.category is not None:
+                parts.append(ansi.builtin(entry.category))
+            parts.append(ansi.type_(entry.type))
+
+            metadata = entry.metadata.hex(" ")
+
+            print(
+                f"  {ansi.number(f'{index:>3}')}: {'::'.join(parts)}"
+                + f"  {ansi.comment(f'[{metadata}]')}"
+            )
+
     def print_tree(self) -> None:
-        """Print the whole script as indented pseudo-source."""
+        """Print the reference tables, then the whole script as indented pseudo-source."""
+        print()
+        self._print_ref_table("GLOBAL REFS", self.global_refs)
+        print()
+        self._print_ref_table("LOCAL REFS", self.local_refs)
+        print()
+        self._print_ref_table("OPCODES", self.opcode_table)
+        print()
+        print(ansi.comment("----- INSTRUCTIONS -----"))
+
         for instruction in self.instructions:
             instruction.print_tree()

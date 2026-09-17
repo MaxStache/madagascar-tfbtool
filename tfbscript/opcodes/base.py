@@ -22,7 +22,7 @@ class InstructionFlags:
 
     flow_control: int = (
         0  # bits 0-2 -- flow-control value returned by tfb_walk_children (FUN_00431130)
-    )
+    ) 
     # 0: return - skip to end of script (block)
     # 1: continue - proceed normally
     # 2,3,4...: break - skip the rest of N-1 enclosing levels, then resume
@@ -151,7 +151,7 @@ class Opcode:
         reader: "BinaryReader",
         context: ParserContext,
         debug_store: DebugStore | None = None,
-        debugOptions: dict[str, bool | int] = {},
+        debugOptions: dict[str, bool | int] | None = None,
     ) -> "Opcode":
         """Read one instruction (and its re-nested descendants) from the stream."""
         from tfbscript.opcodes.op_behavior_implementation import (
@@ -160,6 +160,9 @@ class Opcode:
         from tfbscript.opcodes.op_prescript import OpPrescript
         from tfbscript.opcodes.op_shutdown import OpShutdown
         from tfbscript.opcodes.op_startup import OpStartup
+
+        if debugOptions is None:
+            debugOptions = {}
 
         opcode_index = reader.read_u8()
         flags = InstructionFlags.decode(reader.read_u32())
